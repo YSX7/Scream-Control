@@ -1,0 +1,69 @@
+﻿<Controls:MetroWindow
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="Resources.xml"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:Properties="clr-namespace:ScreamControl_WPF.Properties"
+        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl_WPF.MainWindow"
+        Title="Scream Control" Height="342" Width="358" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top" Margin="5,5,5,0">
+            <Grid Background="#FFE0E0E0">
+                <ComboBox x:Name="cbLang" HorizontalAlignment="Left" Margin="5" DropDownClosed="ChangeLanguageClick" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
+            </Grid>
+        </Expander>
+
+        <StackPanel Height="277" Grid.Row="1" Width="263">
+            <Label Content="{DynamicResource m_Boost}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Width="58"/>
+            <Controls:NumericUpDown x:Name="numBoost" Background="{x:Null}" Foreground="Black" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Boost, Mode=TwoWay}" ValueChanged="numBoost_ValueChanged" HorizontalAlignment="Left" RenderTransformOrigin="1.427,0.5" VerticalAlignment="Top" Margin="7,0,0,0">
+                <Controls:NumericUpDown.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource Gray6}"/>
+                </Controls:NumericUpDown.BorderBrush>
+            </Controls:NumericUpDown>
+
+            <Label Content="{DynamicResource m_Volume}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Grid.Row="1" Width="79"/>
+            <WrapPanel>
+                <Slider x:Name="sliderVolume" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Height="16" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Volume, Mode=TwoWay}" ValueChanged="sliderVolume_ValueChanged" Grid.Row="1"/>
+                <Label Content="{Binding Value, ElementName=sliderVolume, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.421,0.231" Padding="0" Grid.Row="1" Height="16" Width="19"/>
+            </WrapPanel>
+
+            <Label Content="{DynamicResource m_Delay}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5" Grid.Row="1" Width="173"/>
+            <WrapPanel>
+                <Controls:NumericUpDown x:Name="nudDuration" Margin="10,0,0,0" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=SafeScreamZone, Mode=TwoWay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1" ValueChanged="nudDuration_ValueChanged"/>
+                <Label x:Name="lElapsed" Content="" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontWeight="Medium" RenderTransformOrigin="9,0.385" Height="26"/>
+            </WrapPanel>
+
+            <Label Content="{DynamicResource m_AlertWindowLabel}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5" Grid.Row="1"/>
+            <WrapPanel>
+                <Controls:NumericUpDown x:Name="nudAlertWindow" Margin="10,0,0,0" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=AlertOverlayDelay, Mode=TwoWay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1" ValueChanged="nudAlertWindow_ValueChanged"/>
+                <Label x:Name="lWindowElapsed" Content="" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontWeight="Medium" RenderTransformOrigin="9,0.385" Height="26"/>
+            </WrapPanel>
+
+            <Label x:Name="lDebug" Content="Label" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Grid.Row="1"/>
+            <Button Content="Button" Click="Button_Click"/>
+        </StackPanel>
+
+        <Grid x:Name="GridVolume" Margin="0,10,10,10" MinWidth="40" MinHeight="70" Width="77" HorizontalAlignment="Right" Grid.Column="1" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Controls:MetroProgressBar x:Name="pbVolume" Value="50" Orientation="Vertical" Grid.Column="1" Height="Auto" Background="White" HorizontalAlignment="Stretch" Foreground="#FF7FFF79" BorderBrush="#FFECECEC" BorderThickness="2"/>
+            <Border x:Name="Thresold" BorderBrush="Red" BorderThickness="1" Height="2" VerticalAlignment="Bottom" Background="Red" Cursor="SizeNS" Grid.Column="1" Padding="5" Margin="0,8,0,0"/>
+            <Rectangle x:Name="ThresholdHitBox" Height="10" VerticalAlignment="Bottom" Cursor="SizeNS" Grid.Column="1" Panel.ZIndex="10" Margin="0,0,0,-5" MouseDown="ThresholdHitBox_MouseDown" Fill="#00000000"/>
+            <Label x:Name="lThreshold" Content="100" Margin="0,0,0,0" VerticalAlignment="Bottom" Padding="0,0,5,0" MinHeight="15" MinWidth="24" HorizontalContentAlignment="Right"/>
+            <Label Grid.Column="1" x:Name="lVolume" Content="12.34" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0"/>
+        </Grid>
+    </Grid>
+</Controls:MetroWindow>
