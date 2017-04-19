@@ -69,9 +69,8 @@ namespace ScreamControl_WPF
             }
 
             App.Language = currLang;
-
-
            
+            //Update
 #if !DEBUG
             //Autostart
             if (!IsStartupItem())
@@ -81,12 +80,16 @@ namespace ScreamControl_WPF
                 key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
             }
 
-            //Update
+            Update();
+#endif
+        }
+
+        private async void Update()
+        {
             using (var mgr = UpdateManager.GitHubUpdateManager("https://github.com/YSXrus/Scream-Control"))
             {
-                await mgr.Result.UpdateApp(); //TODO: fix async execution
+               await mgr.Result.UpdateApp();
             }
-#endif
         }
 
         private bool IsStartupItem()
