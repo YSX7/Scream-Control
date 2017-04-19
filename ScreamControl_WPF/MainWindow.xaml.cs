@@ -32,7 +32,7 @@ namespace ScreamControl_WPF
     {
         AlarmSystem _as;
 
-        bool _closeGui, _mousePressed;
+        bool  _mousePressed;
         float _actualHeight;
         float _alarmThreshold = 80;
         float AlarmThreshold
@@ -73,14 +73,15 @@ namespace ScreamControl_WPF
             //Update
 #if !DEBUG
             //Autostart
-            if (!IsStartupItem())
-            {
-                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                Assembly curAssembly = Assembly.GetExecutingAssembly();
-                key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
-            }
+            //if (!IsStartupItem())
+            //{
+            //    RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            //    Assembly curAssembly = Assembly.GetExecutingAssembly();
+            //    key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
+            //}
 
             Update();
+            MessageBox.Show(Assembly.GetEntryAssembly().GetName().Version.ToString());
 #endif
         }
 
