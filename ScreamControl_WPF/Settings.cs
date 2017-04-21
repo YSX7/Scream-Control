@@ -1,4 +1,4 @@
-﻿namespace ScreamControl_WPF.Properties {
+﻿namespace ScreamControl_Client.Properties {
     
     
     // This class allows you to handle specific events on the settings class:

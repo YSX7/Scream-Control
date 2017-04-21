@@ -1,11 +1,11 @@
 ﻿using MahApps.Metro.Controls;
 using Microsoft.Win32;
-using Squirrel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -23,7 +23,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 
 
-namespace ScreamControl_WPF
+namespace ScreamControl_Client
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -69,27 +69,21 @@ namespace ScreamControl_WPF
             }
 
             App.Language = currLang;
-           
-            //Update
-#if !DEBUG
-            //Autostart
-            //if (!IsStartupItem())
-            //{
-            //    RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            //    Assembly curAssembly = Assembly.GetExecutingAssembly();
-            //    key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
-            //}
 
-            Update();
-            MessageBox.Show(Assembly.GetEntryAssembly().GetName().Version.ToString());
-#endif
+        #if !DEBUG
+            SetAutostart();
+        #endif
+
+            this.Title+= " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
         }
 
-        private async void Update()
+        private void SetAutostart()
         {
-            using (var mgr = UpdateManager.GitHubUpdateManager("https://github.com/YSXrus/Scream-Control"))
+            if (!IsStartupItem())
             {
-               await mgr.Result.UpdateApp();
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                Assembly curAssembly = Assembly.GetExecutingAssembly();
+                key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
             }
         }
 

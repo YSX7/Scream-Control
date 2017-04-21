@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
-namespace ScreamControl_WPF
+namespace ScreamControl_Client
 {
     class AlarmSystem
     {

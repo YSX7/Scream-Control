@@ -16,7 +16,7 @@ using Process.NET;
 using Process.NET.Memory;
 using Process.NET.Windows;
 
-namespace ScreamControl_WPF
+namespace ScreamControl_Client
 {
     public class AlertOverlay : WpfOverlayPlugin
     {

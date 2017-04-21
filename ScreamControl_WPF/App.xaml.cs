@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Octokit;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ScreamControl_WPF
+namespace ScreamControl_Client
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -15,8 +18,16 @@ namespace ScreamControl_WPF
     public partial class App : Application
     {
 
-
         private static List<CultureInfo> m_Languages = new List<CultureInfo>();
+
+        internal static ExtendedVersion Version
+        {
+            get
+            {
+                Version assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                return new ExtendedVersion(assemblyVersion.Major, assemblyVersion.Minor, assemblyVersion.Build);
+            }
+        }
 
         public static List<CultureInfo> Languages
         {
@@ -28,11 +39,26 @@ namespace ScreamControl_WPF
 
         public App()
         {
+            GetUpdates();
+
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
 
            App.LanguageChanged += App_LanguageChanged;
+        }
+
+        private async void GetUpdates()
+        {
+            var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
+            var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
+            var version = new ExtendedVersion(latest.TagName);
+            bool updateAvailable = version > App.Version;
+            string updateUrl = latest.HtmlUrl;
+            if (updateAvailable && File.Exists("Updater.exe"))
+            {
+                System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + " " + "s");
+            }
         }
 
         public static event EventHandler LanguageChanged;
@@ -86,18 +112,18 @@ namespace ScreamControl_WPF
 
         private void App_LanguageChanged(Object sender, EventArgs e)
         {
-            ScreamControl_WPF.Properties.Settings.Default.DefaultLanguage = Language;
-            ScreamControl_WPF.Properties.Settings.Default.Save();
+            ScreamControl_Client.Properties.Settings.Default.DefaultLanguage = Language;
+            ScreamControl_Client.Properties.Settings.Default.Save();
         }
 
         private void Application_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
-            Language = ScreamControl_WPF.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Language = ScreamControl_WPF.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
         }
 
     }
