@@ -5,7 +5,7 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:Properties="clr-namespace:ScreamControl_Client.Properties"
         xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl_Client.MainWindow"
-        Title="Scream Control" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452">
+        Title="Scream Control" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" ShowMaxRestoreButton="False" BorderThickness="3">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

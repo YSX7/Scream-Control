@@ -58,6 +58,8 @@ namespace ScreamControl_Client
         {
             InitializeComponent();
 
+            _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
+
             App.LanguageChanged += LanguageChanged;
             CultureInfo currLang = App.Language;
 
@@ -215,7 +217,11 @@ namespace ScreamControl_Client
                 return;
             }
             else
+            {
                 Properties.Settings.Default.Save();
+                _hotkeyStealth.Unregister();
+                _hotkeyStealth.Dispose();
+            }
         }
 
         private void wMain_Closed(object sender, EventArgs e)
@@ -345,6 +351,39 @@ namespace ScreamControl_Client
         private void csEnabled_IsCheckedChanged(object sender, EventArgs e)
         {
             _as.enabled = (bool)csEnabled.IsChecked;
+        }
+
+        private void OnStealthHotkeyHandler(Hotkey hotkey)
+        {
+            if (this.IsVisible)
+            {
+                HideWindow();
+            }
+            else
+            {
+                ShowWindow();
+            }
+        }
+
+        private void HideWindow()
+        {
+            this.Hide();
+            this.ShowInTaskbar = false;
+        }
+
+        private void ShowWindow()
+        {
+            this.Show();
+            this.ShowInTaskbar = true;
+            this.Focus();
+        }
+
+        private void wMain_StateChanged(object sender, EventArgs e)
+        {
+            if(this.WindowState == WindowState.Minimized && Properties.Settings.Default.StealthMode)
+            {
+                HideWindow();
+            }
         }
     }
 
