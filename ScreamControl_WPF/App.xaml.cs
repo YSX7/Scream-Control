@@ -15,7 +15,7 @@ namespace ScreamControl_Client
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
 
         private static List<CultureInfo> m_Languages = new List<CultureInfo>();
@@ -39,8 +39,9 @@ namespace ScreamControl_Client
 
         public App()
         {
+        #if !DEBUG
             GetUpdates();
-
+        #endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -50,14 +51,21 @@ namespace ScreamControl_Client
 
         private async void GetUpdates()
         {
-            var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
-            var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
-            var version = new ExtendedVersion(latest.TagName);
-            bool updateAvailable = version > App.Version;
-            string updateUrl = latest.HtmlUrl;
-            if (updateAvailable && File.Exists("Updater.exe"))
+            try
             {
-                System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + " " + "s");
+                var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
+                var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
+                var version = new ExtendedVersion(latest.TagName);
+                bool updateAvailable = version > App.Version;
+                string updateUrl = latest.HtmlUrl;
+                if (updateAvailable && File.Exists("Updater.exe"))
+                {
+                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + " " + "s");
+                }
+            }
+            catch(Octokit.NotFoundException)
+            {
+                //no updates
             }
         }
 
@@ -90,23 +98,23 @@ namespace ScreamControl_Client
                 }
 
                 //3. Находим старую ResourceDictionary и удаляем его и добавляем новую ResourceDictionary
-                ResourceDictionary oldDict = (from d in Application.Current.Resources.MergedDictionaries
+                ResourceDictionary oldDict = (from d in System.Windows.Application.Current.Resources.MergedDictionaries
                                               where d.Source != null && d.Source.OriginalString.StartsWith("Language/lang.")
                                               select d).FirstOrDefault();
                 if (oldDict != null)
                 {
-                    int ind = Application.Current.Resources.MergedDictionaries.IndexOf(oldDict);
-                    Application.Current.Resources.MergedDictionaries.Remove(oldDict);
-                    Application.Current.Resources.MergedDictionaries.Insert(ind, dict);
+                    int ind = System.Windows.Application.Current.Resources.MergedDictionaries.IndexOf(oldDict);
+                    System.Windows.Application.Current.Resources.MergedDictionaries.Remove(oldDict);
+                    System.Windows.Application.Current.Resources.MergedDictionaries.Insert(ind, dict);
                 }
                 else
                 {
-                    Application.Current.Resources.MergedDictionaries.Add(dict);
+                    System.Windows.Application.Current.Resources.MergedDictionaries.Add(dict);
                 }
 
                 //4. Вызываем евент для оповещения всех окон.
                 if(LanguageChanged!=null)
-                     LanguageChanged(Application.Current, new EventArgs());
+                     LanguageChanged(System.Windows.Application.Current, new EventArgs());
             }
         }
 

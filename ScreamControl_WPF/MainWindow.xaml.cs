@@ -32,9 +32,12 @@ namespace ScreamControl_Client
     {
         AlarmSystem _as;
 
-        bool  _mousePressed;
         float _actualHeight;
         float _alarmThreshold = 80;
+        bool  _mousePressed;
+
+        private Hotkey _hotkeyStealth;
+
         float AlarmThreshold
         {
             get
@@ -105,6 +108,7 @@ namespace ScreamControl_Client
             float startPos = _actualHeight / 100 * _alarmThreshold;
 
             _as = new AlarmSystem();
+            _as.enabled = (bool)csEnabled.IsChecked;
             _as.OnMonitorUpdate += new AlarmSystem.MonitorHandler(OnMonitorUpdate);
             _as.OnVolumeCheck += new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
             _as.OnUpdateTimerAlarmDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
@@ -326,11 +330,6 @@ namespace ScreamControl_Client
 
         #endregion
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void nudDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
         {
             if (e.NewValue != null && _as != null)
@@ -343,6 +342,10 @@ namespace ScreamControl_Client
                 _as.delayBeforeOverlay = (float)e.NewValue;
         }
 
+        private void csEnabled_IsCheckedChanged(object sender, EventArgs e)
+        {
+            _as.enabled = (bool)csEnabled.IsChecked;
+        }
     }
 
 }

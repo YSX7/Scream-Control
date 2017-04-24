@@ -50,6 +50,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CSCore">
       <HintPath>..\packages\CSCore.1.2.0\lib\net35-client\CSCore.dll</HintPath>
@@ -129,6 +132,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Classes\ExtendedVersion.cs" />
+    <Compile Include="Classes\Hotkey.cs" />
     <Compile Include="Classes\Math.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Classes\AlarmSystem.cs" />
@@ -192,6 +196,7 @@
     <Content Include="beep.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

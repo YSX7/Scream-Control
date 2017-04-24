@@ -23,6 +23,8 @@ namespace ScreamControl_Client
         private readonly Brush VOLUME_OK = new SolidColorBrush(Color.FromArgb(100, 127, 255, 121));
         private readonly Brush VOLUME_HIGH = new SolidColorBrush(Color.FromArgb(100, 255, 121, 121));
 
+        public bool enabled = false;
+
         public float alarmThreshold = 80;
         public int captureMultiplier = 100;
         public float delayBeforeAlarm = 0,
@@ -167,6 +169,7 @@ namespace ScreamControl_Client
             delayBeforeOverlay = Properties.Settings.Default.AlertOverlayDelay;
             AlarmVolume = (float)Properties.Settings.Default.Volume / 100;
 
+            _bgInputListener.WorkerSupportsCancellation = true;
             _bgInputListener.DoWork += bgInputListener_DoWork;
             _bgInputListener.RunWorkerCompleted += bgInputListener_RunWorkerCompleted;
 
@@ -223,7 +226,7 @@ namespace ScreamControl_Client
 
         public void Close()
         {
-            switch(state)
+            switch (state)
             {
                 case States.Closed:
                     return;
@@ -299,8 +302,10 @@ namespace ScreamControl_Client
         {
             float volume = GetVolumeInfo();
             volume = volume.Clamp(0, 100);
-            VolumeCheck(volume);
-
+            if (this.enabled)
+            {
+                VolumeCheck(volume);
+            }
             MonitorArgs ma = new MonitorArgs(volume);
             OnMonitorUpdate(this, ma);
         }
@@ -330,22 +335,22 @@ namespace ScreamControl_Client
             {
                 //if (_soundOut.PlaybackState == PlaybackState.Playing)
                 //{
-                    vca.meterColor = VOLUME_OK;
-                    vca.resetLabelContent = true;
-                    _soundOut.Pause();
+                vca.meterColor = VOLUME_OK;
+                vca.resetLabelContent = true;
+                _soundOut.Pause();
 
-                    if (_timerAlarmDelay.IsEnabled)
-                    {
-                        _timerAlarmDelay.Stop();
-                    }
-                    if (_timerOverlayShow.IsEnabled)
-                    {
-                        _timerOverlayShow.Stop();
-                    }
-                    if (_overlayWorking)
-                    {
-                        _overlayWorking = false;
-                    }
+                if (_timerAlarmDelay.IsEnabled)
+                {
+                    _timerAlarmDelay.Stop();
+                }
+                if (_timerOverlayShow.IsEnabled)
+                {
+                    _timerOverlayShow.Stop();
+                }
+                if (_overlayWorking)
+                {
+                    _overlayWorking = false;
+                }
                 //}
             }
 
