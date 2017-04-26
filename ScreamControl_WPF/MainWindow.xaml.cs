@@ -62,7 +62,6 @@ namespace ScreamControl_Client
 
             App.LanguageChanged += LanguageChanged;
             CultureInfo currLang = App.Language;
-
             cbLang.Items.Clear();
             foreach (var lang in App.Languages)
             {

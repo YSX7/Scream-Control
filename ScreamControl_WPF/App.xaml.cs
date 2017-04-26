@@ -53,6 +53,7 @@ namespace ScreamControl_Client
         {
             try
             {
+                var silentArgument = ScreamControl_Client.Properties.Settings.Default.StealthMode ? " " + "s" : "";
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
@@ -60,7 +61,7 @@ namespace ScreamControl_Client
                 string updateUrl = latest.HtmlUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
-                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + " " + "s");
+                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
                 }
             }
             catch(Octokit.NotFoundException)
