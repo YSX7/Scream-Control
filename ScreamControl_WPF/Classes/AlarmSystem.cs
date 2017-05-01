@@ -8,12 +8,10 @@ using Process.NET.Memory;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Windows.Media;
-using System.Text;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace ScreamControl_Client
@@ -61,6 +59,21 @@ namespace ScreamControl_Client
             _timerOverlayUpdate;
         private WasapiCapture _soundCapture;
         private ISoundOut _soundOut;
+
+        private float _systemVolume;
+        private SimpleAudioVolume _systemSimpleAudioVolume;
+        public float SystemVolume
+        {
+            get
+            {
+                return _systemVolume;
+            }
+            set
+            {
+                _systemVolume = value;
+                _systemSimpleAudioVolume.MasterVolume = value;
+            }
+        }
 
 
         #region Events
@@ -148,7 +161,6 @@ namespace ScreamControl_Client
         public AlarmSystem()
         {
             state = States.Running;
-
             using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
             {
                 using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
@@ -168,6 +180,8 @@ namespace ScreamControl_Client
             delayBeforeAlarm = Properties.Settings.Default.SafeScreamZone;
             delayBeforeOverlay = Properties.Settings.Default.AlertOverlayDelay;
             AlarmVolume = (float)Properties.Settings.Default.Volume / 100;
+
+            _systemSimpleAudioVolume = GetSimpleAudioVolume();
 
             _bgInputListener.WorkerSupportsCancellation = true;
             _bgInputListener.DoWork += bgInputListener_DoWork;
@@ -316,6 +330,7 @@ namespace ScreamControl_Client
             vca = new VolumeCheckArgs(VOLUME_OK);
             if (volume >= alarmThreshold)
             {
+                KeepSystemVolume();
                 vca.meterColor = VOLUME_HIGH;
                 if (delayBeforeAlarm > 0)
                 {
@@ -408,6 +423,43 @@ namespace ScreamControl_Client
             return pid;
         }
 
+        #endregion
+
+        #region System volume
+        private SimpleAudioVolume GetSimpleAudioVolume()
+        {
+            using (var sessionManager = GetDefaultAudioSessionManager2(DataFlow.Render))
+            {
+                using (var sessionEnumerator = sessionManager.GetSessionEnumerator())
+                {
+                    foreach (var session in sessionEnumerator)
+                    {
+                        var asControl2 = session.QueryInterface<AudioSessionControl2>();
+                        if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                            return session.QueryInterface<SimpleAudioVolume>();
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void KeepSystemVolume()
+        {
+            _systemSimpleAudioVolume.MasterVolume = _systemVolume;
+            _systemSimpleAudioVolume.IsMuted = false;
+        }
+
+        private AudioSessionManager2 GetDefaultAudioSessionManager2(DataFlow dataFlow)
+        {
+            using (var enumerator = new MMDeviceEnumerator())
+            {
+                using (var device = enumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia))
+                {
+                    var sessionManager = AudioSessionManager2.FromMMDevice(device);
+                    return sessionManager;
+                }
+            }
+        }
         #endregion
     }
 }

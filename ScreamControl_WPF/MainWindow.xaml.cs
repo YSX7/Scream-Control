@@ -304,6 +304,12 @@ namespace ScreamControl_Client
                 _as.AlarmVolume = ((float)e.NewValue / 100).Clamp(0, 1);
         }
 
+        private void sliderVolumeSystem_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (e.NewValue != null && _as != null)
+                _as.SystemVolume = ((float)e.NewValue / 100).Clamp(0, 1);
+        }
+
         #region Language things
 
         private void LanguageChanged(Object sender, EventArgs e)

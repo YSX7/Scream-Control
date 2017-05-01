@@ -13,4 +13,5 @@
     <v:String x:Key="m_On">Вкл</v:String>
     <v:String x:Key="m_Stealth">Включить скрытный режим</v:String>
     <v:String x:Key="m_Volume">Громкость</v:String>
+    <v:String x:Key="m_VolumeSystem">Системная громкость</v:String>
 </ResourceDictionary>

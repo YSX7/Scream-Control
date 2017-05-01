@@ -85,18 +85,6 @@ namespace ScreamControl_Client.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("80")]
-        public float Threshold {
-            get {
-                return ((float)(this["Threshold"]));
-            }
-            set {
-                this["Threshold"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool Enabled {
             get {
@@ -116,6 +104,30 @@ namespace ScreamControl_Client.Properties {
             }
             set {
                 this["StealthMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float Threshold {
+            get {
+                return ((float)(this["Threshold"]));
+            }
+            set {
+                this["Threshold"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int VolumeSystem {
+            get {
+                return ((int)(this["VolumeSystem"]));
+            }
+            set {
+                this["VolumeSystem"] = value;
             }
         }
     }

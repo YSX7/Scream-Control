@@ -17,14 +17,17 @@
     <Setting Name="AlertOverlayDelay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="Threshold" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">80</Value>
-    </Setting>
     <Setting Name="Enabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="StealthMode" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Threshold" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="VolumeSystem" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

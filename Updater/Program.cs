@@ -23,41 +23,44 @@ namespace Updater
         //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - 's' for silent update
         static void Main(string[] args)
         {
-
-            if (args.Length == 0)
+            try
             {
-                return;
-            }
-
-            var handle = GetConsoleWindow();
-            if (args.Length > 2)
-                if (args[2] == "s")
+                if (args.Length == 0)
                 {
-                    HideWindow(handle, SW_HIDE);
-                    silentMode = true;
+                    return;
                 }
 
-            Console.WriteLine("Waiting for app close...");
-            CheckMainAppClosed(args[2]);
+                var handle = GetConsoleWindow();
+                if (args.Length > 2)
+                    if (args[2] == "s")
+                    {
+                        HideWindow(handle, SW_HIDE);
+                        silentMode = true;
+                    }
 
-            Console.WriteLine("Update started.");
-            using (WebClient client = new WebClient())
-            {
-                Console.Write("Downloading...");
-                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(OnFileDownloadProgress);
-                client.DownloadFileCompleted += new AsyncCompletedEventHandler(OnFileDownloadCompleted);
-                StartDownload(client, args[0]).Wait();
+                Console.WriteLine("Waiting for app close...");
+                CheckMainAppClosed(args[2]);
+
+                Console.WriteLine("Update started.");
+                using (WebClient client = new WebClient())
+                {
+                    Console.Write("Downloading...");
+                    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(OnFileDownloadProgress);
+                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(OnFileDownloadCompleted);
+                    StartDownload(client, args[0]).Wait();
+                }
+
+                Extract();
+                File.Delete(FILE_NAME);
+
+                if (!silentMode)
+                    System.Threading.Thread.Sleep(2000);
+
             }
-
-            Extract();
-            File.Delete(FILE_NAME);
-
-            if (!silentMode)
-                System.Threading.Thread.Sleep(2000);
-
-            Process.Start(args[2]);
-
-            return;
+            finally
+            {
+                Process.Start(args[2]);
+            }
         }
 
         private static void Extract()
