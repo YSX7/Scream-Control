@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -39,6 +40,8 @@ namespace ScreamControl_Client
 
         public App()
         {
+            ChangeLogFile();
+            Trace.TraceInformation("Scream Control started");
         #if !DEBUG
             GetUpdates();
         #endif
@@ -53,19 +56,27 @@ namespace ScreamControl_Client
         {
             try
             {
+                Trace.TraceInformation("Updates check");
                 var silentArgument = ScreamControl_Client.Properties.Settings.Default.StealthMode ? " " + "s" : "";
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
+                Trace.TraceInformation("Updates available: {0}", updateAvailable);
                 string updateUrl = latest.HtmlUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
+                    Trace.TraceInformation("Go for updates");
                     System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
                 }
             }
-            catch(Octokit.NotFoundException)
+            catch(Octokit.NotFoundException ex)
             {
+                Trace.TraceWarning("No updates found: {0}", ex.Message);
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceWarning("Something happend when checking: {0}", ex);
                 //no updates
             }
         }
@@ -117,6 +128,7 @@ namespace ScreamControl_Client
                 if(LanguageChanged!=null)
                      LanguageChanged(System.Windows.Application.Current, new EventArgs());
             }
+            
         }
 
         private void App_LanguageChanged(Object sender, EventArgs e)
@@ -135,5 +147,16 @@ namespace ScreamControl_Client
             Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
         }
 
+        private void ChangeLogFile()
+        {
+            if (!File.Exists("log.txt"))
+                File.Create("log.txt").Close();
+            if (File.Exists("log-prev.txt"))
+                File.Delete("log-prev.txt");
+            File.Move("log.txt", "log-prev.txt");
+            Trace.TraceInformation("Created at {0}", DateTime.Now.ToString());
+        }
     }
+
+
 }

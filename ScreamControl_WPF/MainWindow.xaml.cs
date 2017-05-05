@@ -28,15 +28,17 @@ namespace ScreamControl_Client
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
     public partial class MainWindow : MetroWindow
     {
         AlarmSystem _as;
-
         float _actualHeight;
         float _alarmThreshold = 80;
         bool  _mousePressed;
 
         private Hotkey _hotkeyStealth;
+
+        private SCNetworkClient _SCnetwork;
 
         float AlarmThreshold
         {
@@ -58,6 +60,9 @@ namespace ScreamControl_Client
         {
             InitializeComponent();
 
+            if ((bool)csStealth.IsChecked)
+                HideWindow();
+
             _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
 
             App.LanguageChanged += LanguageChanged;
@@ -74,32 +79,15 @@ namespace ScreamControl_Client
 
             App.Language = currLang;
 
-        #if !DEBUG
-            SetAutostart();
-        #endif
-
+#if !DEBUG
+            Startup.SetAutostart();
+#endif
+            this._SCnetwork =  new SCNetworkClient();
             this.Title+= " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
+
+            Trace.TraceInformation("Window Initialized");
         }
 
-        private void SetAutostart()
-        {
-            if (!IsStartupItem())
-            {
-                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                Assembly curAssembly = Assembly.GetExecutingAssembly();
-                key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
-            }
-        }
-
-        private bool IsStartupItem()
-        {
-            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-
-            if (rkApp.GetValue("Scream Control") == null)
-                return false;
-            else
-                return true;
-        }
 
         #region Window initialization and things
 
@@ -119,6 +107,7 @@ namespace ScreamControl_Client
             LanguageChanged(null, null);
 
             LoadThresholdPosition();
+            Trace.TraceInformation("Window loaded");
         }
 
         private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
@@ -197,6 +186,7 @@ namespace ScreamControl_Client
 
         private void OnAlarmSystemClosed(object sender)
         {
+            Trace.TraceInformation("Alarm System closed");
             this.Close();
         }
 
@@ -208,15 +198,22 @@ namespace ScreamControl_Client
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            _as.Close();
+            Trace.TraceInformation("Window closing at {0}", DateTime.Now);
+#if !DEBUG
+            Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
+    #endif
+            if(_as.state != AlarmSystem.States.Closed && _as.state != AlarmSystem.States.Closing)
+                _as.Close();
 
             if (_as.state != AlarmSystem.States.Closed)
             {
+                Trace.TraceWarning("Alarm system is not closed yet. Window closing canceled");
                 e.Cancel = true;
                 return;
             }
             else
             {
+                Trace.TraceInformation("Closing approved");
                 Properties.Settings.Default.Save();
                 _hotkeyStealth.Unregister();
                 _hotkeyStealth.Dispose();
@@ -225,12 +222,16 @@ namespace ScreamControl_Client
 
         private void wMain_Closed(object sender, EventArgs e)
         {
+            Trace.TraceInformation("Window closed");
+#if !DEBUG
+            Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
+    #endif
             App.Current.Shutdown();
         }
 
-        #endregion
+#endregion
 
-        #region Threshold
+#region Threshold
 
         private void LoadThresholdPosition()
         {
@@ -290,7 +291,7 @@ namespace ScreamControl_Client
             Properties.Settings.Default.Threshold = AlarmThreshold;
         }
 
-        #endregion
+#endregion
 
         private void numBoost_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
         {
@@ -310,7 +311,7 @@ namespace ScreamControl_Client
                 _as.SystemVolume = ((float)e.NewValue / 100).Clamp(0, 1);
         }
 
-        #region Language things
+#region Language things
 
         private void LanguageChanged(Object sender, EventArgs e)
         {
@@ -339,7 +340,7 @@ namespace ScreamControl_Client
 
         }
 
-        #endregion
+#endregion
 
         private void nudDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
         {

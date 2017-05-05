@@ -13,18 +13,14 @@ namespace MicrophoneTest
 
         static void Main(string[] args)
         {
-            var Server = new UdpClient(8888);
-            var ResponseData = Encoding.ASCII.GetBytes("SomeResponseData");
 
-            while (true)
-            {
-                var ClientEp = new IPEndPoint(IPAddress.Any, 0);
-                var ClientRequestData = Server.Receive(ref ClientEp);
-                var ClientRequest = Encoding.ASCII.GetString(ClientRequestData);
-
-                Console.WriteLine("Recived {0} from {1}, sending response", ClientRequest, ClientEp.Address.ToString());
-                Server.Send(ResponseData, ResponseData.Length, ClientEp);
-            }
+            UdpClient client = new UdpClient();
+            IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, 15000);
+            Console.WriteLine("Введи ченить че ты");
+            string input = Console.ReadLine();
+            byte[] bytes = Encoding.ASCII.GetBytes(input);
+            client.Send(bytes, bytes.Length, ip);
+            client.Close();
         }
     }
 }

@@ -60,7 +60,9 @@ namespace ScreamControl_Client
         private WasapiCapture _soundCapture;
         private ISoundOut _soundOut;
 
+        //private bool _loggingEnabled = false;
         private float _systemVolume;
+
         private SimpleAudioVolume _systemSimpleAudioVolume;
         public float SystemVolume
         {
@@ -160,6 +162,9 @@ namespace ScreamControl_Client
 
         public AlarmSystem()
         {
+            //_loggingEnabled = Trace.Listeners.Count > 1;
+            Trace.TraceInformation("Alarm system init");
+            Trace.Indent();
             state = States.Running;
             using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
             {
@@ -169,13 +174,15 @@ namespace ScreamControl_Client
                     _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
                     _soundCapture.Initialize();
                     _soundCapture.Start();
+                    Trace.TraceInformation("Sound Capture OK");
                 }
             }
-
             IWaveSource soundSource = GetSoundSource();
             soundSource = soundSource.Loop();
             _soundOut = GetSoundOut();
             _soundOut.Initialize(soundSource);
+            Trace.TraceInformation("Sound Out OK");
+
             captureMultiplier = Properties.Settings.Default.Boost;
             delayBeforeAlarm = Properties.Settings.Default.SafeScreamZone;
             delayBeforeOverlay = Properties.Settings.Default.AlertOverlayDelay;
@@ -188,6 +195,7 @@ namespace ScreamControl_Client
             _bgInputListener.RunWorkerCompleted += bgInputListener_RunWorkerCompleted;
 
             _bgInputListener.RunWorkerAsync();
+            Trace.TraceInformation("Background worker running");
 
             #region Timers
 
@@ -234,8 +242,11 @@ namespace ScreamControl_Client
                     _alertOverlay.Disable();
                 }
             };
-
             #endregion
+
+            Trace.TraceInformation("Timers initialized");
+            Trace.TraceInformation("Alarm System up and running!");
+            Trace.Unindent();
         }
 
         public void Close()
@@ -244,13 +255,15 @@ namespace ScreamControl_Client
             {
                 case States.Closed:
                     return;
+                case States.Closing:
+                    return;
                 case States.Stopped:
                     break;
                 default:
                     state = States.Stopping;
                     return;
             }
-
+            Trace.TraceInformation("Alarm System closing");
             state = States.Closing;
             //_soundCapture.Stop();
             //_soundCapture.Dispose();
@@ -290,16 +303,25 @@ namespace ScreamControl_Client
 
         private void bgInputListener_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (state != States.Stopping)
+            try
             {
-                MonitorVolume(null, null);
-                Thread.Sleep(50);
+                while (state != States.Stopping)
+                {
+                    MonitorVolume(null, null);
+                    Thread.Sleep(50);
+                }
             }
+            catch(Exception ex)
+            {
+                Trace.TraceError("Something happened at BG Listener: {0}", ex);
+            }
+            Trace.TraceInformation("BG Mic Listener trying to close");
             _bgInputListener.CancelAsync();
         }
 
         private void bgInputListener_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            Trace.TraceInformation("Background Microphone Listener closing. State: {0}", state.ToString());
             state = States.Stopping;
             _soundCapture.Stop();
             _soundCapture.Dispose();
@@ -314,14 +336,21 @@ namespace ScreamControl_Client
 
         private void MonitorVolume(object sender, EventArgs e)
         {
-            float volume = GetVolumeInfo();
-            volume = volume.Clamp(0, 100);
-            if (this.enabled)
+            try
             {
-                VolumeCheck(volume);
+                float volume = GetVolumeInfo();
+                volume = volume.Clamp(0, 100);
+                if (this.enabled)
+                {
+                    VolumeCheck(volume);
+                }
+                MonitorArgs ma = new MonitorArgs(volume);
+                OnMonitorUpdate(this, ma);
             }
-            MonitorArgs ma = new MonitorArgs(volume);
-            OnMonitorUpdate(this, ma);
+            catch(Exception ex)
+            {
+                Trace.TraceInformation("Something happend at volume monitor: {0}", ex);
+            }
         }
 
         private void VolumeCheck(float volume)
@@ -436,7 +465,10 @@ namespace ScreamControl_Client
                     {
                         var asControl2 = session.QueryInterface<AudioSessionControl2>();
                         if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                        {
+                            Trace.TraceInformation("Simple audio volume OK");
                             return session.QueryInterface<SimpleAudioVolume>();
+                        }
                     }
                 }
             }
