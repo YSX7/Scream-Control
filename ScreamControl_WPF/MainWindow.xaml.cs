@@ -62,7 +62,6 @@ namespace ScreamControl_Client
 
             if ((bool)csStealth.IsChecked)
                 HideWindow();
-
             _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
 
             App.LanguageChanged += LanguageChanged;
@@ -82,7 +81,7 @@ namespace ScreamControl_Client
 #if !DEBUG
             Startup.SetAutostart();
 #endif
-            this._SCnetwork =  new SCNetworkClient();
+            //this._SCnetwork =  new SCNetworkClient();
             this.Title+= " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
 
             Trace.TraceInformation("Window Initialized");
