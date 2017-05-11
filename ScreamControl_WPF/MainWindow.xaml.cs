@@ -31,10 +31,13 @@ namespace ScreamControl_Client
     /// 
     public partial class MainWindow : MetroWindow
     {
+        private readonly Brush DEFAULT_NORMAL_BRUSH = Brushes.White;
+        private readonly Brush DEFAULT_ALERT_GOES_OFF_BRUSH = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffff00"));
+
         AlarmSystem _as;
         float _actualHeight;
         float _alarmThreshold = 80;
-        bool  _mousePressed;
+        bool _mousePressed;
 
         private Hotkey _hotkeyStealth;
 
@@ -62,6 +65,7 @@ namespace ScreamControl_Client
 
             if ((bool)csStealth.IsChecked)
                 HideWindow();
+
             _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
 
             App.LanguageChanged += LanguageChanged;
@@ -81,8 +85,8 @@ namespace ScreamControl_Client
 #if !DEBUG
             Startup.SetAutostart();
 #endif
-            //this._SCnetwork =  new SCNetworkClient();
-            this.Title+= " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
+            this._SCnetwork = new SCNetworkClient();
+            this.Title += " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
 
             Trace.TraceInformation("Window Initialized");
         }
@@ -96,7 +100,8 @@ namespace ScreamControl_Client
             float startPos = _actualHeight / 100 * _alarmThreshold;
 
             _as = new AlarmSystem();
-            _as.enabled = (bool)csEnabled.IsChecked;
+            _as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
+            _as._isMessageAlarmEnabled = (bool)tsMessageAlertSwitch.IsChecked;
             _as.OnMonitorUpdate += new AlarmSystem.MonitorHandler(OnMonitorUpdate);
             _as.OnVolumeCheck += new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
             _as.OnUpdateTimerAlarmDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
@@ -135,8 +140,8 @@ namespace ScreamControl_Client
                 pbVolume.Foreground = args.meterColor;
                 if (args.resetLabelColor)
                 {
-                    lElapsed.Foreground = Brushes.Black;
-                    lWindowElapsed.Foreground = Brushes.Black;
+                    lElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
+                    lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
                 }
                 if (args.resetLabelContent)
                 {
@@ -158,9 +163,9 @@ namespace ScreamControl_Client
                 lElapsed.Content = args.ElapsedTimeString;
                 if (args.alarmActive)
                 {
-                    lElapsed.Foreground = Brushes.Red;
+                    lElapsed.Foreground = DEFAULT_ALERT_GOES_OFF_BRUSH;
                     lElapsed.Content = FindResource("m_DelayElapsedFinish");
-                    lWindowElapsed.Foreground = Brushes.Black;
+                    lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
                 }
             }
         }
@@ -177,7 +182,7 @@ namespace ScreamControl_Client
                 lWindowElapsed.Content = args.ElapsedTimeString;
                 if (args.alarmActive)
                 {
-                    lWindowElapsed.Foreground = Brushes.Red;
+                    lWindowElapsed.Foreground = DEFAULT_ALERT_GOES_OFF_BRUSH;
                     lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
                 }
             }
@@ -200,8 +205,8 @@ namespace ScreamControl_Client
             Trace.TraceInformation("Window closing at {0}", DateTime.Now);
 #if !DEBUG
             Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
-    #endif
-            if(_as.state != AlarmSystem.States.Closed && _as.state != AlarmSystem.States.Closing)
+#endif
+            if (_as.state != AlarmSystem.States.Closed && _as.state != AlarmSystem.States.Closing)
                 _as.Close();
 
             if (_as.state != AlarmSystem.States.Closed)
@@ -224,13 +229,13 @@ namespace ScreamControl_Client
             Trace.TraceInformation("Window closed");
 #if !DEBUG
             Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
-    #endif
+#endif
             App.Current.Shutdown();
         }
 
-#endregion
+        #endregion
 
-#region Threshold
+        #region Threshold
 
         private void LoadThresholdPosition()
         {
@@ -290,7 +295,7 @@ namespace ScreamControl_Client
             Properties.Settings.Default.Threshold = AlarmThreshold;
         }
 
-#endregion
+        #endregion
 
         private void numBoost_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
         {
@@ -310,7 +315,7 @@ namespace ScreamControl_Client
                 _as.SystemVolume = ((float)e.NewValue / 100).Clamp(0, 1);
         }
 
-#region Language things
+        #region Language things
 
         private void LanguageChanged(Object sender, EventArgs e)
         {
@@ -339,7 +344,7 @@ namespace ScreamControl_Client
 
         }
 
-#endregion
+        #endregion
 
         private void nudDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
         {
@@ -351,11 +356,6 @@ namespace ScreamControl_Client
         {
             if (e.NewValue != null && _as != null)
                 _as.delayBeforeOverlay = (float)e.NewValue;
-        }
-
-        private void csEnabled_IsCheckedChanged(object sender, EventArgs e)
-        {
-            _as.enabled = (bool)csEnabled.IsChecked;
         }
 
         private void OnStealthHotkeyHandler(Hotkey hotkey)
@@ -385,10 +385,20 @@ namespace ScreamControl_Client
 
         private void wMain_StateChanged(object sender, EventArgs e)
         {
-            if(this.WindowState == WindowState.Minimized && Properties.Settings.Default.StealthMode)
+            if (this.WindowState == WindowState.Minimized && Properties.Settings.Default.StealthMode)
             {
                 HideWindow();
             }
+        }
+
+        private void tsSoundAlertSwitch_IsCheckedChanged(object sender, EventArgs e)
+        {
+            _as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
+        }
+
+        private void tsMessageAlertSwitch_IsCheckedChanged(object sender, EventArgs e)
+        {
+            _as._isMessageAlarmEnabled = (bool)tsMessageAlertSwitch.IsChecked;
         }
     }
 

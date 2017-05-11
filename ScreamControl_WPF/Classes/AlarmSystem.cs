@@ -21,7 +21,8 @@ namespace ScreamControl_Client
         private readonly Brush VOLUME_OK = new SolidColorBrush(Color.FromArgb(100, 127, 255, 121));
         private readonly Brush VOLUME_HIGH = new SolidColorBrush(Color.FromArgb(100, 255, 121, 121));
 
-        public bool enabled = false;
+        public bool _isSoundAlarmEnabled = false;
+        public bool _isMessageAlarmEnabled = false;
 
         public float alarmThreshold = 80;
         public int captureMultiplier = 100;
@@ -209,7 +210,8 @@ namespace ScreamControl_Client
                     _timerAlarmDelay.Stop();
                     _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                     PlayAlarm();
-                    _timerOverlayShow.Start();
+                    if (_isMessageAlarmEnabled)
+                        _timerOverlayShow.Start();
                 }
 
                 OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
@@ -239,7 +241,8 @@ namespace ScreamControl_Client
                 if (!_overlayWorking)
                 {
                     _timerOverlayUpdate.Stop();
-                    _alertOverlay.Disable();
+                    _alertOverlay.Dispose();
+                    _alertOverlay = null;
                 }
             };
             #endregion
@@ -297,7 +300,6 @@ namespace ScreamControl_Client
 
         private IWaveSource GetSoundSource()
         {
-            //return any source ... in this example, we'll just play a mp3 file
             return CodecFactory.Instance.GetCodec("beep.mp3");
         }
 
@@ -311,7 +313,7 @@ namespace ScreamControl_Client
                     Thread.Sleep(50);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Trace.TraceError("Something happened at BG Listener: {0}", ex);
             }
@@ -340,14 +342,11 @@ namespace ScreamControl_Client
             {
                 float volume = GetVolumeInfo();
                 volume = volume.Clamp(0, 100);
-                if (this.enabled)
-                {
-                    VolumeCheck(volume);
-                }
+                VolumeCheck(volume);
                 MonitorArgs ma = new MonitorArgs(volume);
                 OnMonitorUpdate(this, ma);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Trace.TraceInformation("Something happend at volume monitor: {0}", ex);
             }
@@ -361,18 +360,29 @@ namespace ScreamControl_Client
             {
                 KeepSystemVolume();
                 vca.meterColor = VOLUME_HIGH;
-                if (delayBeforeAlarm > 0)
+                if (_isSoundAlarmEnabled)
                 {
-                    if (!_timerAlarmDelay.IsEnabled && _soundOut.PlaybackState != PlaybackState.Playing)
+                    if (delayBeforeAlarm > 0)
                     {
-                        vca.resetLabelColor = true;
-                        _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
-                        _timerAlarmDelay.Start();
+                        if (!_timerAlarmDelay.IsEnabled && _soundOut.PlaybackState != PlaybackState.Playing)
+                        {
+                            vca.resetLabelColor = true;
+                            _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
+                            _timerAlarmDelay.Start();
+                        }
+                        else return;
                     }
-                    else return;
+                    else
+                        PlayAlarm();
                 }
                 else
-                    PlayAlarm();
+                {
+                    if (_isMessageAlarmEnabled && !_timerOverlayShow.IsEnabled && !_timerOverlayUpdate.IsEnabled)
+                    {
+                        _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
+                        _timerOverlayShow.Start();
+                    }
+                }
                 OnVolumeCheck(this, vca);
             }
             else
@@ -409,11 +419,19 @@ namespace ScreamControl_Client
 
         private void ShowAlertWindow()
         {
-            _alertOverlay = new AlertOverlay();
-
             System.Diagnostics.Process[] p = System.Diagnostics.Process.GetProcesses();
-
             var processSharp = new ProcessSharp((int)GetForegroundProcessId(), MemoryType.Remote);
+            if (_alertOverlay != null)
+            {
+                //  _overlayWorking = false;
+                if (!_alertOverlay.IsEnabled)
+                {
+                    _overlayWorking = false;
+                }
+                return;
+            }
+
+            _alertOverlay = new AlertOverlay();
 
             _alertOverlay.Initialize(processSharp.WindowFactory.MainWindow);
             _alertOverlay.Enable();

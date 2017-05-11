@@ -62,12 +62,19 @@ namespace ScreamControl_Client
             try
             {
                 RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", true);
-                byte[] newValue = (byte[])key.GetValue(appName + ".lnk");
-                if (newValue[0] != 2)
+                if (key != null)
                 {
-                    newValue[0] = 2;
-                    key.SetValue(appName + ".lnk", newValue);
-                    Trace.TraceInformation("Autostart Enabled");
+                    byte[] newValue = (byte[])key.GetValue(appName + ".lnk");
+                    if (newValue[0] != 2)
+                    {
+                        newValue[0] = 2;
+                        key.SetValue(appName + ".lnk", newValue);
+                        Trace.TraceInformation("Autostart Enabled");
+                    }
+                }
+                else
+                {
+                    Trace.TraceWarning("No registry key found");
                 }
             }
             catch(Exception e)

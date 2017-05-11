@@ -2,12 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:v="clr-namespace:System;assembly=mscorlib">
     <v:String x:Key="m_AlertWindow">Too loud</v:String>
-    <v:String x:Key="m_AlertWindowElapsedFinish">Start!</v:String>
+    <v:String x:Key="m_AlertWindowElapsedFinish">START!</v:String>
     <v:String x:Key="m_AlertWindowLabel">Alert window delay (sec)</v:String>
-    <v:String x:Key="m_AppSwitch">Activate alerts</v:String>
+    <v:String x:Key="m_SoundAlertExpander">Sound Alert</v:String>
+    <v:String x:Key="m_MessageAlertExpander">Message Alert</v:String>
     <v:String x:Key="m_Boost">Mic Boost</v:String>
-    <v:String x:Key="m_Delay">Safe scream zone duration (sec)</v:String>
-    <v:String x:Key="m_DelayElapsedFinish">Play!</v:String>
+    <v:String x:Key="m_Delay">Delay before alarm (sec)</v:String>
+    <v:String x:Key="m_DelayElapsedFinish">PLAY!</v:String>
     <v:String x:Key="m_Language">Language</v:String>
     <v:String x:Key="m_Off">Off</v:String>
     <v:String x:Key="m_On">On</v:String>

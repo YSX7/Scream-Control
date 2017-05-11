@@ -86,12 +86,12 @@ namespace ScreamControl_Client.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool Enabled {
+        public bool SoundAlertEnabled {
             get {
-                return ((bool)(this["Enabled"]));
+                return ((bool)(this["SoundAlertEnabled"]));
             }
             set {
-                this["Enabled"] = value;
+                this["SoundAlertEnabled"] = value;
             }
         }
         
@@ -128,6 +128,18 @@ namespace ScreamControl_Client.Properties {
             }
             set {
                 this["VolumeSystem"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MessageAlertEnabled {
+            get {
+                return ((bool)(this["MessageAlertEnabled"]));
+            }
+            set {
+                this["MessageAlertEnabled"] = value;
             }
         }
     }

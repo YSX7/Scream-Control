@@ -37,7 +37,6 @@ namespace ScreamControl_Client
         {
             _tickEngine.IsTicking = false;
             base.Disable();
-            this.Dispose();
         }
 
         public override void Initialize(IWindow targetWindow)
@@ -117,6 +116,7 @@ namespace ScreamControl_Client
             OverlayWindow.Hide();
             OverlayWindow.Close();
             OverlayWindow = null;
+
             _tickEngine.Stop();
 
             base.Dispose();
