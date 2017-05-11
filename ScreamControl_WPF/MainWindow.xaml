@@ -1,12 +1,20 @@
 ﻿<Controls:MetroWindow
     BorderBrush="{DynamicResource AccentColorBrush}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:databinding="clr-namespace:ScreamControl_Client"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:res="Resources.xml"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:Properties="clr-namespace:ScreamControl_Client.Properties"
         xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl_Client.MainWindow"
         Title="Scream Control" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" ShowMaxRestoreButton="False" BorderThickness="1">
+    <Controls:MetroWindow.Resources>
+        <databinding:BindingProxy x:Key="SoundAlertHeaderProxy" Data="{DynamicResource m_SoundAlertExpander}"></databinding:BindingProxy>
+        <databinding:BindingProxy x:Key="MessageAlertHeaderProxy" Data="{DynamicResource m_MessageAlertExpander}"></databinding:BindingProxy>
+        <databinding:ToUpperConverter x:Key="ToUpperConverter"></databinding:ToUpperConverter>
+        <SolidColorBrush x:Key="UnheckedToggleSwitchBrush" Color="#7A7574"/>
+        <SolidColorBrush x:Key="CheckedToggleSwitchBrush" Color="#FF4343"/>
+    </Controls:MetroWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -17,51 +25,92 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top" Margin="5,5,5,0">
+        <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top" Margin="5,5,5,0" Controls:ControlsHelper.ContentCharacterCasing="Upper">
             <Grid Background="#FFE0E0E0">
                 <ComboBox x:Name="cbLang" HorizontalAlignment="Left" Margin="5" DropDownClosed="ChangeLanguageClick" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
             </Grid>
         </Expander>
         <StackPanel Margin="7,10,0,0" Grid.Row="1" VerticalAlignment="Top">
             <Controls:ToggleSwitch x:Name="csStealth" IsChecked="{Binding Source={x:Static Properties:Settings.Default}, Path=StealthMode, Mode=TwoWay}" Header="{DynamicResource m_Stealth}" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="-5,0,0,0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12" Margin="5,0,0,0"/>
-            <Controls:ToggleSwitch x:Name="csEnabled" IsChecked="{Binding Source={x:Static Properties:Settings.Default}, Path=Enabled, Mode=TwoWay}" Header="{DynamicResource m_AppSwitch}" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="-5,0,0,0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="5,0,0,0" IsCheckedChanged="csEnabled_IsCheckedChanged" />
         </StackPanel>
-        <StackPanel Grid.Row="2" Margin="7,0,0,0">
-            <StackPanel VerticalAlignment="Top">
-                <Label Content="{DynamicResource m_Boost}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Width="58"/>
-                <Controls:NumericUpDown x:Name="numBoost" Background="{x:Null}" Foreground="Black" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Boost, Mode=TwoWay}" ValueChanged="numBoost_ValueChanged" HorizontalAlignment="Left" RenderTransformOrigin="1.427,0.5" VerticalAlignment="Top" Margin="0">
-                    <Controls:NumericUpDown.BorderBrush>
-                        <SolidColorBrush Color="{DynamicResource Gray6}"/>
-                    </Controls:NumericUpDown.BorderBrush>
-                </Controls:NumericUpDown>
-            </StackPanel>
-            <StackPanel IsEnabled="{Binding IsChecked, ElementName=csEnabled}" Margin="0,0,0,10">
-                <Label Content="{DynamicResource m_Volume}" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Grid.Row="1" Width="79"/>
-                <WrapPanel>
-                    <Slider x:Name="sliderVolume" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Height="16" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Volume, Mode=TwoWay}" ValueChanged="sliderVolume_ValueChanged" Grid.Row="1"/>
-                    <Label Content="{Binding Value, ElementName=sliderVolume, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0,0" Padding="0" Grid.Row="1" Height="16" Width="19"/>
-                </WrapPanel>
-                
-                <Label Content="{DynamicResource m_VolumeSystem}" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Grid.Row="1"/>
-                <WrapPanel>
-                    <Slider x:Name="sliderVolumeSystem" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Height="16" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=VolumeSystem, Mode=TwoWay}" ValueChanged="sliderVolumeSystem_ValueChanged" Grid.Row="1"/>
-                    <Label Content="{Binding Value, ElementName=sliderVolumeSystem, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0,0" Padding="0" Grid.Row="1" Height="16" Width="19"/>
-                </WrapPanel>
+        <StackPanel Grid.Row="2" Margin="7,0,0,7">
+            <Label Content="{DynamicResource m_Boost}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Width="58"/>
+            <Controls:NumericUpDown x:Name="numBoost" Background="{x:Null}" Foreground="Black" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Boost, Mode=TwoWay}" ValueChanged="numBoost_ValueChanged" HorizontalAlignment="Left" RenderTransformOrigin="1.427,0.5" VerticalAlignment="Top" Margin="0">
+                <Controls:NumericUpDown.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource Gray6}"/>
+                </Controls:NumericUpDown.BorderBrush>
+            </Controls:NumericUpDown>
+            <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+            </Grid>
 
-                <Label Content="{DynamicResource m_Delay}" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5" Grid.Row="1" Width="173"/>
-                <WrapPanel>
-                    <Controls:NumericUpDown x:Name="nudDuration" Margin="0" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=SafeScreamZone, Mode=TwoWay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1" ValueChanged="nudDuration_ValueChanged"/>
-                    <Label x:Name="lElapsed" Content="" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontWeight="Medium" RenderTransformOrigin="9,0.385" Height="26"/>
-                </WrapPanel>
+            <Expander VerticalAlignment="Top" Margin="0,0,0,5">
+                <Expander.Header>
+                    <Grid>
+                        <Label Content="{Binding Source={StaticResource SoundAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"/>
+                        <Label x:Name="lElapsed" Content="" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" FontWeight="Bold" Height="26" Foreground="White"/>
+                        <Controls:ToggleSwitch x:Name="tsSoundAlertSwitch" IsChecked="{Binding Source={x:Static Properties:Settings.Default}, Path=SoundAlertEnabled, Mode=TwoWay}" OnSwitchBrush="{StaticResource CheckedToggleSwitchBrush}" OffSwitchBrush="{StaticResource UnheckedToggleSwitchBrush}" Foreground="White" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="0" IsCheckedChanged="tsSoundAlertSwitch_IsCheckedChanged" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Padding="0" />
+                    </Grid>
+                </Expander.Header>
+                <Grid Background="#FFE0E0E0" IsEnabled="{Binding IsChecked, ElementName=tsSoundAlertSwitch}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.Resources>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Margin" Value="3,3,3,3"></Setter>
+                        </Style>
+                    </Grid.Resources>
+                    <StackPanel Margin="10,10,3,3">
+                        <Label Content="{DynamicResource m_Volume}" Margin="0" Padding="0"/>
+                        <WrapPanel VerticalAlignment="Bottom" Margin="0,3,0,0">
+                            <Slider x:Name="sliderVolume" HorizontalAlignment="Left" Margin="0" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Volume, Mode=TwoWay}" ValueChanged="sliderVolume_ValueChanged" Grid.Row="1" VerticalAlignment="Top"/>
+                            <Label Content="{Binding Value, ElementName=sliderVolume, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0,0" Padding="0" Grid.Row="1" Height="16" Width="19"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Margin="10,3,3,10">
+                        <Label Content="{DynamicResource m_VolumeSystem}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5"/>
+                        <WrapPanel>
+                            <Slider x:Name="sliderVolumeSystem" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Height="16" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=VolumeSystem, Mode=TwoWay}" ValueChanged="sliderVolumeSystem_ValueChanged" Grid.Row="1"/>
+                            <Label Content="{Binding Value, ElementName=sliderVolumeSystem, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0,0" Padding="0" Height="16" Width="19"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel  Grid.RowSpan="2" Grid.Column="1" VerticalAlignment="Center" Margin="10,3,3,3">
+                        <Label Content="{DynamicResource m_Delay}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5"/>
+                        <Controls:NumericUpDown x:Name="nudDuration" Margin="0" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=SafeScreamZone, Mode=TwoWay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1" ValueChanged="nudDuration_ValueChanged"/>
+                    </StackPanel>
+                </Grid>
+            </Expander>
 
-                <Label Content="{DynamicResource m_AlertWindowLabel}" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5" Grid.Row="1"/>
-                <WrapPanel>
-                    <Controls:NumericUpDown x:Name="nudAlertWindow" Margin="0" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=AlertOverlayDelay, Mode=TwoWay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1" ValueChanged="nudAlertWindow_ValueChanged"/>
-                    <Label x:Name="lWindowElapsed" Content="" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontWeight="Medium" RenderTransformOrigin="9,0.385" Height="26"/>
-                </WrapPanel>
+            <Expander VerticalAlignment="Top" Margin="0">
+                <Expander.Header>
+                    <Grid>
+                        <Label Content="{Binding Source={StaticResource MessageAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"></Label>
+                        <Label x:Name="lWindowElapsed" Content="" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Top" FontWeight="Bold"/>
+                        <Controls:ToggleSwitch x:Name="tsMessageAlertSwitch" IsChecked="{Binding Source={x:Static Properties:Settings.Default}, Path=MessageAlertEnabled, Mode=TwoWay}" OnSwitchBrush="{StaticResource CheckedToggleSwitchBrush}" OffSwitchBrush="{StaticResource UnheckedToggleSwitchBrush}" Foreground="White" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="0" IsCheckedChanged="tsMessageAlertSwitch_IsCheckedChanged" HorizontalAlignment="Right" Grid.RowSpan="3" VerticalAlignment="Center" Padding="0" Height="32" />
+                    </Grid>
+                </Expander.Header>
+                <Grid Background="#FFE0E0E0" IsEnabled="{Binding IsChecked, ElementName=tsMessageAlertSwitch}">
+                    <StackPanel Margin="10,10,10,10">
+                        <Label Content="{DynamicResource m_AlertWindowLabel}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5" Grid.Row="1"/>
+                        <Controls:NumericUpDown x:Name="nudAlertWindow" Margin="0" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=AlertOverlayDelay, Mode=TwoWay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1" ValueChanged="nudAlertWindow_ValueChanged"/>
+                    </StackPanel>
+                </Grid>
+            </Expander>
 
-                <Label x:Name="lDebug" Content="Label" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Grid.Row="1" Visibility="Collapsed"/>
-            </StackPanel>
+            <Label x:Name="lDebug" Content="Label" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Grid.Row="1" Visibility="Collapsed"/>
         </StackPanel>
 
         <Grid x:Name="GridVolume" Margin="0,10,10,10" MinWidth="40" MinHeight="70" Width="77" HorizontalAlignment="Right" Grid.Column="1" Grid.RowSpan="3">

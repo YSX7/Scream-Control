@@ -62,7 +62,7 @@ namespace ScreamControl_Client
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
-                Trace.TraceInformation("Updates available: {0}", updateAvailable);
+                Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
                 string updateUrl = latest.HtmlUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
