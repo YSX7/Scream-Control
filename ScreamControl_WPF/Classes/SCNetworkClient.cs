@@ -16,11 +16,14 @@ namespace ScreamControl_Client
     {
         #region Variables and Stuff
 
+        private readonly string DEFAULT_CONNECT_MESSAGE = "SC_C";
+
         private int _localPort = 13642;
         private int _destPort = 13641;
 
         private UdpClient _udpReceiver;
         private UdpClient _udpSender;
+        private TcpClient _tcpClient;
         IPEndPoint _receiveIP;
         IPEndPoint _sendIP;
 
@@ -38,6 +41,12 @@ namespace ScreamControl_Client
         public event MessageReceivedHandler OnMessageReceived;
 
         #endregion
+
+        private class ByteMessage
+        {
+            public byte[] Data { get; set; }
+        }
+
         public SCNetworkClient()
         {
             _udpReceiver = new UdpClient(_localPort);
@@ -47,26 +56,23 @@ namespace ScreamControl_Client
 
         private void EstablishConnectionCallback(IAsyncResult ar)
         {
-            //byte[] bytes = _udpReceiver.EndReceive(ar, ref _receiveIP);
-            //string message = Encoding.ASCII.GetString(bytes);
-            //if(message == StateEnum.Connecting)
-            //{
-            //    this._connected = true;
+            byte[] bytes = _udpReceiver.EndReceive(ar, ref _receiveIP);
+            string message = Encoding.ASCII.GetString(bytes);
+            if (message == DEFAULT_CONNECT_MESSAGE)
+            {
+                this._connected = true;
 
-            //    _udpSender = new UdpClient(_destPort);
-            //    _sendIP = new IPEndPoint(_receiveIP.Address, _destPort);
-            //    _udpSender.Connect(_sendIP);
+                ByteMessage settingsToSend = Serialize(Properties.Settings.Default.PropertyValues);
 
-            //    Stream stream = _udp
-            //    BinaryFormatter formatter = new BinaryFormatter();
-            //    Encoding.ASCII.GetBytes()
-            //    byte[] bytes = Encoding.
-            //    Properties.Settings.Default.Properties;
-            //      _udpSender.BeginSend()
-            //    //TODO: 1) передать данные о настройках 2) передавать данные с захвата голоса 3) ждать сохранения контроллера
-            //    return;
-            //}
-            //this._udpReceiver.BeginReceive(EstablishConnectionCallback, new object());
+                _udpSender = new UdpClient(_destPort);
+                _sendIP = new IPEndPoint(_receiveIP.Address, _destPort);
+                _udpSender.Connect(_sendIP);
+
+                //TODO: 1) передать данные о настройках 2) передавать данные с захвата голоса 3) ждать сохранения контроллера
+                return;
+            }
+            else
+             this._udpReceiver.BeginReceive(EstablishConnectionCallback, new object());
         }
 
         private void ReceiveCallback(IAsyncResult ar)
@@ -76,17 +82,24 @@ namespace ScreamControl_Client
 
             System.Diagnostics.Debug.WriteLine(_receiveIP.Address.MapToIPv4().ToString());
             System.Diagnostics.Debug.WriteLine(message);
+            Properties.Settings.Default
         }
+
+        private static ByteMessage Serialize(object anySerializableObject)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                (new BinaryFormatter()).Serialize(memoryStream, anySerializableObject);
+                return new ByteMessage { Data = memoryStream.ToArray() };
+            }
+        }
+
 
         private void SendCallback(IAsyncResult ar)
         {
 
         }
 
-        private static class StateEnum
-        {
-            public static string Connecting = "SC_C";
-        }
     }
 
 }

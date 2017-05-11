@@ -85,7 +85,6 @@ namespace ScreamControl_Client
 #if !DEBUG
             Startup.SetAutostart();
 #endif
-            this._SCnetwork = new SCNetworkClient();
             this.Title += " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
 
             Trace.TraceInformation("Window Initialized");
@@ -112,6 +111,8 @@ namespace ScreamControl_Client
 
             LoadThresholdPosition();
             Trace.TraceInformation("Window loaded");
+
+            this._SCnetwork = new SCNetworkClient();
         }
 
         private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
