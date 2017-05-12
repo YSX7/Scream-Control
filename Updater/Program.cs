@@ -39,7 +39,7 @@ namespace Updater
                     }
 
                 Console.WriteLine("Waiting for app close...");
-                CheckMainAppClosed(args[2]);
+                CheckMainAppClosed(args[1]);
 
                 Console.WriteLine("Update started.");
                 using (WebClient client = new WebClient())
@@ -59,7 +59,7 @@ namespace Updater
             }
             finally
             {
-                Process.Start(args[2]);
+                Process.Start(args[1]);
             }
         }
 
