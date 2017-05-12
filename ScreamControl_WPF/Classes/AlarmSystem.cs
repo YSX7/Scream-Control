@@ -114,6 +114,8 @@ namespace ScreamControl_Client
             public Brush meterColor;
             public bool resetLabelColor;
             public bool resetLabelContent;
+            public bool resetSound;
+            public bool resetOverlay;
 
             public VolumeCheckArgs(Brush meterColor)
             {
@@ -190,6 +192,8 @@ namespace ScreamControl_Client
             AlarmVolume = (float)Properties.Settings.Default.Volume / 100;
 
             _systemSimpleAudioVolume = GetSimpleAudioVolume();
+            SystemVolume = (Properties.Settings.Default.VolumeSystem / 100f).Clamp(0, 1);
+            KeepSystemVolume();
 
             _bgInputListener.WorkerSupportsCancellation = true;
             _bgInputListener.DoWork += bgInputListener_DoWork;
@@ -206,12 +210,8 @@ namespace ScreamControl_Client
                 if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= delayBeforeAlarm)
                 {
                     _timerAlarmDelayArgs.alarmActive = true;
-
                     _timerAlarmDelay.Stop();
-                    _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                     PlayAlarm();
-                    if (_isMessageAlarmEnabled)
-                        _timerOverlayShow.Start();
                 }
 
                 OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
@@ -238,6 +238,8 @@ namespace ScreamControl_Client
             _timerOverlayUpdate.Tick += (s, args) =>
             {
                 _alertOverlay.Update();
+                if (!_isMessageAlarmEnabled)
+                    _overlayWorking = false;
                 if (!_overlayWorking)
                 {
                     _timerOverlayUpdate.Stop();
@@ -362,41 +364,66 @@ namespace ScreamControl_Client
                 vca.meterColor = VOLUME_HIGH;
                 if (_isSoundAlarmEnabled)
                 {
-                    if (delayBeforeAlarm > 0)
+                    if (!_timerAlarmDelay.IsEnabled && _soundOut.PlaybackState != PlaybackState.Playing)
                     {
-                        if (!_timerAlarmDelay.IsEnabled && _soundOut.PlaybackState != PlaybackState.Playing)
-                        {
-                            vca.resetLabelColor = true;
-                            _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
-                            _timerAlarmDelay.Start();
-                        }
-                        else return;
+                        vca.resetSound = true;
+                        vca.resetLabelColor = true;
+                        _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
+                        _timerAlarmDelay.Start();
                     }
-                    else
-                        PlayAlarm();
                 }
                 else
                 {
-                    if (_isMessageAlarmEnabled && !_timerOverlayShow.IsEnabled && !_timerOverlayUpdate.IsEnabled)
+                    vca.resetSound = true;
+                    vca.resetLabelContent = true;
+                    StopTheAlarm(ref vca, true, false);
+                }
+                if (_isMessageAlarmEnabled)
+                {
+                    if (!_timerOverlayShow.IsEnabled && !_timerOverlayUpdate.IsEnabled)
                     {
+                        vca.resetOverlay = true;
+                        vca.resetLabelColor = true;
                         _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                         _timerOverlayShow.Start();
                     }
                 }
-                OnVolumeCheck(this, vca);
+                else
+                {
+                    vca.resetOverlay = true;
+                    vca.resetLabelContent = true;
+                    StopTheAlarm(ref vca,false,true);
+                }
             }
             else
             {
-                //if (_soundOut.PlaybackState == PlaybackState.Playing)
-                //{
-                vca.meterColor = VOLUME_OK;
+                vca.resetSound = true;
+                vca.resetOverlay = true;
                 vca.resetLabelContent = true;
+                StopTheAlarm(ref vca, true, true);
+            }
+            OnVolumeCheck(this, vca);
+        }
+
+        private void StopTheAlarm(ref VolumeCheckArgs vca, bool disableSound, bool disableOverlay)
+        {
+            if (vca.resetOverlay && vca.resetSound)
+            {
+                vca.meterColor = VOLUME_OK;
+            }
+
+            if (disableSound)
+            {
                 _soundOut.Pause();
 
                 if (_timerAlarmDelay.IsEnabled)
                 {
                     _timerAlarmDelay.Stop();
                 }
+            }
+
+            if (disableOverlay)
+            {
                 if (_timerOverlayShow.IsEnabled)
                 {
                     _timerOverlayShow.Stop();
@@ -405,10 +432,7 @@ namespace ScreamControl_Client
                 {
                     _overlayWorking = false;
                 }
-                //}
             }
-
-            OnVolumeCheck(this, vca);
         }
 
         private void PlayAlarm()

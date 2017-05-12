@@ -42,9 +42,9 @@ namespace ScreamControl_Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-        #if !DEBUG
+#if !DEBUG
             GetUpdates();
-        #endif
+#endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -63,11 +63,15 @@ namespace ScreamControl_Client
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
                 Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
-                string updateUrl = latest.HtmlUrl;
+                // string updateUrl = latest.HtmlUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
-                    Trace.TraceInformation("Go for updates");
-                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
+                    string downloadUrl = latest.Assets.First(p => p.Name.Contains("Update")).BrowserDownloadUrl;
+                    if (downloadUrl != null)
+                    {
+                        Trace.TraceInformation("Go for updates");
+                        System.Diagnostics.Process.Start("Updater.exe", downloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
+                    }
                 }
             }
             catch(Octokit.NotFoundException ex)

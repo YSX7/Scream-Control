@@ -138,15 +138,19 @@ namespace ScreamControl_Client
             else
             {
                 pbVolume.Foreground = args.meterColor;
-                if (args.resetLabelColor)
+                if(args.resetSound)
                 {
-                    lElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
-                    lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
+                    if(args.resetLabelColor)
+                        lElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
+                    if(args.resetLabelContent)
+                        lElapsed.Content = "";
                 }
-                if (args.resetLabelContent)
+                if (args.resetOverlay)
                 {
-                    lElapsed.Content = "";
-                    lWindowElapsed.Content = "";
+                    if (args.resetLabelColor)
+                        lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
+                    if (args.resetLabelContent)
+                        lWindowElapsed.Content = "";
                 }
             }
         }
@@ -165,7 +169,6 @@ namespace ScreamControl_Client
                 {
                     lElapsed.Foreground = DEFAULT_ALERT_GOES_OFF_BRUSH;
                     lElapsed.Content = FindResource("m_DelayElapsedFinish");
-                    lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
                 }
             }
         }
