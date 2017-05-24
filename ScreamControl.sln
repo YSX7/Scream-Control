@@ -13,7 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl_ClientTests", "ScreamControl_ClientTests\ScreamControl_ClientTests.csproj", "{41FD70C8-D547-4EAD-B672-67A9FD5688E6}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedProject", "SharedProject\SharedProject.shproj", "{F40F93A7-2E6E-4CAC-9F5F-9DF40364F286}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharedProject\SharedProject.projitems*{1da774dc-d988-4058-b9bf-cbeba7bac32c}*SharedItemsImports = 4
+		SharedProject\SharedProject.projitems*{b46f4250-d812-4147-b381-61385da6c078}*SharedItemsImports = 4
+		SharedProject\SharedProject.projitems*{f40f93a7-2e6e-4cac-9f5f-9df40364f286}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

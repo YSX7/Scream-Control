@@ -2,39 +2,83 @@
 using System.ServiceModel;
 using System.ServiceModel.Discovery;
 using System.ServiceModel.Description;
+using System.Collections.Generic;
+using System.Configuration;
+using ScreamControl.WCF;
+using System.Collections.ObjectModel;
 
-namespace ScreamControl_Client
+namespace ScreamControl.WCF
 {
 
-    [ServiceContract]
-    public interface IHelloWorldService
+    public class WcfScServiceHost
     {
-        [OperationContract]
-        string SayHello(string name);
-    }
-
-    public class HelloWorldService : IHelloWorldService
-    {
-        public string SayHello(string name)
+        static EventServiceClient proxy;
+        private static List<AppSettingsProperty> settingsToSerialize;
+        private class MySubscriber : IWcfScDataTransferServiceCallback
         {
-            return string.Format("Hello from WCF service, {0}", name);
+            public void AllConnected()
+            {
+                Console.WriteLine("Event is subscribed");
+
+                proxy.SendSettings(settingsToSerialize);
+            }
+
+            public void SettingsReceive(List<AppSettingsProperty> settings)
+            {
+                return;
+            }
         }
-    }
 
-    public class SCNetworkClient
-    {
+        private ServiceHost serviceHost;
 
-        public SCNetworkClient()
+        public WcfScServiceHost(List<AppSettingsProperty> settings)
         {
-            var baseAddress = new UriBuilder("http", System.Net.Dns.GetHostName(), 13640, "scwcf");
+            settingsToSerialize = settings;
 
-            ServiceHost serviceHost = new ServiceHost(typeof(HelloWorldService), baseAddress.Uri);
-                serviceHost.AddServiceEndpoint(typeof(IHelloWorldService), new BasicHttpBinding(), string.Empty);
+            var baseAddress = new UriBuilder("net.tcp", System.Net.Dns.GetHostName(), 13640, "scwcf");
 
-                serviceHost.Description.Behaviors.Add(new ServiceDiscoveryBehavior());
-                serviceHost.AddServiceEndpoint(new UdpDiscoveryEndpoint());
+            serviceHost = new ServiceHost(typeof(WcfScDataTransferService));
+            NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
+            binding.ReceiveTimeout = TimeSpan.FromSeconds(60);
+            serviceHost.AddServiceEndpoint(typeof(IWcfScDataTransferService), binding, baseAddress.Uri);
 
-                serviceHost.Open();
+            serviceHost.Description.Behaviors.Add(new ServiceDiscoveryBehavior());
+            serviceHost.AddServiceEndpoint(new UdpDiscoveryEndpoint());
+
+            //ServiceMetadataBehavior smb = new ServiceMetadataBehavior();
+            //smb.HttpGetEnabled = true;
+            //serviceHost.Description.Behaviors.Add(smb);
+
+            serviceHost.Open();
+
+            EndpointAddress serviceAddress = new EndpointAddress(baseAddress.Uri);
+
+                IWcfScDataTransferServiceCallback evnt = new MySubscriber();
+                InstanceContext evntCntx = new InstanceContext(evnt);
+
+            //    var binding = new NetTcpBinding();
+
+                proxy = new EventServiceClient(evntCntx, binding, serviceAddress);
+
+            
+                var output = proxy.Connect(ConnectionClients.Client);
+                //proxy.SubscribeAllConnectedEvent();
+
+
+                //var factory = new DuplexChannelFactory<IWcfScDataTransferService>(evntCntx, binding);
+                //channel = factory.CreateChannel(serviceAddress);
+
+                //string output = channel.Connect(ConnectionClients.Client);
+                //channel.SubscribeAllConnectedEvent();
+
+                output = "";
+           
+
+        }
+
+        public void Close()
+        {
+            serviceHost.Close();
         }
 
         //#region Variables and Stuff

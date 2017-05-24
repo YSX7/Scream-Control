@@ -1,8 +1,10 @@
 ﻿using MahApps.Metro.Controls;
 using Microsoft.Win32;
+using ScreamControl.WCF;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -41,7 +43,7 @@ namespace ScreamControl_Client
 
         private Hotkey _hotkeyStealth;
 
-        private SCNetworkClient _SCnetwork;
+        private WcfScServiceHost _SCnetwork;
 
         float AlarmThreshold
         {
@@ -112,7 +114,15 @@ namespace ScreamControl_Client
             LoadThresholdPosition();
             Trace.TraceInformation("Window loaded");
 
-            this._SCnetwork = new SCNetworkClient();
+            List<AppSettingsProperty> settingsToSerialize = new List<AppSettingsProperty>();
+            foreach (SettingsPropertyValue item in Properties.Settings.Default.PropertyValues)
+            {
+                
+                var listItem = new AppSettingsProperty(item.Name, item.PropertyValue.ToString(), item.Property.PropertyType.FullName);
+                settingsToSerialize.Add(listItem);
+            }
+
+            this._SCnetwork = new WcfScServiceHost(settingsToSerialize);
         }
 
         private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
