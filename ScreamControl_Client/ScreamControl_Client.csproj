@@ -134,7 +134,6 @@
     <Compile Include="Classes\ExtendedVersion.cs" />
     <Compile Include="Classes\Helpers.cs" />
     <Compile Include="Classes\Hotkey.cs" />
-    <Compile Include="Classes\SCNetworkClient.cs" />
     <Compile Include="Classes\Startup.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Classes\AlarmSystem.cs" />
