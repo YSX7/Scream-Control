@@ -7,7 +7,7 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:Properties="clr-namespace:ScreamControl_Client.Properties"
         xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl_Client.MainWindow"
-        Title="Scream Control" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" ShowMaxRestoreButton="False" BorderThickness="1">
+        Title="Scream Control" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" ShowMaxRestoreButton="False" BorderThickness="1" ResizeMode="CanMinimize">
     <Controls:MetroWindow.Resources>
         <databinding:BindingProxy x:Key="SoundAlertHeaderProxy" Data="{DynamicResource m_SoundAlertExpander}"></databinding:BindingProxy>
         <databinding:BindingProxy x:Key="MessageAlertHeaderProxy" Data="{DynamicResource m_MessageAlertExpander}"></databinding:BindingProxy>
@@ -19,21 +19,47 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top" Margin="5,5,5,0" Controls:ControlsHelper.ContentCharacterCasing="Upper">
+
+        <!-- Blocking grid -->
+        <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Background="#BFFFFFFF" Panel.ZIndex="10" Grid.Row="1" Visibility="Hidden">
+            <TextBlock Text="{DynamicResource m_ControllerBlock}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold" Padding="5">
+                <TextBlock.Background>
+                    <SolidColorBrush Color="Red" Opacity="0.1"/>
+                </TextBlock.Background>
+            </TextBlock>
+        </Grid>
+        <Grid Background="#BFFFFFFF" Panel.ZIndex="10" Grid.Column="1" Visibility="{Binding Visibility, ElementName=gControllerBlock}"></Grid>
+
+        <!-- Connection Info -->
+        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0,0,0,1"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label Content="{DynamicResource mc_Initializing}" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,2" VerticalContentAlignment="Center" VerticalAlignment="Center">
+            </Label>
+            <Button x:Name="bNetworkRetry" Style="{StaticResource AccentedSquareButtonStyle}" Padding="10,5" VerticalAlignment="Center" Controls:ControlsHelper.ContentCharacterCasing="Normal" Margin="10,5,0,5" Background="#CC5DAA7C" BorderThickness="1" Visibility="Collapsed">Retry
+            </Button>
+        </StackPanel>
+
+        <!-- Language Panel -->
+        <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top"  Controls:ControlsHelper.ContentCharacterCasing="Upper" Grid.Row="1">
             <Grid Background="#FFE0E0E0">
                 <ComboBox x:Name="cbLang" HorizontalAlignment="Left" Margin="5" DropDownClosed="ChangeLanguageClick" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
             </Grid>
         </Expander>
-        <StackPanel Margin="7,10,0,0" Grid.Row="1" VerticalAlignment="Top">
+
+        <!-- Stealth mode -->
+        <StackPanel Margin="7,10,0,0" Grid.Row="2" VerticalAlignment="Top">
             <Controls:ToggleSwitch x:Name="csStealth" IsChecked="{Binding Source={x:Static Properties:Settings.Default}, Path=StealthMode, Mode=TwoWay}" Header="{DynamicResource m_Stealth}" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="-5,0,0,0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12" Margin="5,0,0,0"/>
         </StackPanel>
-        <StackPanel Grid.Row="2" Margin="7,0,0,7">
+
+        <!-- Sound Controls -->
+        <StackPanel Grid.Row="3" Margin="7,0,0,7">
             <Label Content="{DynamicResource m_Boost}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Width="58"/>
             <Controls:NumericUpDown x:Name="numBoost" Background="{x:Null}" Foreground="Black" Value="{Binding Source={x:Static Properties:Settings.Default}, Path=Boost, Mode=TwoWay}" ValueChanged="numBoost_ValueChanged" HorizontalAlignment="Left" RenderTransformOrigin="1.427,0.5" VerticalAlignment="Top" Margin="0">
                 <Controls:NumericUpDown.BorderBrush>
@@ -113,7 +139,8 @@
             <Label x:Name="lDebug" Content="Label" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Grid.Row="1" Visibility="Collapsed"/>
         </StackPanel>
 
-        <Grid x:Name="GridVolume" Margin="0,10,10,10" MinWidth="40" MinHeight="70" Width="77" HorizontalAlignment="Right" Grid.Column="1" Grid.RowSpan="3">
+        <!-- Sound bar -->
+        <Grid x:Name="GridVolume" Margin="0,10,10,10" MinWidth="40" MinHeight="70" Width="77" HorizontalAlignment="Right" Grid.Column="1" Grid.RowSpan="4">
             <Grid.RowDefinitions>
                 <RowDefinition/>
             </Grid.RowDefinitions>

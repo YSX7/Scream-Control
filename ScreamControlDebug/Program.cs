@@ -11,12 +11,15 @@ using System.ServiceModel.Description;
 using System.ServiceModel.Discovery;
 using System.Text;
 using System.Threading;
+using System.Linq;
 
 namespace MicrophoneTest
 {
 
     class Program
     {
+
+        readonly string[] YES_VARIANTS = { "yes", "y" };
 
         class ControllerSubscriber : IWcfScDataTransferServiceCallback
         {
@@ -28,7 +31,18 @@ namespace MicrophoneTest
             public void SettingsReceive(List<AppSettingsProperty> settings)
             {
                 foreach (var item in settings)
-                    Console.WriteLine("{0} :: {1} :: {2}", item.name, item.value, item.type);
+                    Console.WriteLine("{0} \t {1} \t {2}", item.name, item.value, item.type);
+            }
+
+            public void SettingsReceive(AppSettingsProperty value)
+            {
+                return;
+            }
+
+            public void VolumeReceive(float volume)
+            {
+                //Console.WriteLine(volume);
+                //Console.CursorTop--;
             }
         }
 
@@ -37,66 +51,77 @@ namespace MicrophoneTest
             new Program().Run();
         }
 
+        EventServiceClient proxy;
+
         public void Run()
         {
-            
-            Console.WriteLine("Starting service.");
-
-            DiscoveryClient discoveryClient = new DiscoveryClient(new UdpDiscoveryEndpoint());
-
-            Collection<EndpointDiscoveryMetadata> helloWorldServices = discoveryClient.Find(new FindCriteria(typeof(IWcfScDataTransferService))).Endpoints;
-
-            discoveryClient.Close();
-
-            if (helloWorldServices.Count == 0)
-            {
-                Console.WriteLine("No services");
-                return;
-            }
-            else
+            try
             {
 
-                EndpointAddress serviceAddress = helloWorldServices[0].Address;
+           //     AppSettingsProperty hui = new AppSettingsProperty("Threshold", "", typeof(float).);
 
-                IWcfScDataTransferServiceCallback evnt = new ControllerSubscriber();
-                InstanceContext evntCntx = new InstanceContext(evnt);
+                Console.WriteLine("Searching for service...");
 
-                //    var binding = new NetTcpBinding();
-                NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
-                binding.ReceiveTimeout = TimeSpan.FromSeconds(60);
+                DiscoveryClient discoveryClient = new DiscoveryClient(new UdpDiscoveryEndpoint());
 
-                EventServiceClient proxy = new EventServiceClient(evntCntx, binding, serviceAddress);
+                Collection<EndpointDiscoveryMetadata> helloWorldServices = discoveryClient.Find(new FindCriteria(typeof(IWcfScDataTransferService))).Endpoints;
 
-                string output = proxy.Connect(ConnectionClients.Controller);
-                //proxy.SubscribeAllConnectedEvent();
-                
-                Console.WriteLine(output);
+                discoveryClient.Close();
 
-                //IWcfScDataTransferServiceCallback evnt = new MySubscriber();
-                //InstanceContext evntCntx = new InstanceContext(evnt);
-                //EventServiceClient proxy = new EventServiceClient(evntCntx);
-                //proxy.SubscribeAllConnectedEvent();
-                //string output = proxy.Connect(ConnectionClients.Controller);
-              
+                if (helloWorldServices.Count == 0)
+                {
+                    Console.WriteLine("No services. Try again? (y/n)");
+                    var input = Console.ReadKey().KeyChar.ToString();
+                    if (YES_VARIANTS.Any(x => x == input))
+                        new Program().Run();
+                }
+                else
+                {
+                    Console.WriteLine("Something finded, connecting...");
+                    EndpointAddress serviceAddress = helloWorldServices[0].Address;
 
-                //EndpointAddress serviceAddress = helloWorldServices[0].Address;
+                    IWcfScDataTransferServiceCallback evnt = new ControllerSubscriber();
+                    InstanceContext evntCntx = new InstanceContext(evnt);
 
-                //var binding = new NetTcpBinding();
-                //var factory = new ChannelFactory<IWcfScDataTransferService>(binding);
-                //IWcfScDataTransferService channel = factory.CreateChannel(serviceAddress);
-                //string result = channel.SayHello("Unit Test John");
-                //Console.WriteLine(result);
+                    NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
+                    binding.ReliableSession.Enabled = true;
+                    binding.ReliableSession.Ordered = false;
+
+                    proxy = new EventServiceClient(evntCntx, binding, serviceAddress);
+
+                    string output = proxy.Connect(ConnectionClients.Controller);
+
+                    AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
+
+                    Console.WriteLine(output);
+
+                    string tmp = "";
+                    Console.Write(Environment.NewLine + "Enter Alarm Threshold: ");
+
+                    AppSettingsProperty setting = new AppSettingsProperty("Threshold", "", typeof(float).FullName);
+                    while (tmp.ToLower() != "exit")
+                    {
+                        tmp = Console.ReadLine();
+                        setting.value = tmp;
+                        proxy.SendSettings(setting);
+                    }
+                }
             }
-
-            string tmp = "";
-
-            while (tmp.ToLower() != "exit")
+            catch(Exception e)
             {
-                Console.Write("Enter Something: ");
-                tmp = Console.ReadLine();
+                Console.WriteLine(e.Message);
+                Console.ReadLine();
             }
+        }
 
-            
+
+        void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            Console.WriteLine("Exiting...");
+            if (proxy != null)
+            {
+                proxy.Disconnect(ConnectionClients.Controller);
+            }
         }
     }
 }

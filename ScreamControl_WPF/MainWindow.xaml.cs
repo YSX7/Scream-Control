@@ -111,7 +111,7 @@ namespace ScreamControl_Client
 
             LanguageChanged(null, null);
 
-            LoadThresholdPosition();
+            LoadThresholdPosition(Properties.Settings.Default.Threshold);
             Trace.TraceInformation("Window loaded");
 
             List<AppSettingsProperty> settingsToSerialize = new List<AppSettingsProperty>();
@@ -123,6 +123,26 @@ namespace ScreamControl_Client
             }
 
             this._SCnetwork = new WcfScServiceHost(settingsToSerialize);
+            this._SCnetwork.OnControllerConnected += new WcfScServiceHost.ControllerConnectionChangedHandler(OnControllerConnected);
+            this._SCnetwork.OnControllerDisconnected += new WcfScServiceHost.ControllerConnectionChangedHandler(OnControllerDisconnected);
+            this._SCnetwork.OnSettingReceive += new WcfScServiceHost.SettingReceiveHandler(OnSettingReceive);
+        }
+
+        private void OnControllerDisconnected()
+        {
+            gControllerBlock.Visibility = Visibility.Hidden;
+        }
+
+        private void OnControllerConnected()
+        {
+            gControllerBlock.Visibility = Visibility.Visible;
+        }
+
+        private void OnSettingReceive(AppSettingsProperty setting)
+        {
+            Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
+            if (setting.name == "Threshold")
+                LoadThresholdPosition(Convert.ToSingle(setting.value));
         }
 
         private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
@@ -136,6 +156,8 @@ namespace ScreamControl_Client
             {
                 pbVolume.Value = args.MeterVolume;
                 lVolume.Content = args.LabelVolume;
+                if(_SCnetwork.IsControllerConnected)
+                     _SCnetwork.proxy.SendMicInput(args.RawVolume);
             }
         }
 
@@ -248,9 +270,9 @@ namespace ScreamControl_Client
 
         #region Threshold
 
-        private void LoadThresholdPosition()
+        private void LoadThresholdPosition(float thresholdVolume)
         {
-            AlarmThreshold = Properties.Settings.Default.Threshold;
+            AlarmThreshold = thresholdVolume;
             var y = (_actualHeight / 100) * AlarmThreshold;
 
             SetThresholdPosition(y);

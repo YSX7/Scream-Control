@@ -23,8 +23,14 @@ namespace ScreamControl.WCF
         //[OperationContract(IsOneWay = true)]
         //void SubscribeAllConnectedEvent();
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract(IsOneWay = true, Name = "SendSettingsMultiple")]
         void SendSettings(List<AppSettingsProperty> settings);
+
+        [OperationContract(IsOneWay = true, Name = "SendSettingsSingle")]
+        void SendSettings(AppSettingsProperty value);
+
+        [OperationContract(IsOneWay = true)]
+        void SendMicInput(float volume);
 
         [OperationContract(IsTerminating = true)]
         void Disconnect(ConnectionClients client);
@@ -35,8 +41,14 @@ namespace ScreamControl.WCF
         [OperationContract(IsOneWay = true)]
         void AllConnected();
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract(IsOneWay = true, Name = "SettingReceiveMultiple")]
         void SettingsReceive(List <AppSettingsProperty> settings);
+
+        [OperationContract(IsOneWay = true, Name = "SettingReceiveSingle")]
+        void SettingsReceive(AppSettingsProperty value);
+
+        [OperationContract(IsOneWay = true)]
+        void VolumeReceive(float volume);
     }
 
     [DataContract]
@@ -83,11 +95,20 @@ namespace ScreamControl.WCF
             base.Channel.SendSettings(settings);
         }
 
+        public void SendSettings(AppSettingsProperty value)
+        {
+            base.Channel.SendSettings(value);
+        }
+
         public void Disconnect(ConnectionClients client)
         {
             base.Channel.Disconnect(client);
         }
 
+        public void SendMicInput(float volume)
+        {
+            base.Channel.SendMicInput(volume);
+        }
     }
 
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
@@ -95,9 +116,8 @@ namespace ScreamControl.WCF
     {
         static Action m_EventConnected = delegate { };
 
-        public bool SCclientConnected = false;
-        public bool SCcontrollerConnected = false;
         IWcfScDataTransferServiceCallback controllerCallback;
+        IWcfScDataTransferServiceCallback clientCallback;
 
         //public void SubscribeAllConnectedEvent()
         //{
@@ -108,13 +128,15 @@ namespace ScreamControl.WCF
         public string Connect(ConnectionClients client)
         {
             //throw new FaultException("Something happend");
-            IWcfScDataTransferServiceCallback subscriber = OperationContext.Current.GetCallbackChannel<IWcfScDataTransferServiceCallback>();
-            m_EventConnected += subscriber.AllConnected;
 
             if (client == ConnectionClients.Client)
             {
-                if (SCclientConnected) return string.Format("Client already connected");
-                else SCclientConnected = true;
+                if (clientCallback != null) return string.Format("Client already connected");
+                else
+                {
+                    clientCallback = OperationContext.Current.GetCallbackChannel<IWcfScDataTransferServiceCallback>();
+                    m_EventConnected += clientCallback.AllConnected;
+                }
             }
             if (client == ConnectionClients.Controller)
             {
@@ -124,7 +146,7 @@ namespace ScreamControl.WCF
                     controllerCallback = OperationContext.Current.GetCallbackChannel<IWcfScDataTransferServiceCallback>();
                 }
             }
-            if (SCclientConnected && controllerCallback!= null)
+            if (clientCallback != null && controllerCallback != null)
             {
                 m_EventConnected();
                 return ("All connected, starting data transfer...");
@@ -138,17 +160,26 @@ namespace ScreamControl.WCF
             controllerCallback.SettingsReceive(settings);
         }
 
+        public void SendSettings(AppSettingsProperty value)
+        {
+            clientCallback.SettingsReceive(value);
+        }
 
         public void Disconnect(ConnectionClients client)
         {
             if (client == ConnectionClients.Client)
             {
-                SCclientConnected = false;
+                clientCallback = null;
             }
             if (client == ConnectionClients.Controller)
             {
-                SCcontrollerConnected = false;
+                controllerCallback = null;
             }
+        }
+
+        public void SendMicInput(float volume)
+        {
+            controllerCallback.VolumeReceive(volume);
         }
     }
 

@@ -90,6 +90,14 @@ namespace ScreamControl_Client
                 this._volume = volume;
             }
 
+            public float RawVolume
+            {
+                get
+                {
+                    return _volume;
+                }
+            }
+
             public int MeterVolume
             {
                 get

@@ -4,15 +4,21 @@
     <v:String x:Key="m_AlertWindow">Слишком громко</v:String>
     <v:String x:Key="m_AlertWindowElapsedFinish">СТАРТ!</v:String>
     <v:String x:Key="m_AlertWindowLabel">Время до появления окна с алертом (сек)</v:String>
-    <v:String x:Key="m_SoundAlertExpander">Звуковой Алерт</v:String>
-    <v:String x:Key="m_MessageAlertExpander">Оконный Алерт</v:String>
     <v:String x:Key="m_Boost">Усиление микрофона</v:String>
+    <v:String x:Key="m_ControllerBlock">Извини, чувак, твоим звуком кто-то рулит. Жди окончания.</v:String>
     <v:String x:Key="m_Delay">Время до включения алерта (сек)</v:String>
     <v:String x:Key="m_DelayElapsedFinish">СТАРТ!</v:String>
     <v:String x:Key="m_Language">Язык</v:String>
+    <v:String x:Key="m_MessageAlertExpander">Оконный Алерт</v:String>
     <v:String x:Key="m_Off">Выкл</v:String>
     <v:String x:Key="m_On">Вкл</v:String>
+    <v:String x:Key="m_SoundAlertExpander">Звуковой Алерт</v:String>
     <v:String x:Key="m_Stealth">Включить скрытный режим</v:String>
     <v:String x:Key="m_Volume">Громкость</v:String>
     <v:String x:Key="m_VolumeSystem">Системная громкость</v:String>
+    <!-- Connection info strings -->
+    <v:String x:Key="mc_Initializing">Инициализация сервиса...</v:String>
+    <v:String x:Key="mc_Ready">Сервис готов, ждём контроллера</v:String>
+    <v:String x:Key="mc_Connected">Контроллер подключен, идёт передача данных</v:String>
+    <v:String x:Key="mc_Disconnected">Контроллер отключился</v:String>
 </ResourceDictionary>
