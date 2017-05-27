@@ -40,7 +40,7 @@
         <!-- Connection Info -->
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0,0,0,1"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Label Content="{DynamicResource mc_Initializing}" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,2" VerticalContentAlignment="Center" VerticalAlignment="Center">
+            <Label x:Name="lConnectionStatus" Content="{DynamicResource mc_Initializing}" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,2" VerticalContentAlignment="Center" VerticalAlignment="Center">
             </Label>
             <Button x:Name="bNetworkRetry" Style="{StaticResource AccentedSquareButtonStyle}" Padding="10,5" VerticalAlignment="Center" Controls:ControlsHelper.ContentCharacterCasing="Normal" Margin="10,5,0,5" Background="#CC5DAA7C" BorderThickness="1" Visibility="Collapsed">Retry
             </Button>

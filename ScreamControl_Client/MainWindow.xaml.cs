@@ -43,7 +43,7 @@ namespace ScreamControl_Client
 
         private Hotkey _hotkeyStealth;
 
-        private WcfScServiceHost _SCnetwork;
+        private WcfScServiceHost _WcfHost;
 
         float AlarmThreshold
         {
@@ -122,10 +122,11 @@ namespace ScreamControl_Client
                 settingsToSerialize.Add(listItem);
             }
 
-            this._SCnetwork = new WcfScServiceHost(settingsToSerialize);
-            this._SCnetwork.OnControllerConnected += new WcfScServiceHost.ControllerConnectionChangedHandler(OnControllerConnected);
-            this._SCnetwork.OnControllerDisconnected += new WcfScServiceHost.ControllerConnectionChangedHandler(OnControllerDisconnected);
-            this._SCnetwork.OnSettingReceive += new WcfScServiceHost.SettingReceiveHandler(OnSettingReceive);
+            this._WcfHost = new WcfScServiceHost(settingsToSerialize);
+            this._WcfHost.client.OnControllerConnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerConnected);
+            this._WcfHost.client.OnControllerDisconnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
+            this._WcfHost.client.OnSettingReceive += new WcfScServiceHost.HostClient.SettingReceiveHandler(OnSettingReceive);
+            lConnectionStatus.Content = "Succesful connected, state: " + _WcfHost.client.temp;
         }
 
         private void OnControllerDisconnected()
@@ -156,8 +157,8 @@ namespace ScreamControl_Client
             {
                 pbVolume.Value = args.MeterVolume;
                 lVolume.Content = args.LabelVolume;
-                if(_SCnetwork.IsControllerConnected)
-                     _SCnetwork.proxy.SendMicInput(args.RawVolume);
+                if(_WcfHost.client._isControllerConnected)
+                    _WcfHost.client.proxy.SendMicInput(args.RawVolume);
             }
         }
 

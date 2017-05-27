@@ -57,7 +57,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScreamControl_WPF\ScreamControl_Client.csproj">
+    <ProjectReference Include="..\ScreamControl_Client\ScreamControl_Client.csproj">
       <Project>{1DA774DC-D988-4058-B9BF-CBEBA7BAC32C}</Project>
       <Name>ScreamControl_Client</Name>
     </ProjectReference>

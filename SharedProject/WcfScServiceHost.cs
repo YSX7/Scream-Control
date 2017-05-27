@@ -8,89 +8,100 @@ namespace ScreamControl.WCF
 
     public class WcfScServiceHost
     {
-        public EventServiceClient proxy;
-        public bool IsControllerConnected = false;
-
-        #region Events
-        public delegate void ControllerConnectionChangedHandler();
-        public delegate void SettingReceiveHandler(AppSettingsProperty setting);
-        public event ControllerConnectionChangedHandler OnControllerConnected;
-        public event SettingReceiveHandler OnSettingReceive;
-        public event ControllerConnectionChangedHandler OnControllerDisconnected;
-        #endregion
-
-        private static List<AppSettingsProperty> settingsToSerialize;
-
-        private class MySubscriber : IWcfScDataTransferServiceCallback
+        public class HostClient
         {
-            WcfScServiceHost parent;
+            public EventServiceHostingClient proxy;
+            public bool _isControllerConnected = false;
 
-            public MySubscriber(WcfScServiceHost parent)
+            private List<AppSettingsProperty> _settingsToSerialize;
+
+            #region Events
+            public delegate void ControllerConnectionChangedHandler();
+            public delegate void SettingReceiveHandler(AppSettingsProperty setting);
+            public event ControllerConnectionChangedHandler OnControllerConnected;
+            public event SettingReceiveHandler OnSettingReceive;
+            public event ControllerConnectionChangedHandler OnControllerDisconnected;
+            #endregion
+
+            public string temp;
+
+            public HostClient(string baseAddress, NetTcpBinding binding)
             {
-                this.parent = parent;
+                EndpointAddress serviceAddress = new EndpointAddress(baseAddress);
+
+                IHostingClientServiceCallback evnt = new MyCallback(this);
+                InstanceContext evntCntx = new InstanceContext(evnt);
+
+                proxy = new EventServiceHostingClient(evntCntx, binding, serviceAddress);
+
+                temp = proxy.Connect();
             }
-            
-            public void AllConnected()
+
+            private class MyCallback : IHostingClientServiceCallback
             {
-                parent.IsControllerConnected = true;
+                HostClient _parent;
 
-                parent.proxy.SendSettings(settingsToSerialize);
+                public MyCallback(HostClient parent)
+                {
+                    this._parent = parent;
+                }
 
-                parent.OnControllerConnected();
+                public void AllConnected()
+                {
+                    _parent._isControllerConnected = true;
+
+                    _parent.proxy.SendSettings(_parent._settingsToSerialize);
+
+                    _parent.OnControllerConnected();
+                }
+
+                public void SettingsReceive(List<AppSettingsProperty> settings)
+                {
+                    return;
+                }
+
+                public void SettingsReceiveAndApply(AppSettingsProperty value)
+                {
+                    throw new NotImplementedException();
+                  //  _parent.OnSettingReceive(settings);
+                }
+
+                public void VolumeReceive(float volume)
+                {
+                    return;
+                }
             }
 
-            public void SettingsReceive(List<AppSettingsProperty> settings)
-            {
-                return;
-            }
-
-            public void SettingsReceive(AppSettingsProperty settings)
-            {
-                parent.OnSettingReceive(settings);
-            }
-
-            public void VolumeReceive(float volume)
-            {
-                return;
-            }
         }
 
-        private ServiceHost serviceHost;
+        public HostClient client;
+
+        private ServiceHost _serviceHost;
 
         public WcfScServiceHost(List<AppSettingsProperty> settings)
         {
-            settingsToSerialize = settings;
+        //    this._settingsToSerialize = settings;
 
-            var baseAddress = new UriBuilder("net.tcp", System.Net.Dns.GetHostName(), 13640, "scwcf");
+            var baseAddress = new UriBuilder("net.tcp", System.Net.Dns.GetHostName(), 13640, "wcf");
 
-            serviceHost = new ServiceHost(typeof(WcfScDataTransferService));
+            _serviceHost = new ServiceHost(typeof(ServiceClient));
             NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
             binding.ReliableSession.Enabled = true;
             binding.ReliableSession.Ordered = false;
-            serviceHost.AddServiceEndpoint(typeof(IWcfScDataTransferService), binding, baseAddress.Uri);
+            _serviceHost.AddServiceEndpoint(typeof(IHostingClientService), binding, baseAddress.Uri + "/client");
+            _serviceHost.AddServiceEndpoint(typeof(IControllerService), binding, baseAddress.Uri + "/controller");
 
-            serviceHost.Description.Behaviors.Add(new ServiceDiscoveryBehavior());
-            serviceHost.AddServiceEndpoint(new UdpDiscoveryEndpoint());
+            _serviceHost.Description.Behaviors.Add(new ServiceDiscoveryBehavior());
+            _serviceHost.AddServiceEndpoint(new UdpDiscoveryEndpoint());
 
-            serviceHost.Open();
+            _serviceHost.Open();
 
-            EndpointAddress serviceAddress = new EndpointAddress(baseAddress.Uri);
-
-            IWcfScDataTransferServiceCallback evnt = new MySubscriber(this);
-            InstanceContext evntCntx = new InstanceContext(evnt);
-
-            proxy = new EventServiceClient(evntCntx, binding, serviceAddress);
-
-            var output = proxy.Connect(ConnectionClients.Client);
-
-            output = "";
-
-
+            client = new HostClient(baseAddress.Uri + "/client", binding);
         }
 
         public void Close()
         {
-            serviceHost.Close();
+            _serviceHost.Close();
         }
 
     }
