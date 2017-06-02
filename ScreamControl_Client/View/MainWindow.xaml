@@ -5,16 +5,96 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:res="Resources.xml"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:Inter="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:Properties="clr-namespace:ScreamControl_Client.Properties"
-        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl_Client.MainWindow"
-        Title="Scream Control" Loaded="Window_Loaded" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" ShowMaxRestoreButton="False" BorderThickness="1" ResizeMode="CanMinimize">
+        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl_Client.View.MainWindow"
+        xmlns:ViewModel="clr-namespace:ScreamControl_Client.ViewModel"
+        Title="Scream Control" Closing="Window_Closing" MouseMove="wMain_MouseMove" MouseUp="wMain_MouseUp" 
+        Deactivated="wMain_Deactivated" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" 
+        ShowMaxRestoreButton="False" BorderThickness="1" ResizeMode="CanMinimize"
+        Visibility="{Binding WindowVisibilityState}">
+    <Controls:MetroWindow.DataContext>
+        <ViewModel:MainViewModel/>
+    </Controls:MetroWindow.DataContext>
+    <Inter:Interaction.Triggers>
+        <Inter:EventTrigger EventName="Loaded">
+            <Inter:InvokeCommandAction Command="{Binding LoadedCommand}"/>
+        </Inter:EventTrigger>
+    </Inter:Interaction.Triggers>
     <Controls:MetroWindow.Resources>
         <databinding:BindingProxy x:Key="SoundAlertHeaderProxy" Data="{DynamicResource m_SoundAlertExpander}"></databinding:BindingProxy>
         <databinding:BindingProxy x:Key="MessageAlertHeaderProxy" Data="{DynamicResource m_MessageAlertExpander}"></databinding:BindingProxy>
         <databinding:ToUpperConverter x:Key="ToUpperConverter"></databinding:ToUpperConverter>
         <SolidColorBrush x:Key="UnheckedToggleSwitchBrush" Color="#7A7574"/>
         <SolidColorBrush x:Key="CheckedToggleSwitchBrush" Color="#FF4343"/>
+
+        <Style x:Key="SliderButtonStyle" TargetType="{x:Type RepeatButton}">
+            <Setter Property="SnapsToDevicePixels" Value="true"/>
+            <Setter Property="OverridesDefaultStyle" Value="true"/>
+            <Setter Property="IsTabStop" Value="false"/>
+            <Setter Property="Focusable" Value="false"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RepeatButton}">
+                        <Border >
+                            <Border.Background>
+                                <SolidColorBrush Opacity="0"/>
+                            </Border.Background>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ProgressSliderThumb" TargetType="{x:Type Thumb}">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Border BorderBrush="Red" BorderThickness="1" Height="2" VerticalAlignment="Center" Background="Red" Cursor="SizeNS" Grid.Column="1"/>
+                            <Rectangle Margin="-2,-5" Cursor="SizeNS" Fill="#00000000" Grid.Column="1"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ProgressSlider" TargetType="{x:Type Slider}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Slider}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" MinWidth="{TemplateBinding MinWidth}"/>
+                                </Grid.ColumnDefinitions>
+                                <TickBar x:Name="TopTick" Visibility="Collapsed" Placement="Left" Grid.Column="0"/>
+                                <TickBar x:Name="BottomTick" Visibility="Collapsed" Placement="Right" Grid.Column="0"/>
+                                <Border x:Name="TrackBackground"  Margin="5,0" HorizontalAlignment="Stretch" Width="Auto" Grid.Column="1" Background="#FF0CFF00" Visibility="Collapsed" />
+                                <Track x:Name="PART_Track" Grid.Column="1">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.DecreaseLarge}"/>
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.IncreaseLarge}"/>
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource ProgressSliderThumb}" x:Name="Thumb" Background="Black"/>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Controls:MetroWindow.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -28,7 +108,9 @@
         </Grid.ColumnDefinitions>
 
         <!-- Blocking grid -->
-        <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Background="#BFFFFFFF" Panel.ZIndex="10" Grid.Row="1" Visibility="Hidden">
+
+
+        <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Background="White" Panel.ZIndex="10" Grid.Row="1" Visibility="Hidden">
             <TextBlock Text="{DynamicResource m_ControllerBlock}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold" Padding="5">
                 <TextBlock.Background>
                     <SolidColorBrush Color="Red" Opacity="0.1"/>
@@ -49,7 +131,7 @@
         <!-- Language Panel -->
         <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top"  Controls:ControlsHelper.ContentCharacterCasing="Upper" Grid.Row="1">
             <Grid Background="#FFE0E0E0">
-                <ComboBox x:Name="cbLang" HorizontalAlignment="Left" Margin="5" DropDownClosed="ChangeLanguageClick" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
+                <ComboBox x:Name="cbLang" ItemsSource="{Binding Path=Languages}" SelectedItem="{Binding Path=CurrentLanguage}" DisplayMemberPath="NativeName" HorizontalAlignment="Left" Margin="5" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
             </Grid>
         </Expander>
 
@@ -149,10 +231,15 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Controls:MetroProgressBar x:Name="pbVolume" Value="50" Orientation="Vertical" Grid.Column="1" Height="Auto" Background="White" HorizontalAlignment="Stretch" Foreground="#FF7FFF79" BorderBrush="#FFECECEC" BorderThickness="2"/>
+            <!--<Border Padding="0">
+            <TextBlock Text="100" Margin="0" TextAlignment="Center" Padding="3,0,5,0" MinWidth="27" VerticalAlignment="Center"/>
+            </Border>-->
+            <!--<Slider x:Name="slider" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Value="50" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1"/>-->
             <Border x:Name="Thresold" BorderBrush="Red" BorderThickness="1" Height="2" VerticalAlignment="Bottom" Background="Red" Cursor="SizeNS" Grid.Column="1" Padding="5" Margin="0,8,0,0"/>
-            <Rectangle x:Name="ThresholdHitBox" Height="10" VerticalAlignment="Bottom" Cursor="SizeNS" Grid.Column="1" Panel.ZIndex="10" Margin="0,0,0,-5" MouseDown="ThresholdHitBox_MouseDown" Fill="#00000000"/>
-            <Label x:Name="lThreshold" Content="100" Margin="0,0,0,0" VerticalAlignment="Bottom" Padding="0,0,5,0" MinHeight="15" MinWidth="24" HorizontalContentAlignment="Right"/>
-            <Label Grid.Column="1" x:Name="lVolume" Content="12.34" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0"/>
+            <Rectangle x:Name="ThresholdHitBox" Height="10" VerticalAlignment="Bottom" Cursor="SizeNS" Grid.Column="1" Panel.ZIndex="10" Margin="0,0,0,-5" Fill="#00000000"/>
+            <Label x:Name="lThreshold" Content="100" Margin="0,0,0,119" Padding="0,0,5,0" MinHeight="15" MinWidth="24" HorizontalContentAlignment="Right" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch"/>
+            <Label Grid.Column="1" x:Name="lVolume" Content="12.34" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0" Height="17"/>
         </Grid>
+
     </Grid>
 </Controls:MetroWindow>

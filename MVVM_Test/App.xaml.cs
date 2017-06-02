@@ -11,11 +11,7 @@ namespace MVVM_Test
     {
         public App()
         {
-            var mw = new MainWindow
-            {
-                DataContext = new MainWindowViewModel()
-            };
-             mw.Show();
+
         }
 
     }

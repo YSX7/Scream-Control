@@ -25,7 +25,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 
 
-namespace ScreamControl_Client
+namespace ScreamControl_Client.View
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -65,24 +65,7 @@ namespace ScreamControl_Client
         {
             InitializeComponent();
 
-            if ((bool)csStealth.IsChecked)
-                HideWindow();
-
             _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
-
-            App.LanguageChanged += LanguageChanged;
-            CultureInfo currLang = App.Language;
-            cbLang.Items.Clear();
-            foreach (var lang in App.Languages)
-            {
-                ComboBoxItem cboxItem = new ComboBoxItem();
-                cboxItem.Content = lang.NativeName;
-                cboxItem.Tag = lang;
-                cboxItem.IsSelected = lang.Equals(currLang);
-                cbLang.Items.Add(cboxItem);
-            }
-
-            App.Language = currLang;
 
 #if !DEBUG
             Startup.SetAutostart();
@@ -98,7 +81,7 @@ namespace ScreamControl_Client
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _actualHeight = (float)pbVolume.ActualHeight - 3;
-            float startPos = _actualHeight / 100 * _alarmThreshold;
+            //float startPos = _actualHeight / 100 * _alarmThreshold;
 
             _as = new AlarmSystem();
             _as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
@@ -109,7 +92,7 @@ namespace ScreamControl_Client
             _as.OnUpdateTimerOverlayDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
             _as.OnClosed += new AlarmSystem.ClosedSystemHandler(OnAlarmSystemClosed);
 
-            LanguageChanged(null, null);
+         //   LanguageChanged(null, null);
 
             LoadThresholdPosition(Properties.Settings.Default.Threshold);
             Trace.TraceInformation("Window loaded");
@@ -236,26 +219,26 @@ namespace ScreamControl_Client
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            Trace.TraceInformation("Window closing at {0}", DateTime.Now);
-#if !DEBUG
-            Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
-#endif
-            if (_as.state != AlarmSystem.States.Closed && _as.state != AlarmSystem.States.Closing)
-                _as.Close();
+            //            Trace.TraceInformation("Window closing at {0}", DateTime.Now);
+            //#if !DEBUG
+            //            Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
+            //#endif
+            //            if (_as.state != AlarmSystem.States.Closed && _as.state != AlarmSystem.States.Closing)
+            //                _as.Close();
 
-            if (_as.state != AlarmSystem.States.Closed)
-            {
-                Trace.TraceWarning("Alarm system is not closed yet. Window closing canceled");
-                e.Cancel = true;
-                return;
-            }
-            else
-            {
-                Trace.TraceInformation("Closing approved");
-                Properties.Settings.Default.Save();
-                _hotkeyStealth.Unregister();
-                _hotkeyStealth.Dispose();
-            }
+            //            if (_as.state != AlarmSystem.States.Closed)
+            //            {
+            //                Trace.TraceWarning("Alarm system is not closed yet. Window closing canceled");
+            //                e.Cancel = true;
+            //                return;
+            //            }
+            //            else
+            //            {
+            //                Trace.TraceInformation("Closing approved");
+            Properties.Settings.Default.Save();
+            //                _hotkeyStealth.Unregister();
+            //                _hotkeyStealth.Dispose();
+            //            }
         }
 
         private void wMain_Closed(object sender, EventArgs e)
@@ -348,37 +331,6 @@ namespace ScreamControl_Client
             if (e.NewValue != null && _as != null)
                 _as.SystemVolume = ((float)e.NewValue / 100).Clamp(0, 1);
         }
-
-        #region Language things
-
-        private void LanguageChanged(Object sender, EventArgs e)
-        {
-            CultureInfo currLang = App.Language;
-
-            //Отмечаем нужный пункт смены языка как выбранный язык
-            foreach (ComboBoxItem i in cbLang.Items)
-            {
-                CultureInfo ci = i.Tag as CultureInfo;
-                i.IsSelected = ci != null && ci.Equals(currLang);
-            }
-        }
-
-        private void ChangeLanguageClick(object sender, EventArgs e)
-        {
-            ComboBox cbox = sender as ComboBox;
-            ComboBoxItem citem = cbox.SelectedItem as ComboBoxItem;
-            if (citem != null)
-            {
-                CultureInfo lang = citem.Tag as CultureInfo;
-                if (lang != null)
-                {
-                    App.Language = lang;
-                }
-            }
-
-        }
-
-        #endregion
 
         private void nudDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
         {
