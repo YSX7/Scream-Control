@@ -1,5 +1,6 @@
 ﻿using MahApps.Metro.Controls;
 using Microsoft.Win32;
+using ScreamControl;
 using ScreamControl.WCF;
 using System;
 using System.Collections.Generic;
@@ -31,13 +32,10 @@ namespace ScreamControl_Client.View
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : MetroWindow, IScreamControlWindow
     {
-        private readonly Brush DEFAULT_NORMAL_BRUSH = Brushes.White;
-        private readonly Brush DEFAULT_ALERT_GOES_OFF_BRUSH = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffff00"));
+        
 
-        AlarmSystem _as;
-        float _actualHeight;
         float _alarmThreshold = 80;
         bool _mousePressed;
 
@@ -80,17 +78,9 @@ namespace ScreamControl_Client.View
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _actualHeight = (float)pbVolume.ActualHeight - 3;
             //float startPos = _actualHeight / 100 * _alarmThreshold;
 
-            _as = new AlarmSystem();
-            _as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
-            _as._isMessageAlarmEnabled = (bool)tsMessageAlertSwitch.IsChecked;
-            _as.OnMonitorUpdate += new AlarmSystem.MonitorHandler(OnMonitorUpdate);
-            _as.OnVolumeCheck += new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
-            _as.OnUpdateTimerAlarmDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
-            _as.OnUpdateTimerOverlayDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
-            _as.OnClosed += new AlarmSystem.ClosedSystemHandler(OnAlarmSystemClosed);
+
 
          //   LanguageChanged(null, null);
 
@@ -127,82 +117,6 @@ namespace ScreamControl_Client.View
             Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
             if (setting.name == "Threshold")
                 LoadThresholdPosition(Convert.ToSingle(setting.value));
-        }
-
-        private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                AlarmSystem.MonitorHandler eh = new AlarmSystem.MonitorHandler(OnMonitorUpdate);
-                this.Dispatcher.Invoke(eh, new object[] { sender, args });
-            }
-            else
-            {
-                pbVolume.Value = args.MeterVolume;
-                lVolume.Content = args.LabelVolume;
-                if(_WcfHost.client._isControllerConnected)
-                    _WcfHost.client.proxy.SendMicInput(args.RawVolume);
-            }
-        }
-
-        private void OnVolumeCheck(object sender, AlarmSystem.VolumeCheckArgs args)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                AlarmSystem.VolumeCheckHandler eh = new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
-                this.Dispatcher.Invoke(eh, new object[] { sender, args });
-            }
-            else
-            {
-                pbVolume.Foreground = args.meterColor;
-                if (args.resetLabelColor)
-                {
-                    lElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
-                    lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
-                }
-                if (args.resetLabelContent)
-                {
-                    lElapsed.Content = "";
-                    lWindowElapsed.Content = "";
-                }
-            }
-        }
-
-        private void OnUpdateTimerAlarmDelay(object sender, AlarmSystem.TimerDelayArgs args)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                AlarmSystem.TimerDelayHandler eh = new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
-                this.Dispatcher.Invoke(eh, new object[] { sender, args });
-            }
-            else
-            {
-                lElapsed.Content = args.ElapsedTimeString;
-                if (args.alarmActive)
-                {
-                    lElapsed.Foreground = DEFAULT_ALERT_GOES_OFF_BRUSH;
-                    lElapsed.Content = FindResource("m_DelayElapsedFinish");
-                    lWindowElapsed.Foreground = DEFAULT_NORMAL_BRUSH;
-                }
-            }
-        }
-
-        private void OnUpdateTimerOverlayDelay(object sender, AlarmSystem.TimerDelayArgs args)
-        {
-            if (!this.Dispatcher.CheckAccess())
-            {
-                AlarmSystem.TimerDelayHandler eh = new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
-                this.Dispatcher.Invoke(eh, new object[] { sender, args });
-            }
-            else
-            {
-                lWindowElapsed.Content = args.ElapsedTimeString;
-                if (args.alarmActive)
-                {
-                    lWindowElapsed.Foreground = DEFAULT_ALERT_GOES_OFF_BRUSH;
-                    lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
-                }
-            }
         }
 
         private void OnAlarmSystemClosed(object sender)
@@ -256,54 +170,55 @@ namespace ScreamControl_Client.View
 
         private void LoadThresholdPosition(float thresholdVolume)
         {
-            AlarmThreshold = thresholdVolume;
-            var y = (_actualHeight / 100) * AlarmThreshold;
+            //AlarmThreshold = thresholdVolume;
+            //var y = (_actualHeight / 100) * AlarmThreshold;
 
-            SetThresholdPosition(y);
+            //SetThresholdPosition(y);
 
-            lThreshold.Content = AlarmThreshold.ToString("F0");
+            //lThreshold.Content = AlarmThreshold.ToString("F0");
         }
 
         private float CalculateThreshold(float p)
         {
-            p = p.Clamp(0, _actualHeight);
+            //p = p.Clamp(0, _actualHeight);
 
-            SetThresholdPosition(p);
+            //SetThresholdPosition(p);
 
-            float vol = (p) / (_actualHeight / 100);
-            vol = vol.Clamp(0, 100);
+            //float vol = (p) / (_actualHeight / 100);
+            //vol = vol.Clamp(0, 100);
 
-            lThreshold.Content = vol.ToString("F0");
+            //lThreshold.Content = vol.ToString("F0");
 
-            return vol;
+            //return vol;
+            return 0;
         }
 
         private void SetThresholdPosition(float m)
         {
-            Thickness margin = new Thickness(0, 0, 0, m);
-            Thresold.Margin = margin;
-            margin.Bottom = m - 5;
-            ThresholdHitBox.Margin = margin;
+            //Thickness margin = new Thickness(0, 0, 0, m);
+            ////Thresold.Margin = margin;
+            //margin.Bottom = m - 5;
+            ////ThresholdHitBox.Margin = margin;
 
-            float mBottom = (float)margin.Bottom;
-            margin.Bottom = margin.Bottom.Clamp(0, _actualHeight - 10);
-            lThreshold.Margin = margin;
+            //float mBottom = (float)margin.Bottom;
+            //margin.Bottom = margin.Bottom.Clamp(0, _actualHeight - 10);
+            //lThreshold.Margin = margin;
         }
 
         private void ThresholdHitBox_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            _mousePressed = true;
-            _actualHeight = (float)pbVolume.ActualHeight - 3;
+            //_mousePressed = true;
+            //_actualHeight = (float)pbVolume.ActualHeight - 3;
         }
 
         private void wMain_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_mousePressed)
-            {
-                float y = (float)(_actualHeight - e.GetPosition(GridVolume).Y);
-                AlarmThreshold = CalculateThreshold(y);
-                lDebug.Content = _actualHeight + " " + y;
-            }
+            //if (_mousePressed)
+            //{
+            //    float y = (float)(_actualHeight - e.GetPosition(GridVolume).Y);
+            //    AlarmThreshold = CalculateThreshold(y);
+            //    lDebug.Content = _actualHeight + " " + y;
+            //}
         }
 
         private void wMain_MouseUp(object sender, MouseButtonEventArgs e)
@@ -379,12 +294,12 @@ namespace ScreamControl_Client.View
 
         private void tsSoundAlertSwitch_IsCheckedChanged(object sender, EventArgs e)
         {
-            _as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
+            //_as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
         }
 
         private void tsMessageAlertSwitch_IsCheckedChanged(object sender, EventArgs e)
         {
-            _as._isMessageAlarmEnabled = (bool)tsMessageAlertSwitch.IsChecked;
+            //_as._isMessageAlarmEnabled = (bool)tsMessageAlertSwitch.IsChecked;
         }
     }
 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace MVVM_Test.ViewModel
+namespace ScreamControl_Client.ViewModel
 {
     class Command : ICommand
     {

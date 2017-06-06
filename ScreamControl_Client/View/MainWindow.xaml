@@ -67,7 +67,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Slider}">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.InactiveBorderBrushKey}}" >
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -78,7 +78,7 @@
                                 <Border x:Name="TrackBackground"  Margin="5,0" HorizontalAlignment="Stretch" Width="Auto" Grid.Column="1" Background="#FF0CFF00" Visibility="Collapsed" />
                                 <Track x:Name="PART_Track" Grid.Column="1">
                                     <Track.DecreaseRepeatButton>
-                                        <RepeatButton Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.DecreaseLarge}"/>
+                                        <RepeatButton x:Name="decreaseButton" Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.DecreaseLarge}"/>
                                     </Track.DecreaseRepeatButton>
                                     <Track.IncreaseRepeatButton>
                                         <RepeatButton Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.IncreaseLarge}"/>
@@ -164,7 +164,7 @@
                     <Grid>
                         <Label Content="{Binding Source={StaticResource SoundAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"/>
                         <Label x:Name="lElapsed" Content="" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" FontWeight="Bold" Height="26" Foreground="White"/>
-                        <Controls:ToggleSwitch x:Name="tsSoundAlertSwitch" IsChecked="{Binding Source={x:Static Properties:Settings.Default}, Path=SoundAlertEnabled, Mode=TwoWay}" OnSwitchBrush="{StaticResource CheckedToggleSwitchBrush}" OffSwitchBrush="{StaticResource UnheckedToggleSwitchBrush}" Foreground="White" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="0" IsCheckedChanged="tsSoundAlertSwitch_IsCheckedChanged" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Padding="0" />
+                        <Controls:ToggleSwitch x:Name="tsSoundAlertSwitch" OnSwitchBrush="{StaticResource CheckedToggleSwitchBrush}" OffSwitchBrush="{StaticResource UnheckedToggleSwitchBrush}" Foreground="White" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="0" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Padding="0" IsChecked="{Binding IsSoundAlertEnabled}" />
                     </Grid>
                 </Expander.Header>
                 <Grid Background="#FFE0E0E0" IsEnabled="{Binding IsChecked, ElementName=tsSoundAlertSwitch}">
@@ -230,14 +230,9 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
+            <Label x:Name="lThreshold" Content="100" Margin="0" Padding="0,0,5,0" MinHeight="15" MinWidth="24" HorizontalContentAlignment="Right" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch"/>
             <Controls:MetroProgressBar x:Name="pbVolume" Value="50" Orientation="Vertical" Grid.Column="1" Height="Auto" Background="White" HorizontalAlignment="Stretch" Foreground="#FF7FFF79" BorderBrush="#FFECECEC" BorderThickness="2"/>
-            <!--<Border Padding="0">
-            <TextBlock Text="100" Margin="0" TextAlignment="Center" Padding="3,0,5,0" MinWidth="27" VerticalAlignment="Center"/>
-            </Border>-->
-            <!--<Slider x:Name="slider" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Value="50" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1"/>-->
-            <Border x:Name="Thresold" BorderBrush="Red" BorderThickness="1" Height="2" VerticalAlignment="Bottom" Background="Red" Cursor="SizeNS" Grid.Column="1" Padding="5" Margin="0,8,0,0"/>
-            <Rectangle x:Name="ThresholdHitBox" Height="10" VerticalAlignment="Bottom" Cursor="SizeNS" Grid.Column="1" Panel.ZIndex="10" Margin="0,0,0,-5" Fill="#00000000"/>
-            <Label x:Name="lThreshold" Content="100" Margin="0,0,0,119" Padding="0,0,5,0" MinHeight="15" MinWidth="24" HorizontalContentAlignment="Right" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch"/>
+            <Slider x:Name="slider" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1"/>
             <Label Grid.Column="1" x:Name="lVolume" Content="12.34" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0" Height="17"/>
         </Grid>
 

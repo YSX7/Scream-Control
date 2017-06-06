@@ -50,12 +50,12 @@ namespace ScreamControl_Client.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int Volume {
+        public int AlarmVolume {
             get {
-                return ((int)(this["Volume"]));
+                return ((int)(this["AlarmVolume"]));
             }
             set {
-                this["Volume"] = value;
+                this["AlarmVolume"] = value;
             }
         }
         
@@ -86,12 +86,12 @@ namespace ScreamControl_Client.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SoundAlertEnabled {
+        public bool IsSoundAlertEnabled {
             get {
-                return ((bool)(this["SoundAlertEnabled"]));
+                return ((bool)(this["IsSoundAlertEnabled"]));
             }
             set {
-                this["SoundAlertEnabled"] = value;
+                this["IsSoundAlertEnabled"] = value;
             }
         }
         
@@ -122,24 +122,24 @@ namespace ScreamControl_Client.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int VolumeSystem {
+        public int AlarmSystemVolume {
             get {
-                return ((int)(this["VolumeSystem"]));
+                return ((int)(this["AlarmSystemVolume"]));
             }
             set {
-                this["VolumeSystem"] = value;
+                this["AlarmSystemVolume"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool MessageAlertEnabled {
+        public bool IsOverlayAlertEnabled {
             get {
-                return ((bool)(this["MessageAlertEnabled"]));
+                return ((bool)(this["IsOverlayAlertEnabled"]));
             }
             set {
-                this["MessageAlertEnabled"] = value;
+                this["IsOverlayAlertEnabled"] = value;
             }
         }
     }

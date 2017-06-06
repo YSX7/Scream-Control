@@ -18,11 +18,29 @@ namespace ScreamControl_Client
 {
     class AlarmSystem
     {
+
+        private bool _isSoundAlertEnabled = false;
+        private bool _isOverlayAlertEnabled = false;
+
+        public void PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            
+            switch(e.PropertyName)
+            {
+                case "IsSoundAlertEnabled":
+                    _isSoundAlertEnabled = (bool)sender.GetType().GetProperty(e.PropertyName).GetValue(sender);
+                    break;
+                case "IsOverlayAlertEnabled":
+                    _isOverlayAlertEnabled = (bool)sender.GetType().GetProperty(e.PropertyName).GetValue(sender);
+                    break;
+            }
+        }
+
+        //Revision this
         private readonly Brush VOLUME_OK = new SolidColorBrush(Color.FromArgb(100, 127, 255, 121));
         private readonly Brush VOLUME_HIGH = new SolidColorBrush(Color.FromArgb(100, 255, 121, 121));
 
-        public bool _isSoundAlarmEnabled = false;
-        public bool _isMessageAlarmEnabled = false;
+
 
         public float alarmThreshold = 80;
         public int captureMultiplier = 100;
@@ -90,7 +108,7 @@ namespace ScreamControl_Client
                 this._volume = volume;
             }
 
-            public float RawVolume
+            public float MicVolume
             {
                 get
                 {
@@ -149,11 +167,11 @@ namespace ScreamControl_Client
                 }
             }
 
-            public string ElapsedTimeString
+            public int ElapsedTimeInt
             {
                 get
                 {
-                    return (DateTime.Now - _start).TotalMilliseconds.ToString("0,0");
+                    return (int)(DateTime.Now - _start).TotalMilliseconds;
                 }
             }
         }
@@ -195,7 +213,7 @@ namespace ScreamControl_Client
             captureMultiplier = Properties.Settings.Default.Boost;
             delayBeforeAlarm = Properties.Settings.Default.SafeScreamZone;
             delayBeforeOverlay = Properties.Settings.Default.AlertOverlayDelay;
-            AlarmVolume = (float)Properties.Settings.Default.Volume / 100;
+            AlarmVolume = (float)Properties.Settings.Default.AlarmVolume / 100;
 
             _systemSimpleAudioVolume = GetSimpleAudioVolume();
 
@@ -218,7 +236,7 @@ namespace ScreamControl_Client
                     _timerAlarmDelay.Stop();
                     _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                     PlayAlarm();
-                    if (_isMessageAlarmEnabled)
+                    if (_isOverlayAlertEnabled)
                         _timerOverlayShow.Start();
                 }
 
@@ -368,7 +386,7 @@ namespace ScreamControl_Client
             {
                 KeepSystemVolume();
                 vca.meterColor = VOLUME_HIGH;
-                if (_isSoundAlarmEnabled)
+                if (_isSoundAlertEnabled)
                 {
                     if (delayBeforeAlarm > 0)
                     {
@@ -385,7 +403,7 @@ namespace ScreamControl_Client
                 }
                 else
                 {
-                    if (_isMessageAlarmEnabled && !_timerOverlayShow.IsEnabled && !_timerOverlayUpdate.IsEnabled)
+                    if (_isOverlayAlertEnabled && !_timerOverlayShow.IsEnabled && !_timerOverlayUpdate.IsEnabled)
                     {
                         _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                         _timerOverlayShow.Start();
