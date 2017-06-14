@@ -1,11 +1,13 @@
 ﻿//using MVVM_Test.ViewModel;
 using ScreamControl;
 using ScreamControl.WCF;
+using ScreamControl.WCF.Host;
 using ScreamControl_Client.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -148,19 +150,6 @@ namespace ScreamControl_Client.ViewModel
         ///// <summary>
         ///// Get or set available space for threshold value moving
         ///// </summary>
-        //public float MovingHeight {
-        //    private get
-        //    {
-        //        return mainModel.MovingHeight;
-        //    }
-
-        //    set
-        //    {
-        //        float newValue = value - 3;
-        //        mainModel.MovingHeight = value;
-        //        RaisePropertyChanged("MovingHeight");
-        //    }
-        //}
 
         /// <summary>
         /// Get or set if sound alert enabled
@@ -303,19 +292,20 @@ namespace ScreamControl_Client.ViewModel
             {
                 _currentConnectionState = value;
                 RaisePropertyChanged("CurrentConnectionState");
+                RaisePropertyChanged("IsControlsBlocked");
             }
         }
 
         /// <summary>
         /// Get if controls need to be blocked
         /// </summary>
-        public bool IsControlsBlocked
+        public Visibility IsControlsBlocked
         {
             get
             {
                 if (CurrentConnectionState == ConnectionInfoStates.Connected)
-                    return true;
-                return false;
+                    return Visibility.Visible;
+                return Visibility.Collapsed;
             }
             private set
             {
@@ -447,8 +437,8 @@ namespace ScreamControl_Client.ViewModel
         private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
         {
             this.MicVolume = args.MicVolume;
-            if (_WcfHost.client._isControllerConnected)
-                _WcfHost.client.proxy.SendMicInput(args.MicVolume);
+            if (CurrentConnectionState == ConnectionInfoStates.Connected)
+                _WcfHost.Client.proxy.SendMicInput(args.MicVolume);
         }
 
         private void OnVolumeCheck(object sender, AlarmSystem.VolumeCheckArgs args)
@@ -460,17 +450,23 @@ namespace ScreamControl_Client.ViewModel
             //}
             //else
             //{
-                VolumeBarBrush = args.meterColor;
-                if (args.resetLabelColor)
-                {
-                    SoundAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
-                    OverlayAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
-                }
-                if (args.resetLabelContent)
-                {
-                    SoundTimerValue = 0;
-                    OverlayTimerValue = 0;
-                }
+            VolumeBarBrush = args.meterColor;
+            if (args.resetSoundLabelColor)
+            {
+                SoundAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
+            }
+            if (args.resetOverlayLabelColor)
+            {
+                OverlayAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
+            }
+            if (args.resetSoundLabelContent)
+            {
+                SoundTimerValue = 0;
+            }
+            if (args.resetOverlayLabelContent)
+            {
+                OverlayTimerValue = 0;
+            }
             //}
         }
 
@@ -483,14 +479,13 @@ namespace ScreamControl_Client.ViewModel
             //}
             //else
             //{
-                SoundTimerValue = args.ElapsedTimeInt;
-                if (args.alarmActive)
-                {
-                    SoundAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
-                    //TODO: converter этого значения
-                    SoundTimerValue = -1; // === lElapsed.Content = FindResource("m_DelayElapsedFinish");
-                    OverlayAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
-                }
+            SoundTimerValue = args.ElapsedTimeInt;
+            if (args.alarmActive)
+            {
+                SoundAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
+                //TODO: converter этого значения
+                SoundTimerValue = -1; // === lElapsed.Content = FindResource("m_DelayElapsedFinish");
+            }
             //}
         }
 
@@ -503,13 +498,13 @@ namespace ScreamControl_Client.ViewModel
             //}
             //else
             //{
-                OverlayTimerValue = args.ElapsedTimeInt;
-                if (args.alarmActive)
-                {
-                    OverlayAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
+            OverlayTimerValue = args.ElapsedTimeInt;
+            if (args.alarmActive)
+            {
+                OverlayAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
                 //TODO: converter этого значения
-                   OverlayTimerValue = -1; // === lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
-                }
+                OverlayTimerValue = -1; // === lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
+            }
             //}
         }
 
@@ -531,10 +526,30 @@ namespace ScreamControl_Client.ViewModel
             CurrentConnectionState = ConnectionInfoStates.Disconnected;
         }
 
+        private void OnRequestCurrentSettingsHandler(ref List<AppSettingsProperty> settingsArg)
+        {
+            settingsArg = new List<AppSettingsProperty>();
+            foreach (SettingsPropertyValue item in Properties.Settings.Default.PropertyValues)
+            {
+                var listItem = new AppSettingsProperty(item.Name, item.PropertyValue.ToString(), item.Property.PropertyType.FullName);
+                settingsArg.Add(listItem);
+            }
+        }
+
         private void OnSettingReceive(AppSettingsProperty setting)
         {
-            Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
+            try
+            {
+              this.GetType().GetProperty(setting.name).SetValue(this, Convert.ChangeType(setting.value, Type.GetType(setting.type)));
+            }
+           // Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
+           catch
+            {
+           //     MessageBox.Show(string.Format("{0} = {1}", setting.name, setting.value));
+            }
         }
+
+
         #endregion
 
         private void LoadedMethod()
@@ -548,18 +563,21 @@ namespace ScreamControl_Client.ViewModel
             _alarmSystem.OnUpdateTimerAlarmDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
             _alarmSystem.OnUpdateTimerOverlayDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
             _alarmSystem.OnClosed += new AlarmSystem.ClosedSystemHandler(OnAlarmSystemClosed);
-            
+
 
             this._WcfHost = new WcfScServiceHost();
-            this._WcfHost.client.OnControllerConnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerConnected);
-            this._WcfHost.client.OnControllerDisconnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
-            this._WcfHost.client.OnSettingReceive += new WcfScServiceHost.HostClient.SettingReceiveHandler(OnSettingReceive);
+            this._WcfHost.Client.OnControllerConnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerConnected);
+            this._WcfHost.Client.OnControllerDisconnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
+            this._WcfHost.Client.OnRequestCurrentSettings += new WcfScServiceHost.HostClient.RequestCurrentSettingsHandler(OnRequestCurrentSettingsHandler);
+            this._WcfHost.Client.OnSettingReceive += new WcfScServiceHost.HostClient.SettingReceiveHandler(OnSettingReceive);
 
             CurrentConnectionState = ConnectionInfoStates.Ready;
         }
 
         public void ClosingMethod(object sender, CancelEventArgs e)
         {
+            _WcfHost.Close();
+
             if (CloseTrigger)
                 return;
             if (_alarmSystem.state != AlarmSystem.States.Closed && _alarmSystem.state != AlarmSystem.States.Closing)

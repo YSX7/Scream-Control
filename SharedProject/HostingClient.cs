@@ -24,7 +24,7 @@ namespace ScreamControl.WCF
     interface IHostingClientServiceCallback
     {
         [OperationContract(IsOneWay = true)]
-        void AllConnected();
+        void ConnectionChanged();
 
         [OperationContract(IsOneWay = true)]
         void SettingsReceiveAndApply(AppSettingsProperty value);

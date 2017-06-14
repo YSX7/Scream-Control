@@ -56,7 +56,6 @@ namespace ScreamControl_Client
             }
         }
 
-        //TODO: Revision this
         private readonly Brush VOLUME_OK = new SolidColorBrush(Color.FromArgb(100, 127, 255, 121));
         private readonly Brush VOLUME_HIGH = new SolidColorBrush(Color.FromArgb(100, 255, 121, 121));
 
@@ -158,8 +157,10 @@ namespace ScreamControl_Client
         public class VolumeCheckArgs : EventArgs
         {
             public Brush meterColor;
-            public bool resetLabelColor;
-            public bool resetLabelContent;
+            public bool resetSoundLabelColor;
+            public bool resetSoundLabelContent;
+            public bool resetOverlayLabelColor;
+            public bool resetOverlayLabelContent;
 
             public VolumeCheckArgs(Brush meterColor)
             {
@@ -308,8 +309,11 @@ namespace ScreamControl_Client
                 if (!_overlayWorking)
                 {
                     _timerOverlayUpdate.Stop();
-                    _alertOverlay.Dispose();
-                    _alertOverlay = null;
+                    if (_alertOverlay != null)
+                    {
+                        _alertOverlay.Dispose();
+                        _alertOverlay = null;
+                    }
                 }
             };
             #endregion
@@ -438,7 +442,7 @@ namespace ScreamControl_Client
                     {
                         if (!_timerAlarmDelay.Enabled && _soundOut.PlaybackState != PlaybackState.Playing)
                         {
-                            vca.resetLabelColor = true;
+                            vca.resetSoundLabelColor = true;
                             _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
                             _timerAlarmDelay.Start();
                         }
@@ -452,8 +456,8 @@ namespace ScreamControl_Client
                     if (_soundOut.PlaybackState == PlaybackState.Playing)
                     {
                         _soundOut.Stop();
-                        vca.resetLabelColor = true;
-                        vca.resetLabelContent = true;
+                        vca.resetSoundLabelColor = true;
+                        vca.resetSoundLabelContent = true;
                     }
                     
                 }
@@ -461,6 +465,7 @@ namespace ScreamControl_Client
                 {
                     if (!_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled)
                     {
+                        vca.resetOverlayLabelColor = true;
                         _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                         _timerOverlayShow.Start();
                     }
@@ -470,9 +475,11 @@ namespace ScreamControl_Client
                     if (_timerOverlayShow.Enabled)
                     {
                         _timerOverlayShow.Stop();
+                        vca.resetOverlayLabelColor = true;
                     }
                     if (_overlayWorking)
                     {
+                        vca.resetOverlayLabelContent = true;
                         _overlayWorking = false;
                     }
                 }
@@ -482,7 +489,8 @@ namespace ScreamControl_Client
                 //if (_soundOut.PlaybackState == PlaybackState.Playing)
                 //{
                 vca.meterColor = VOLUME_OK;
-                vca.resetLabelContent = true;
+                vca.resetSoundLabelContent = true;
+                vca.resetOverlayLabelContent = true;
                 _soundOut.Pause();
 
                 if (_timerAlarmDelay.Enabled)

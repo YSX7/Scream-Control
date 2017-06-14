@@ -13,7 +13,7 @@
         xmlns:ViewModel="clr-namespace:ScreamControl_Client.ViewModel"
         Title="Scream Control" Closing="Window_Closing" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" 
         ShowMaxRestoreButton="False" BorderThickness="1"
-        Visibility="{Binding WindowVisibilityState}" CloseTrigger="{Binding CloseTrigger}" ResizeMode="CanMinimize">
+        Visibility="{Binding WindowVisibilityState}" CloseTrigger="{Binding CloseTrigger}" ResizeMode="CanMinimize" SizeChanged="wMain_SizeChanged" Loaded="Window_Loaded">
     <Controls:MetroWindow.DataContext>
         <ViewModel:MainViewModel/>
     </Controls:MetroWindow.DataContext>
@@ -125,7 +125,7 @@
         <!-- Blocking grid -->
 
 
-        <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Background="White" Panel.ZIndex="10" Grid.Row="1" Visibility="Hidden">
+        <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Panel.ZIndex="10" Grid.Row="1" Background="#BFFFFFFF" Visibility="{Binding IsControlsBlocked, Mode=OneWay}">
             <TextBlock Text="{DynamicResource m_ControllerBlock}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold" Padding="5">
                 <TextBlock.Background>
                     <SolidColorBrush Color="Red" Opacity="0.1"/>
@@ -146,7 +146,7 @@
         <!-- Language Panel -->
         <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top"  Controls:ControlsHelper.ContentCharacterCasing="Upper" Grid.Row="1">
             <Grid Background="#FFE0E0E0">
-                <ComboBox x:Name="cbLang" ItemsSource="{Binding Path=Languages}" SelectedItem="{Binding Path=CurrentLanguage}" DisplayMemberPath="NativeName" HorizontalAlignment="Left" Margin="5" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2" SelectionChanged="cbLang_SelectionChanged"/>
+                <ComboBox x:Name="cbLang" ItemsSource="{Binding Path=Languages}" SelectedItem="{Binding Path=CurrentLanguage}" DisplayMemberPath="NativeName" HorizontalAlignment="Left" Margin="5" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
             </Grid>
         </Expander>
 
@@ -275,9 +275,9 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Label Margin="0" Padding="0,0,5,0" MinHeight="15" MinWidth="24" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Center" ContentStringFormat="{}{0:n0}" Content="{Binding Threshold}"/>
+            <Label x:Name="lThreshold" Padding="0" MinHeight="15" MinWidth="24" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Center" ContentStringFormat="{}{0:n0}" Content="{Binding Threshold}"/>
             <Controls:MetroProgressBar Value="{Binding MicVolume}" Orientation="Vertical" Grid.Column="1" Height="Auto" Background="White" HorizontalAlignment="Stretch" Foreground="{Binding VolumeBarBrush}" BorderBrush="#FFECECEC" BorderThickness="2"/>
-            <Slider x:Name="slider" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1" Value="{Binding Threshold}"/>
+            <Slider x:Name="slThreshold" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1" Value="{Binding Threshold}" ValueChanged="slider_ValueChanged"/>
             <Label Grid.Column="1" x:Name="lVolume" Content="{Binding MicVolume}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0" Height="17" ContentStringFormat="{}{0:n1}"/>
         </Grid>
 

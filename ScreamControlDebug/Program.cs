@@ -21,9 +21,9 @@ namespace MicrophoneTest
 
         readonly string[] YES_VARIANTS = { "yes", "y" };
 
-        class ControllerSubscriber : IWcfScDataTransferServiceCallback
+        class ControllerSubscriber : IControllerServiceCallback
         {
-            public void AllConnected()
+            public void ConnectionChanged()
             {
                 return;
             }
@@ -51,7 +51,7 @@ namespace MicrophoneTest
             new Program().Run();
         }
 
-        EventServiceClient proxy;
+        EventServiceController proxy;
 
         public void Run()
         {
@@ -64,7 +64,7 @@ namespace MicrophoneTest
 
                 DiscoveryClient discoveryClient = new DiscoveryClient(new UdpDiscoveryEndpoint());
 
-                Collection<EndpointDiscoveryMetadata> helloWorldServices = discoveryClient.Find(new FindCriteria(typeof(IWcfScDataTransferService))).Endpoints;
+                Collection<EndpointDiscoveryMetadata> helloWorldServices = discoveryClient.Find(new FindCriteria(typeof(IControllerService))).Endpoints;
 
                 discoveryClient.Close();
 
@@ -80,20 +80,20 @@ namespace MicrophoneTest
                     Console.WriteLine("Something finded, connecting...");
                     EndpointAddress serviceAddress = helloWorldServices[0].Address;
 
-                    IWcfScDataTransferServiceCallback evnt = new ControllerSubscriber();
+                    IControllerServiceCallback evnt = new ControllerSubscriber();
                     InstanceContext evntCntx = new InstanceContext(evnt);
 
                     NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
                     binding.ReliableSession.Enabled = true;
                     binding.ReliableSession.Ordered = false;
 
-                    proxy = new EventServiceClient(evntCntx, binding, serviceAddress);
+                    proxy = new EventServiceController(evntCntx, binding, serviceAddress);
 
-                    string output = proxy.Connect(ConnectionClients.Controller);
+                    proxy.Connect();
 
                     AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
 
-                    Console.WriteLine(output);
+                  //  Console.WriteLine(output);
 
                     string tmp = "";
                     Console.Write(Environment.NewLine + "Enter Alarm Threshold: ");
@@ -105,6 +105,21 @@ namespace MicrophoneTest
                         setting.value = tmp;
                         proxy.SendSettings(setting);
                     }
+
+                    Console.WriteLine(proxy.DisconnectPrepare());
+                    //try
+                    //{
+                    //    if (proxy.State != System.ServiceModel.CommunicationState.Faulted)
+                    //    {
+                    //        proxy.Close();
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Console.WriteLine(ex.Message);
+                    //    proxy.Abort();
+                    //}
+
                 }
             }
             catch(Exception e)
@@ -120,7 +135,8 @@ namespace MicrophoneTest
             Console.WriteLine("Exiting...");
             if (proxy != null)
             {
-                proxy.Disconnect(ConnectionClients.Controller);
+                proxy.Disconnect();
+                proxy.Close();
             }
         }
     }

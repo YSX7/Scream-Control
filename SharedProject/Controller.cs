@@ -14,14 +14,17 @@ namespace ScreamControl.WCF
         [OperationContract(IsOneWay = true, IsInitiating = false)]
         void SendSettings(AppSettingsProperty value);
 
-        [OperationContract(IsTerminating = true, IsOneWay = true)]
+        [OperationContract(IsInitiating = false, IsOneWay = false)]
+        string DisconnectPrepare();
+
+        [OperationContract(IsTerminating = true, IsInitiating = false, IsOneWay = true)]
         void Disconnect();
     }
 
     interface IControllerServiceCallback
     {
         [OperationContract(IsOneWay = true)]
-        void AllConnected();
+        void ConnectionChanged();
 
         [OperationContract(IsOneWay = true)]
         void SettingsReceive(List<AppSettingsProperty> settings);

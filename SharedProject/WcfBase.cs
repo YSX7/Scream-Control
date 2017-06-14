@@ -37,7 +37,7 @@ namespace ScreamControl.WCF
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     public class ServiceClient : IControllerService, IHostingClientService
     {
-        static Action m_EventConnected = delegate { };
+        static Action m_ConnectionChanged = delegate { };
 
         IControllerServiceCallback controllerCallback;
         IHostingClientServiceCallback clientCallback;
@@ -46,25 +46,26 @@ namespace ScreamControl.WCF
         string IHostingClientService.Connect()
         {
             clientCallback = OperationContext.Current.GetCallbackChannel<IHostingClientServiceCallback>();
-            m_EventConnected += clientCallback.AllConnected;
+            m_ConnectionChanged += clientCallback.ConnectionChanged;
             if (controllerCallback != null)
-                m_EventConnected();
+                m_ConnectionChanged();
             return OperationContext.Current.Channel.State.ToString();
         }
 
         void IHostingClientService.Disconnect()
         {
-            clientCallback = null;
+            m_ConnectionChanged();
+         //   clientCallback = null;
         }
 
         void IHostingClientService.SendMicInput(float volume)
         {
-            controllerCallback.VolumeReceive(volume);
+              controllerCallback?.VolumeReceive(volume);
         }
 
         void IHostingClientService.SendSettings(List<AppSettingsProperty> settings)
         {
-            controllerCallback.SettingsReceive(settings);
+            controllerCallback?.SettingsReceive(settings);
         }
         #endregion
 
@@ -72,23 +73,35 @@ namespace ScreamControl.WCF
         void IControllerService.Connect()
         {
             controllerCallback = OperationContext.Current.GetCallbackChannel<IControllerServiceCallback>();
-            m_EventConnected += controllerCallback.AllConnected;
+            m_ConnectionChanged += controllerCallback.ConnectionChanged;
             if (clientCallback != null)
-                m_EventConnected();
+                m_ConnectionChanged();
+        }
+
+        string IControllerService.DisconnectPrepare()
+        {
+            m_ConnectionChanged -= controllerCallback.ConnectionChanged;
+            m_ConnectionChanged();
+            //   OperationContext.Current.Channel.Close();
+            controllerCallback = null;
+            return "disconnected";
         }
 
         void IControllerService.Disconnect()
         {
-            controllerCallback = null;
+            
         }
 
         void IControllerService.SendSettings(AppSettingsProperty value)
         {
-            clientCallback.SettingsReceiveAndApply(value);
+            clientCallback?.SettingsReceiveAndApply(value);
         }
         #endregion
     }
 
+    /// <summary>
+    /// WCF service for controller
+    /// </summary>
     class EventServiceController: ClientBase<IControllerService>, IControllerService
     {
         public EventServiceController(InstanceContext context, Binding binding, EndpointAddress address)
@@ -108,12 +121,20 @@ namespace ScreamControl.WCF
             base.Channel.SendSettings(value);
         }
 
+        public string DisconnectPrepare()
+        {
+            return base.Channel.DisconnectPrepare();
+        }
+
         public void Disconnect()
         {
             base.Channel.Disconnect();
         }
     }
 
+    /// <summary>
+    /// WCF service for client who hosting wcf
+    /// </summary>
     public class EventServiceHostingClient : ClientBase<IHostingClientService>, IHostingClientService
     {
         public EventServiceHostingClient(InstanceContext context, Binding binding, EndpointAddress address)

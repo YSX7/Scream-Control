@@ -55,7 +55,7 @@ namespace ScreamControl_Client.View
 
         private Hotkey _hotkeyStealth;
 
-        private WcfScServiceHost _WcfHost;
+        private double _availableHeight;
 
         delegate float MonitorVolumeCallback();
 
@@ -78,15 +78,8 @@ namespace ScreamControl_Client.View
 
             Trace.TraceInformation("Window loaded");
 
-            //TODO: переместить это когда ктот подключается
-            List<AppSettingsProperty> settingsToSerialize = new List<AppSettingsProperty>();
-            foreach (SettingsPropertyValue item in Properties.Settings.Default.PropertyValues)
-            {
-
-                var listItem = new AppSettingsProperty(item.Name, item.PropertyValue.ToString(), item.Property.PropertyType.FullName);
-                settingsToSerialize.Add(listItem);
-            }
-
+            _availableHeight = GridVolume.ActualHeight;
+            SetThresholdContentMargin(slThreshold.Value);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -138,9 +131,20 @@ namespace ScreamControl_Client.View
             }
         }
 
-        private void cbLang_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            
+            SetThresholdContentMargin(e.NewValue);
+        }
+
+        private void wMain_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            _availableHeight = GridVolume.ActualHeight;
+        }
+
+        private void SetThresholdContentMargin(double sliderValue)
+        {
+            double newBottom = (_availableHeight / 100 * sliderValue - lThreshold.ActualHeight / 2).Clamp(0, _availableHeight - lThreshold.ActualHeight);
+            lThreshold.Margin = new Thickness(0, 0, 0, newBottom);
         }
     }
 }
