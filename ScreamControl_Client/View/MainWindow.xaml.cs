@@ -28,34 +28,34 @@ using System.Windows.Threading;
 
 namespace ScreamControl_Client.View
 {
+
+    public partial class ExtendedMetroWindow : MetroWindow
+    {
+        public bool CloseTrigger
+        {
+            get { return (bool)GetValue(CloseTriggerProperty); }
+            set { SetValue(CloseTriggerProperty, value); }
+        }
+
+        public static readonly DependencyProperty CloseTriggerProperty =
+            DependencyProperty.Register("CloseTrigger", typeof(bool), typeof(ExtendedMetroWindow), new PropertyMetadata(new PropertyChangedCallback(OnCloseTriggerChanged)));
+
+        private static void OnCloseTriggerChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+        {
+            (dp as MetroWindow).Close();
+        }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
-    public partial class MainWindow : MetroWindow, IScreamControlWindow
+    public partial class MainWindow : ExtendedMetroWindow
     {
-        
-
-        float _alarmThreshold = 80;
-        bool _mousePressed;
 
         private Hotkey _hotkeyStealth;
 
         private WcfScServiceHost _WcfHost;
-
-        float AlarmThreshold
-        {
-            get
-            {
-                return _alarmThreshold;
-            }
-            set
-            {
-                if (_as != null)
-                    _as.alarmThreshold = value;
-                _alarmThreshold = value;
-            }
-        }
 
         delegate float MonitorVolumeCallback();
 
@@ -73,190 +73,36 @@ namespace ScreamControl_Client.View
             Trace.TraceInformation("Window Initialized");
         }
 
-
-        #region Window initialization and things
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //float startPos = _actualHeight / 100 * _alarmThreshold;
 
-
-
-         //   LanguageChanged(null, null);
-
-            LoadThresholdPosition(Properties.Settings.Default.Threshold);
             Trace.TraceInformation("Window loaded");
 
+            //TODO: переместить это когда ктот подключается
             List<AppSettingsProperty> settingsToSerialize = new List<AppSettingsProperty>();
             foreach (SettingsPropertyValue item in Properties.Settings.Default.PropertyValues)
             {
-                
+
                 var listItem = new AppSettingsProperty(item.Name, item.PropertyValue.ToString(), item.Property.PropertyType.FullName);
                 settingsToSerialize.Add(listItem);
             }
 
-            this._WcfHost = new WcfScServiceHost(settingsToSerialize);
-            this._WcfHost.client.OnControllerConnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerConnected);
-            this._WcfHost.client.OnControllerDisconnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
-            this._WcfHost.client.OnSettingReceive += new WcfScServiceHost.HostClient.SettingReceiveHandler(OnSettingReceive);
-            lConnectionStatus.Content = "Succesful connected, state: " + _WcfHost.client.temp;
-        }
-
-        private void OnControllerDisconnected()
-        {
-            gControllerBlock.Visibility = Visibility.Hidden;
-        }
-
-        private void OnControllerConnected()
-        {
-            gControllerBlock.Visibility = Visibility.Visible;
-        }
-
-        private void OnSettingReceive(AppSettingsProperty setting)
-        {
-            Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
-            if (setting.name == "Threshold")
-                LoadThresholdPosition(Convert.ToSingle(setting.value));
-        }
-
-        private void OnAlarmSystemClosed(object sender)
-        {
-            Trace.TraceInformation("Alarm System closed");
-            this.Close();
-        }
-
-        private void wMain_Deactivated(object sender, EventArgs e)
-        {
-            //Window window = (Window)sender;
-            //window.Topmost = true;
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            //            Trace.TraceInformation("Window closing at {0}", DateTime.Now);
-            //#if !DEBUG
-            //            Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
-            //#endif
-            //            if (_as.state != AlarmSystem.States.Closed && _as.state != AlarmSystem.States.Closing)
-            //                _as.Close();
-
-            //            if (_as.state != AlarmSystem.States.Closed)
-            //            {
-            //                Trace.TraceWarning("Alarm system is not closed yet. Window closing canceled");
-            //                e.Cancel = true;
-            //                return;
-            //            }
-            //            else
-            //            {
-            //                Trace.TraceInformation("Closing approved");
-            Properties.Settings.Default.Save();
-            //                _hotkeyStealth.Unregister();
-            //                _hotkeyStealth.Dispose();
-            //            }
+            Trace.TraceInformation("Window closing at {0}", DateTime.Now);
+#if !DEBUG
+             Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
+#endif
+            _hotkeyStealth.Unregister();
+            _hotkeyStealth.Dispose();
         }
 
         private void wMain_Closed(object sender, EventArgs e)
         {
             Trace.TraceInformation("Window closed");
-#if !DEBUG
-            Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
-#endif
             App.Current.Shutdown();
-        }
-
-        #endregion
-
-        #region Threshold
-
-        private void LoadThresholdPosition(float thresholdVolume)
-        {
-            //AlarmThreshold = thresholdVolume;
-            //var y = (_actualHeight / 100) * AlarmThreshold;
-
-            //SetThresholdPosition(y);
-
-            //lThreshold.Content = AlarmThreshold.ToString("F0");
-        }
-
-        private float CalculateThreshold(float p)
-        {
-            //p = p.Clamp(0, _actualHeight);
-
-            //SetThresholdPosition(p);
-
-            //float vol = (p) / (_actualHeight / 100);
-            //vol = vol.Clamp(0, 100);
-
-            //lThreshold.Content = vol.ToString("F0");
-
-            //return vol;
-            return 0;
-        }
-
-        private void SetThresholdPosition(float m)
-        {
-            //Thickness margin = new Thickness(0, 0, 0, m);
-            ////Thresold.Margin = margin;
-            //margin.Bottom = m - 5;
-            ////ThresholdHitBox.Margin = margin;
-
-            //float mBottom = (float)margin.Bottom;
-            //margin.Bottom = margin.Bottom.Clamp(0, _actualHeight - 10);
-            //lThreshold.Margin = margin;
-        }
-
-        private void ThresholdHitBox_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            //_mousePressed = true;
-            //_actualHeight = (float)pbVolume.ActualHeight - 3;
-        }
-
-        private void wMain_MouseMove(object sender, MouseEventArgs e)
-        {
-            //if (_mousePressed)
-            //{
-            //    float y = (float)(_actualHeight - e.GetPosition(GridVolume).Y);
-            //    AlarmThreshold = CalculateThreshold(y);
-            //    lDebug.Content = _actualHeight + " " + y;
-            //}
-        }
-
-        private void wMain_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            _mousePressed = false;
-            Properties.Settings.Default.Threshold = AlarmThreshold;
-        }
-
-        #endregion
-
-        private void numBoost_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
-        {
-            if (e.NewValue != null && _as != null)
-                _as.captureMultiplier = (int)e.NewValue;
-        }
-
-        private void sliderVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (e.NewValue != null && _as != null)
-                _as.AlarmVolume = ((float)e.NewValue / 100).Clamp(0, 1);
-        }
-
-        private void sliderVolumeSystem_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (e.NewValue != null && _as != null)
-                _as.SystemVolume = ((float)e.NewValue / 100).Clamp(0, 1);
-        }
-
-        private void nudDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
-        {
-            if (e.NewValue != null && _as != null)
-                _as.delayBeforeAlarm = (float)e.NewValue;
-        }
-
-        private void nudAlertWindow_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
-        {
-            if (e.NewValue != null && _as != null)
-                _as.delayBeforeOverlay = (float)e.NewValue;
         }
 
         private void OnStealthHotkeyHandler(Hotkey hotkey)
@@ -292,15 +138,9 @@ namespace ScreamControl_Client.View
             }
         }
 
-        private void tsSoundAlertSwitch_IsCheckedChanged(object sender, EventArgs e)
+        private void cbLang_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //_as._isSoundAlarmEnabled = (bool)tsSoundAlertSwitch.IsChecked;
-        }
-
-        private void tsMessageAlertSwitch_IsCheckedChanged(object sender, EventArgs e)
-        {
-            //_as._isMessageAlarmEnabled = (bool)tsMessageAlertSwitch.IsChecked;
+            
         }
     }
-
 }

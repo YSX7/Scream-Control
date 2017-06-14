@@ -13,7 +13,7 @@ namespace ScreamControl_Client.Model
         #region Constructor
         public MainModel()
         {
-            this.MovingHeight = 0;
+          //  this.MovingHeight = 0;
         }
         #endregion
 
@@ -27,7 +27,7 @@ namespace ScreamControl_Client.Model
         /// Get or set Connection Info
         /// </summary>
 
-        public float MovingHeight { get; set; }
+      //  public float MovingHeight { get; set; }
         //public string ConnectionInfo { get; set; }
         //public List<CultureInfo> Languages { get; set; }
         //public CultureInfo CurrentLanguage { get; set; }

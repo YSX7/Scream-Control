@@ -11,8 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Controller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostingClient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Base.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IScreamControlWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WcfBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WcfScServiceHost.cs" />
   </ItemGroup>
 </Project>

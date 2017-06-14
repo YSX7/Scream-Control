@@ -9,6 +9,8 @@ using System.Windows.Data;
 
 namespace ScreamControl_Client
 {
+    public enum ConnectionInfoStates { Initializing, Ready, Connected, Disconnected };
+
     public static class MathEx
     {
         public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
@@ -34,6 +36,46 @@ namespace ScreamControl_Client
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return null;
+        }
+    }
+
+    public class TimerValueConverter : IMultiValueConverter
+    {
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
+        {
+            int timerValue = (int)value[0];
+            if (timerValue == 0)
+                return "";
+            if (timerValue == -1 && value[1] != null)
+                return value[1].ToString();
+            return timerValue;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [ValueConversion(typeof(Enum), typeof(string))]
+    public class ConnectionInfoConverter : DependencyObject, IValueConverter
+    {
+
+        //TODO: if possible, redo this in more efficient way.
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value != null)
+            {
+                string returnString = parameter.ToString() + value.ToString();
+                return App.Current.FindResource(returnString);
+            }
+            return "Connection in unknown state";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 

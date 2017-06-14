@@ -1,10 +1,12 @@
 ﻿//using MVVM_Test.ViewModel;
+using ScreamControl;
 using ScreamControl.WCF;
 using ScreamControl_Client.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -12,9 +14,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace ScreamControl_Client.ViewModel
 {
+
     class MainViewModel : INotifyPropertyChanged
     {
         #region INotifyPropertyChanged Members
@@ -52,8 +56,33 @@ namespace ScreamControl_Client.ViewModel
         private readonly Brush DEFAULT_ALERT_GOES_OFF_BRUSH = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffff00"));
         #endregion
 
-        #region Private fields
+        #region Fields
+
         WcfScServiceHost _WcfHost;
+        AlarmSystem _alarmSystem;
+
+        /// <summary>
+        /// Captured mic volume
+        /// </summary>
+        private float _micVolume;
+
+        /// <summary>
+        /// Window closing trigger
+        /// </summary>
+        private bool _closeTrigger;
+
+        /// <summary>
+        /// Current volume brush
+        /// </summary>
+        private Brush _volumeBarBrush;
+
+        private int _soundTimerValue = 0;
+        private int _overlayTimerValue = 0;
+
+        private Brush _soundAlertTimerBrush;
+        private Brush _overlayAlertTimerBrush;
+
+        private ConnectionInfoStates _currentConnectionState;
         #endregion
 
         #region Properties
@@ -69,12 +98,8 @@ namespace ScreamControl_Client.ViewModel
             set
             {
                 Properties.Settings.Default.StealthMode = value;
+                RaisePropertyChanged("IsStealthMode");
             }
-        }
-
-        public float MicVolume
-        {
-            get; set;
         }
 
         /// <summary>
@@ -91,7 +116,11 @@ namespace ScreamControl_Client.ViewModel
 
             }
 
-            set { WindowVisibilityState = value; }
+            set
+            {
+                WindowVisibilityState = value;
+                RaisePropertyChanged("WindowVisibilityState");
+            }
         }
 
         /// <summary>
@@ -104,25 +133,34 @@ namespace ScreamControl_Client.ViewModel
         /// </summary>
         public CultureInfo CurrentLanguage
         {
-            get { return App.Language; }
-            set { App.Language = value; }
-        }
-
-        /// <summary>
-        /// Get or set available space for threshold value moving
-        /// </summary>
-        public float MovingHeight {
-            private get
+            get
             {
-                return mainModel.MovingHeight;
+                return App.Language;
             }
-            
             set
             {
-                float newValue = value - 3;
-                mainModel.MovingHeight = value;
+                App.Language = value;
+                RaisePropertyChanged("CurrentLanguage");
+                RaisePropertyChanged("CurrentConnectionState");
             }
         }
+
+        ///// <summary>
+        ///// Get or set available space for threshold value moving
+        ///// </summary>
+        //public float MovingHeight {
+        //    private get
+        //    {
+        //        return mainModel.MovingHeight;
+        //    }
+
+        //    set
+        //    {
+        //        float newValue = value - 3;
+        //        mainModel.MovingHeight = value;
+        //        RaisePropertyChanged("MovingHeight");
+        //    }
+        //}
 
         /// <summary>
         /// Get or set if sound alert enabled
@@ -161,7 +199,15 @@ namespace ScreamControl_Client.ViewModel
         /// </summary>
         public Brush VolumeBarBrush
         {
-            get; set;
+            get
+            {
+                return _volumeBarBrush;
+            }
+            set
+            {
+                _volumeBarBrush = value;
+                RaisePropertyChanged("VolumeBarBrush");
+            }
         }
 
         /// <summary>
@@ -169,7 +215,15 @@ namespace ScreamControl_Client.ViewModel
         /// </summary>
         public int SoundTimerValue
         {
-            get; set;
+            get
+            {
+                return _soundTimerValue;
+            }
+            set
+            {
+                _soundTimerValue = value;
+                RaisePropertyChanged("SoundTimerValue");
+            }
         }
 
         /// <summary>
@@ -177,7 +231,15 @@ namespace ScreamControl_Client.ViewModel
         /// </summary>
         public int OverlayTimerValue
         {
-            get; set;
+            get
+            {
+                return _overlayTimerValue;
+            }
+            set
+            {
+                _overlayTimerValue = value;
+                RaisePropertyChanged("OverlayTimerValue");
+            }
         }
 
         /// <summary>
@@ -185,7 +247,15 @@ namespace ScreamControl_Client.ViewModel
         /// </summary>
         public Brush SoundAlertTimerBrush
         {
-            get; set;
+            get
+            {
+                return _soundAlertTimerBrush;
+            }
+            set
+            {
+                _soundAlertTimerBrush = value;
+                RaisePropertyChanged("SoundAlertTimerBrush");
+            }
         }
 
         /// <summary>
@@ -193,10 +263,178 @@ namespace ScreamControl_Client.ViewModel
         /// </summary>
         public Brush OverlayAlertTimerBrush
         {
-            get; set;
+            get
+            {
+                return _overlayAlertTimerBrush;
+            }
+            set
+            {
+                _overlayAlertTimerBrush = value;
+                RaisePropertyChanged("OverlayAlertTimerBrush");
+            }
         }
 
-        
+        /// <summary>
+        /// Get or set trigger when app need to be closed
+        /// </summary>
+        public bool CloseTrigger
+        {
+            get
+            {
+                return _closeTrigger;
+            }
+            set
+            {
+                _closeTrigger = value;
+                RaisePropertyChanged("CloseTrigger");
+            }
+        }
+
+        /// <summary>
+        /// Get or set current connection info state
+        /// </summary>
+        public ConnectionInfoStates CurrentConnectionState
+        {
+            get
+            {
+                return _currentConnectionState;
+            }
+            set
+            {
+                _currentConnectionState = value;
+                RaisePropertyChanged("CurrentConnectionState");
+            }
+        }
+
+        /// <summary>
+        /// Get if controls need to be blocked
+        /// </summary>
+        public bool IsControlsBlocked
+        {
+            get
+            {
+                if (CurrentConnectionState == ConnectionInfoStates.Connected)
+                    return true;
+                return false;
+            }
+            private set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Get or set mic capture boost
+        /// </summary>
+        public int MicCaptureBoost
+        {
+            get
+            {
+                return Properties.Settings.Default.Boost;
+            }
+            set
+            {
+                Properties.Settings.Default.Boost = value;
+                RaisePropertyChanged("MicCaptureBoost");
+            }
+        }
+
+        /// <summary>
+        /// Get or set application alarm volume
+        /// </summary>
+        public int AlarmVolume
+        {
+            get
+            {
+                return Properties.Settings.Default.AlarmVolume;
+            }
+            set
+            {
+                Properties.Settings.Default.AlarmVolume = value;
+                RaisePropertyChanged("AlarmVolume");
+            }
+        }
+
+        /// <summary>
+        /// Get or set system alarm volume
+        /// </summary>
+        public int AlarmSystemVolume
+        {
+            get
+            {
+                return Properties.Settings.Default.AlarmSystemVolume;
+            }
+            set
+            {
+                Properties.Settings.Default.AlarmSystemVolume = value;
+                RaisePropertyChanged("AlarmSystemVolume");
+            }
+        }
+
+        /// <summary>
+        /// Get or set delay before sound alarm
+        /// </summary>
+        public int DelayBeforeAlarm
+        {
+            get
+            {
+                return Properties.Settings.Default.SafeScreamZone;
+            }
+            set
+            {
+                Properties.Settings.Default.SafeScreamZone = value;
+                RaisePropertyChanged("DelayBeforeAlarm");
+            }
+        }
+
+        /// <summary>
+        /// Get or set delay before alarm overlay
+        /// </summary>
+        public int DelayBeforeOverlay
+        {
+            get
+            {
+                return Properties.Settings.Default.AlertOverlayDelay;
+            }
+            set
+            {
+                Properties.Settings.Default.AlertOverlayDelay = value;
+                RaisePropertyChanged("DelayBeforeOverlay");
+            }
+        }
+
+        /// <summary>
+        /// Get captured microphone volume
+        /// </summary>
+        public float MicVolume
+        {
+            get
+            {
+                return _micVolume;
+            }
+            set
+            {
+                _micVolume = value;
+                RaisePropertyChanged("MicVolume");
+            }
+        }
+
+        /// <summary>
+        /// Get or set threshold (alarms beyond that will be activated)
+        /// </summary>
+        public float Threshold
+        {
+            get
+            {
+                return Properties.Settings.Default.Threshold;
+            }
+            set
+            {
+                Properties.Settings.Default.Threshold = value;
+                RaisePropertyChanged("Threshold");
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -265,26 +503,82 @@ namespace ScreamControl_Client.ViewModel
             //}
             //else
             //{
-                OverlayTimerValue = args;
+                OverlayTimerValue = args.ElapsedTimeInt;
                 if (args.alarmActive)
                 {
-                    lWindowElapsed.Foreground = DEFAULT_ALERT_GOES_OFF_BRUSH;
-                    lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
+                    OverlayAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
+                //TODO: converter этого значения
+                   OverlayTimerValue = -1; // === lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
                 }
             //}
+        }
+
+        private void OnAlarmSystemClosed(object sender)
+        {
+            Trace.TraceInformation("Alarm System closed");
+            ClosingMethod(sender, new CancelEventArgs());
+        }
+        #endregion
+
+        #region WCF Host events
+        private void OnControllerConnected()
+        {
+            CurrentConnectionState = ConnectionInfoStates.Connected;
+        }
+
+        private void OnControllerDisconnected()
+        {
+            CurrentConnectionState = ConnectionInfoStates.Disconnected;
+        }
+
+        private void OnSettingReceive(AppSettingsProperty setting)
+        {
+            Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
         }
         #endregion
 
         private void LoadedMethod()
         {
-            AlarmSystem alarmSystem = new AlarmSystem();
-            this.PropertyChanged += alarmSystem.PropertyChanged;
-            alarmSystem.OnMonitorUpdate += new AlarmSystem.MonitorHandler(OnMonitorUpdate);
-            alarmSystem.OnVolumeCheck += new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
-            alarmSystem.OnUpdateTimerAlarmDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
-            alarmSystem.OnUpdateTimerOverlayDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
-            alarmSystem.OnClosed += new AlarmSystem.ClosedSystemHandler(OnAlarmSystemClosed);
+            CurrentConnectionState = ConnectionInfoStates.Initializing;
+
+            _alarmSystem = new AlarmSystem(MicCaptureBoost, DelayBeforeAlarm, DelayBeforeOverlay, AlarmVolume, AlarmSystemVolume, Threshold, IsSoundAlertEnabled, IsOverlayAlertEnabled);
+            this.PropertyChanged += _alarmSystem.PropertyChanged;
+            _alarmSystem.OnMonitorUpdate += new AlarmSystem.MonitorHandler(OnMonitorUpdate);
+            _alarmSystem.OnVolumeCheck += new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
+            _alarmSystem.OnUpdateTimerAlarmDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
+            _alarmSystem.OnUpdateTimerOverlayDelay += new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
+            _alarmSystem.OnClosed += new AlarmSystem.ClosedSystemHandler(OnAlarmSystemClosed);
+            
+
+            this._WcfHost = new WcfScServiceHost();
+            this._WcfHost.client.OnControllerConnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerConnected);
+            this._WcfHost.client.OnControllerDisconnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
+            this._WcfHost.client.OnSettingReceive += new WcfScServiceHost.HostClient.SettingReceiveHandler(OnSettingReceive);
+
+            CurrentConnectionState = ConnectionInfoStates.Ready;
         }
+
+        public void ClosingMethod(object sender, CancelEventArgs e)
+        {
+            if (CloseTrigger)
+                return;
+            if (_alarmSystem.state != AlarmSystem.States.Closed && _alarmSystem.state != AlarmSystem.States.Closing)
+                _alarmSystem.Close();
+
+            if (_alarmSystem.state != AlarmSystem.States.Closed)
+            {
+                Trace.TraceWarning("Alarm system is not closed yet. Window closing canceled");
+                e.Cancel = true;
+                return;
+            }
+            else
+            {
+                Trace.TraceInformation("Closing approved");
+                Properties.Settings.Default.Save();
+                CloseTrigger = true;
+            }
+        }
+
         #endregion
 
         #region Helper methods

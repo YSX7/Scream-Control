@@ -18,6 +18,8 @@ using Process.NET.Windows;
 
 namespace ScreamControl_Client
 {
+    //TODO: that invoke things scares me, maybe there is another way to update window
+
     public class AlertOverlay : WpfOverlayPlugin
     {
         readonly TickEngine _tickEngine = new TickEngine();
@@ -65,7 +67,11 @@ namespace ScreamControl_Client
             // (or very recently has been, depends on your update rate)
             if (OverlayWindow.IsVisible)
             {
-                OverlayWindow.Update();
+                Application.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    if(OverlayWindow!= null)
+                      OverlayWindow.Update();
+                });
             }
         }
 
@@ -89,7 +95,11 @@ namespace ScreamControl_Client
             //else
             if (activated && !visible)
             {
-                OverlayWindow.Show();
+                Application.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    if (OverlayWindow != null)
+                        OverlayWindow.Show();
+                });
             }
         }
 
@@ -113,9 +123,12 @@ namespace ScreamControl_Client
                 Disable();
             }
 
-            OverlayWindow.Hide();
-            OverlayWindow.Close();
-            OverlayWindow = null;
+            Application.Current.Dispatcher.Invoke((Action)delegate
+            {
+                OverlayWindow.Hide();
+                OverlayWindow.Close();
+                OverlayWindow = null;
+            });
 
             _tickEngine.Stop();
 
@@ -130,25 +143,30 @@ namespace ScreamControl_Client
 
         void SetUp()
         {
-            var _grid = new Grid
-            {
-                VerticalAlignment = System.Windows.VerticalAlignment.Stretch,
-                HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
-                Width = OverlayWindow.Width,
-                Height = OverlayWindow.Height
-            };
+            Application.Current.Dispatcher.Invoke((Action)delegate {
 
-            _label = new Label
-           {
-               FontSize = 28,
-               Foreground = Brushes.Red,
-               Background = (Brush)App.Current.FindResource("OverlayLabelBG"),
-               Content = App.Current.FindResource("m_AlertWindow"),
-               HorizontalAlignment = HorizontalAlignment.Center,
-               VerticalAlignment = VerticalAlignment.Center,
-           };
-            _grid.Children.Add(_label);
-            OverlayWindow.Add(_grid);
+                var _grid = new Grid
+                {
+                    VerticalAlignment = System.Windows.VerticalAlignment.Stretch,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
+                    Width = OverlayWindow.Width,
+                    Height = OverlayWindow.Height
+                };
+
+                _label = new Label
+                {
+                    FontSize = 28,
+                    Foreground = Brushes.Red,
+                    Background = (Brush)App.Current.FindResource("OverlayLabelBG"),
+                    Content = App.Current.FindResource("m_AlertWindow"),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                _grid.Children.Add(_label);
+                OverlayWindow.Add(_grid);
+
+            });
+
         }
 
         private void OverlayWindow_Deactivated(object sender, EventArgs e)

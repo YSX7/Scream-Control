@@ -99,6 +99,7 @@ namespace ScreamControl_Client
 
                 //2. Создаём ResourceDictionary для новой культуры
                 ResourceDictionary dict = new ResourceDictionary();
+             //   dict.
                 switch (value.Name)
                 {
                     case "ru-RU":

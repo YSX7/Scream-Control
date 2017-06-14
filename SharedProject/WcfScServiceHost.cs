@@ -78,7 +78,7 @@ namespace ScreamControl.WCF
 
         private ServiceHost _serviceHost;
 
-        public WcfScServiceHost(List<AppSettingsProperty> settings)
+        public WcfScServiceHost()
         {
         //    this._settingsToSerialize = settings;
 

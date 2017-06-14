@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interactivity;
 
 namespace ScreamControl_Client.ViewModel
 {
@@ -46,4 +47,36 @@ namespace ScreamControl_Client.ViewModel
     //        AssociatedObject.MouseMove -= AssociatedObjectOnMouseMove;
     //    }
     //}
+
+    public class CloseWindowBehavior : Behavior<Window>
+    {
+        public bool CloseTrigger
+        {
+            get { return (bool)GetValue(CloseTriggerProperty); }
+            set { SetValue(CloseTriggerProperty, value); }
+        }
+
+        public static readonly DependencyProperty CloseTriggerProperty =
+            DependencyProperty.Register("CloseTrigger", typeof(bool), typeof(CloseWindowBehavior), new PropertyMetadata(false, OnCloseTriggerChanged));
+
+
+        private static void OnCloseTriggerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var behavior = d as CloseWindowBehavior;
+
+            if (behavior != null)
+            {
+                behavior.OnCloseTriggerChanged();
+            }
+        }
+
+        private void OnCloseTriggerChanged()
+        {
+            //TODO: test this
+            if (this.CloseTrigger)
+            {
+                this.AssociatedObject.Close();
+            }
+        }
+    }
 }

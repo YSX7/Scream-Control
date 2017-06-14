@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Timers;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -24,34 +25,51 @@ namespace ScreamControl_Client
 
         public void PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            
-            switch(e.PropertyName)
+
+            object value = sender.GetType().GetProperty(e.PropertyName).GetValue(sender);
+            switch (e.PropertyName)
             {
                 case "IsSoundAlertEnabled":
-                    _isSoundAlertEnabled = (bool)sender.GetType().GetProperty(e.PropertyName).GetValue(sender);
+                    _isSoundAlertEnabled = (bool)value;
                     break;
                 case "IsOverlayAlertEnabled":
-                    _isOverlayAlertEnabled = (bool)sender.GetType().GetProperty(e.PropertyName).GetValue(sender);
+                    _isOverlayAlertEnabled = (bool)value;
+                    break;
+                case "MicCaptureBoost":
+                    _micCaptureBoost = (int)value;
+                    break;
+                case "AlarmVolume":
+                    AlarmVolume = Convert.ToSingle(value);
+                    break;
+                case "AlarmSystemVolume":
+                    SystemVolume = Convert.ToSingle(value);
+                    break;
+                case "DelayBeforeAlarm":
+                    _delayBeforeAlarm = Convert.ToSingle(value);
+                    break;
+                case "DelayBeforeOverlay":
+                    _delayBeforeOverlay = Convert.ToSingle(value);
+                    break;
+                case "Threshold":
+                    _alarmThreshold = Convert.ToSingle(value);
                     break;
             }
         }
 
-        //Revision this
+        //TODO: Revision this
         private readonly Brush VOLUME_OK = new SolidColorBrush(Color.FromArgb(100, 127, 255, 121));
         private readonly Brush VOLUME_HIGH = new SolidColorBrush(Color.FromArgb(100, 255, 121, 121));
 
-
-
-        public float alarmThreshold = 80;
-        public int captureMultiplier = 100;
-        public float delayBeforeAlarm = 0,
-            delayBeforeOverlay = 0;
+        private float _alarmThreshold = 100;
+        private int _micCaptureBoost = 100;
+        private float _delayBeforeAlarm = 0,
+            _delayBeforeOverlay = 0;
         public enum States { Stopped, Running, Stopping, Closing, Closed };
         public States state = States.Stopped;
 
 
         private float _alarmVolume;
-        public float AlarmVolume
+        private float AlarmVolume
         {
             get
             {
@@ -59,10 +77,11 @@ namespace ScreamControl_Client
             }
             set
             {
-                _alarmVolume = value;
+                float newValue = (Convert.ToSingle(value) / 100).Clamp(0, 1);
+                _alarmVolume = newValue;
                 if (_soundOut != null)
                 {
-                    _soundOut.Volume = value;
+                    _soundOut.Volume = newValue;
                 }
             }
 
@@ -73,7 +92,7 @@ namespace ScreamControl_Client
         private AudioMeterInformation _meter;
         private AlertOverlay _alertOverlay;
         private readonly BackgroundWorker _bgInputListener = new BackgroundWorker();
-        private DispatcherTimer _timerAlarmDelay,
+        private System.Timers.Timer _timerAlarmDelay,
             _timerOverlayShow,
             _timerOverlayUpdate;
         private WasapiCapture _soundCapture;
@@ -83,7 +102,7 @@ namespace ScreamControl_Client
         private float _systemVolume;
 
         private SimpleAudioVolume _systemSimpleAudioVolume;
-        public float SystemVolume
+        private float SystemVolume
         {
             get
             {
@@ -91,8 +110,9 @@ namespace ScreamControl_Client
             }
             set
             {
-                _systemVolume = value;
-                _systemSimpleAudioVolume.MasterVolume = value;
+                float newValue = (Convert.ToSingle(value) / 100).Clamp(0, 1);
+                _systemVolume = newValue;
+                _systemSimpleAudioVolume.MasterVolume = newValue;
             }
         }
 
@@ -174,6 +194,14 @@ namespace ScreamControl_Client
                     return (int)(DateTime.Now - _start).TotalMilliseconds;
                 }
             }
+
+            public string ElapsedTimeString
+            {
+                get
+                {
+                    return (DateTime.Now - _start).TotalMilliseconds.ToString("0,0");
+                }
+            }
         }
         public delegate void TimerDelayHandler(object sender, TimerDelayArgs args);
         public event TimerDelayHandler OnUpdateTimerAlarmDelay,
@@ -187,7 +215,14 @@ namespace ScreamControl_Client
         #endregion
 
 
-        public AlarmSystem()
+        public AlarmSystem(int micCaptureBoost = 100,
+                           float delayBeforeAlarm = 0,
+                           float delayBeforeOverlay = 0,
+                           float alarmVolume = 0,
+                           float systemVolume = 0,
+                           float threshold = 100,
+                           bool isSoundAlertEnabled = false,
+                           bool isOverlayAlertEnabled = false)
         {
             //_loggingEnabled = Trace.Listeners.Count > 1;
             Trace.TraceInformation("Alarm system init");
@@ -210,12 +245,16 @@ namespace ScreamControl_Client
             _soundOut.Initialize(soundSource);
             Trace.TraceInformation("Sound Out OK");
 
-            captureMultiplier = Properties.Settings.Default.Boost;
-            delayBeforeAlarm = Properties.Settings.Default.SafeScreamZone;
-            delayBeforeOverlay = Properties.Settings.Default.AlertOverlayDelay;
-            AlarmVolume = (float)Properties.Settings.Default.AlarmVolume / 100;
+            this._isSoundAlertEnabled = isSoundAlertEnabled;
+            this._isOverlayAlertEnabled = isOverlayAlertEnabled;
+            this._micCaptureBoost = micCaptureBoost;
+            this._delayBeforeAlarm = delayBeforeAlarm;
+            this._delayBeforeOverlay = delayBeforeOverlay;
+            this.AlarmVolume = alarmVolume;
+            this._alarmThreshold = threshold;
 
             _systemSimpleAudioVolume = GetSimpleAudioVolume();
+            this.SystemVolume = systemVolume;
 
             _bgInputListener.WorkerSupportsCancellation = true;
             _bgInputListener.DoWork += bgInputListener_DoWork;
@@ -226,10 +265,10 @@ namespace ScreamControl_Client
 
             #region Timers
 
-            _timerAlarmDelay = new DispatcherTimer();
-            _timerAlarmDelay.Tick += (s, args) =>
+            _timerAlarmDelay = new System.Timers.Timer();
+            _timerAlarmDelay.Elapsed += (s, args) =>
             {
-                if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= delayBeforeAlarm)
+                if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
                 {
                     _timerAlarmDelayArgs.alarmActive = true;
 
@@ -241,27 +280,31 @@ namespace ScreamControl_Client
                 }
 
                 OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
-                if (_timerAlarmDelay.Dispatcher.HasShutdownStarted)
-                    _timerAlarmDelayArgs = null;
+                //if (!_timerAlarmDelay.Enabled)
+                //    _timerAlarmDelayArgs = null;
             };
+            //_timerAlarmDelay.Tick += (s, args) =>
+            //{
 
-            _timerOverlayShow = new DispatcherTimer();
-            _timerOverlayShow.Tick += (s, args) =>
+            //};
+
+            _timerOverlayShow = new System.Timers.Timer();
+            _timerOverlayShow.Elapsed += (s, args) =>
             {
-                if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= delayBeforeOverlay)
+                if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
                 {
                     _timerOverlayDelayArgs.alarmActive = true;
                     _timerOverlayShow.Stop();
-                    ShowAlertWindow();
+                    App.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
                 }
                 OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
-                if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
-                    _timerOverlayDelayArgs = null;
+                //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
+                //    _timerOverlayDelayArgs = null;
             };
 
-            _timerOverlayUpdate = new DispatcherTimer();
-            _timerOverlayUpdate.Interval = TimeSpan.FromMilliseconds(10);
-            _timerOverlayUpdate.Tick += (s, args) =>
+            _timerOverlayUpdate = new System.Timers.Timer();
+            _timerOverlayUpdate.Interval = 10;
+            _timerOverlayUpdate.Elapsed += (s, args) =>
             {
                 _alertOverlay.Update();
                 if (!_overlayWorking)
@@ -276,6 +319,11 @@ namespace ScreamControl_Client
             Trace.TraceInformation("Timers initialized");
             Trace.TraceInformation("Alarm System up and running!");
             Trace.Unindent();
+        }
+
+        private void _timerAlarmDelay_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         public void Close()
@@ -313,7 +361,7 @@ namespace ScreamControl_Client
 
         private float GetVolumeInfo()
         {
-            return _meter.PeakValue * captureMultiplier;
+            return _meter.PeakValue * _micCaptureBoost;
         }
 
         private ISoundOut GetSoundOut()
@@ -382,34 +430,40 @@ namespace ScreamControl_Client
         {
             VolumeCheckArgs vca;
             vca = new VolumeCheckArgs(VOLUME_OK);
-            if (volume >= alarmThreshold)
+            if (volume >= _alarmThreshold)
             {
                 KeepSystemVolume();
                 vca.meterColor = VOLUME_HIGH;
                 if (_isSoundAlertEnabled)
                 {
-                    if (delayBeforeAlarm > 0)
+                    if (_delayBeforeAlarm > 0)
                     {
-                        if (!_timerAlarmDelay.IsEnabled && _soundOut.PlaybackState != PlaybackState.Playing)
+                        if (!_timerAlarmDelay.Enabled && _soundOut.PlaybackState != PlaybackState.Playing)
                         {
                             vca.resetLabelColor = true;
                             _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
                             _timerAlarmDelay.Start();
                         }
-                        else return;
+                        //  else return;
                     }
                     else
                         PlayAlarm();
                 }
                 else
                 {
-                    if (_isOverlayAlertEnabled && !_timerOverlayShow.IsEnabled && !_timerOverlayUpdate.IsEnabled)
+                    if (_soundOut.PlaybackState == PlaybackState.Playing)
+                    {
+                        _soundOut.Stop();
+                        vca.resetLabelColor = true;
+                        vca.resetLabelContent = true;
+                    }
+
+                    if (_isOverlayAlertEnabled && !_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled)
                     {
                         _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                         _timerOverlayShow.Start();
                     }
                 }
-                OnVolumeCheck(this, vca);
             }
             else
             {
@@ -419,11 +473,11 @@ namespace ScreamControl_Client
                 vca.resetLabelContent = true;
                 _soundOut.Pause();
 
-                if (_timerAlarmDelay.IsEnabled)
+                if (_timerAlarmDelay.Enabled)
                 {
                     _timerAlarmDelay.Stop();
                 }
-                if (_timerOverlayShow.IsEnabled)
+                if (_timerOverlayShow.Enabled)
                 {
                     _timerOverlayShow.Stop();
                 }
@@ -466,6 +520,7 @@ namespace ScreamControl_Client
             // Do work
             _timerOverlayUpdate.Start();
         }
+
 
         #region Various
 
