@@ -273,10 +273,8 @@ namespace ScreamControl_Client
                     _timerAlarmDelayArgs.alarmActive = true;
 
                     _timerAlarmDelay.Stop();
-                    _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                     PlayAlarm();
-                    if (_isOverlayAlertEnabled)
-                        _timerOverlayShow.Start();
+
                 }
 
                 OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
@@ -457,11 +455,25 @@ namespace ScreamControl_Client
                         vca.resetLabelColor = true;
                         vca.resetLabelContent = true;
                     }
-
-                    if (_isOverlayAlertEnabled && !_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled)
+                    
+                }
+                if (_isOverlayAlertEnabled)
+                {
+                    if (!_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled)
                     {
                         _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
                         _timerOverlayShow.Start();
+                    }
+                }
+                else
+                {
+                    if (_timerOverlayShow.Enabled)
+                    {
+                        _timerOverlayShow.Stop();
+                    }
+                    if (_overlayWorking)
+                    {
+                        _overlayWorking = false;
                     }
                 }
             }
