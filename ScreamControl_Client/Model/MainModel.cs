@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScreamControl_Client.Model
+namespace ScreamControl.Model
 {
     class MainModel
     {

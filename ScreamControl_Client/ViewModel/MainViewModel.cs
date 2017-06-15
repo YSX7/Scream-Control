@@ -2,7 +2,8 @@
 using ScreamControl;
 using ScreamControl.WCF;
 using ScreamControl.WCF.Host;
-using ScreamControl_Client.Model;
+using ScreamControl.Model;
+using ScreamControl.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

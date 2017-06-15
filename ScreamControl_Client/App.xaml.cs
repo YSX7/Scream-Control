@@ -1,14 +1,14 @@
 ﻿using Octokit;
+using ScreamControl.View;
+using ScreamControl_Client.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace ScreamControl_Client
@@ -146,6 +146,8 @@ namespace ScreamControl_Client
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
+            MainWindow window = new MainWindow();
+            window.DataContext = new MainViewModel();
         }
 
         private void ChangeLogFile()

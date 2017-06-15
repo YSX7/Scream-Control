@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:properties="clr-namespace:ScreamControl_Control.Properties"
-             StartupUri="MainWindow.xaml" LoadCompleted="Application_LoadCompleted" Startup="Application_Startup">
+             StartupUri="SharedProject/MainWindow.xaml" LoadCompleted="Application_LoadCompleted" Startup="Application_Startup">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

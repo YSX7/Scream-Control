@@ -11,7 +11,7 @@ using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
 
-namespace ScreamControl_Client
+namespace ScreamControl.View
 {
     static class Startup
     {
@@ -37,7 +37,7 @@ namespace ScreamControl_Client
 
                 if (!System.IO.File.Exists(lnkPath))
                 {
-                    WshShellClass wshShell = new WshShellClass();
+                    WshShell wshShell = new WshShell();
                     IWshRuntimeLibrary.IWshShortcut shortcut;
 
                     // Create the shortcut

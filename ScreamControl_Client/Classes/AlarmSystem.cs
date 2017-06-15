@@ -12,10 +12,11 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Timers;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace ScreamControl_Client
+namespace ScreamControl
 {
     class AlarmSystem
     {
@@ -294,7 +295,7 @@ namespace ScreamControl_Client
                 {
                     _timerOverlayDelayArgs.alarmActive = true;
                     _timerOverlayShow.Stop();
-                    App.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
+                     Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
                 }
                 OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                 //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)

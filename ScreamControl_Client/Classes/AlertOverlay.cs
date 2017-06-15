@@ -16,7 +16,7 @@ using Process.NET;
 using Process.NET.Memory;
 using Process.NET.Windows;
 
-namespace ScreamControl_Client
+namespace ScreamControl
 {
     //TODO: that invoke things scares me, maybe there is another way to update window
 
@@ -157,8 +157,8 @@ namespace ScreamControl_Client
                 {
                     FontSize = 28,
                     Foreground = Brushes.Red,
-                    Background = (Brush)App.Current.FindResource("OverlayLabelBG"),
-                    Content = App.Current.FindResource("m_AlertWindow"),
+                    Background = (Brush)Application.Current.FindResource("OverlayLabelBG"),
+                    Content = Application.Current.FindResource("m_AlertWindow"),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                 };

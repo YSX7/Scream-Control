@@ -9,9 +9,9 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
-namespace ScreamControl_Client
+namespace ScreamControl.View
 {
-    class Hotkey : IDisposable
+    public class Hotkey : IDisposable
     {
         private static Dictionary<int, Hotkey> _dictHotKeyToCalBackProc;
 

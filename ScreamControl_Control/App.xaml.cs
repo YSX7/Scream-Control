@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScreamControl_Control;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -98,6 +99,10 @@ namespace ScreamControl_Control
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Language = ScreamControl_Control.Properties.Settings.Default.DefaultLanguage;
+            MainWindow app = new MainWindow();
+            ProductViewModel viewModel = new ProductViewModel();
+            app.DataContext = viewModel;
+            app.Show();
         }
 
     }

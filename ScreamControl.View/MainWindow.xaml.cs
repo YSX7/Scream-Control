@@ -1,32 +1,13 @@
 ﻿using MahApps.Metro.Controls;
-using Microsoft.Win32;
-using ScreamControl;
-using ScreamControl.WCF;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
 
-namespace ScreamControl_Client.View
+namespace ScreamControl.View
 {
 
     public partial class ExtendedMetroWindow : MetroWindow
@@ -95,7 +76,7 @@ namespace ScreamControl_Client.View
         private void wMain_Closed(object sender, EventArgs e)
         {
             Trace.TraceInformation("Window closed");
-            App.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         private void OnStealthHotkeyHandler(Hotkey hotkey)
@@ -125,10 +106,10 @@ namespace ScreamControl_Client.View
 
         private void wMain_StateChanged(object sender, EventArgs e)
         {
-            if (this.WindowState == WindowState.Minimized && Properties.Settings.Default.StealthMode)
-            {
-                HideWindow();
-            }
+            //if (this.WindowState == WindowState.Minimized && Properties.Settings.Default.StealthMode)
+            //{
+            //    HideWindow();
+            //}
         }
 
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
