@@ -4,13 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ScreamControl_Client"
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <TextBlock Text="{DynamicResource m_ControllerBlock}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold" Padding="5">
-        <TextBlock.Background>
-            <SolidColorBrush Color="Red" Opacity="0.1"/>
-        </TextBlock.Background>
+            <TextBlock.Background>
+                <SolidColorBrush Color="Red" Opacity="0.1"/>
+            </TextBlock.Background>
         </TextBlock>
     </Grid>
 </UserControl>
