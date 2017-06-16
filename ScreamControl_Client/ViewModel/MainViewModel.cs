@@ -89,6 +89,13 @@ namespace ScreamControl_Client.ViewModel
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Get prefix for localizable connection strings
+        /// </summary>
+        public string ConnectionInfoStringsPrefix
+        { get { return "mc_"; } }
+
         /// <summary>
         /// Get or set Stealth Mode bool
         /// </summary>

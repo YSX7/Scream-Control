@@ -42,23 +42,22 @@ namespace ScreamControl.View
         }
     }
 
-    [ValueConversion(typeof(Enum), typeof(string))]
-    public class ConnectionInfoConverter : DependencyObject, IValueConverter
+    public class ConnectionInfoConverter : IMultiValueConverter
     {
 
         //TODO: if possible, redo this in more efficient way.
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value != null)
             {
-                string returnString = parameter.ToString() + value.ToString();
-                return Application.Current.FindResource(returnString);
+                string resource = value[1].ToString() + value[0].ToString();
+                return Application.Current.FindResource(resource);
             }
             return "Connection in unknown state";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

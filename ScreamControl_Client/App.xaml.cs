@@ -99,20 +99,12 @@ namespace ScreamControl_Client
 
                 //2. Создаём ResourceDictionary для новой культуры
                 ResourceDictionary dict = new ResourceDictionary();
-             //   dict.
-                switch (value.Name)
-                {
-                    case "ru-RU":
-                        dict.Source = new Uri(String.Format("Language/lang.{0}.xaml", value.Name), UriKind.Relative);
-                        break;
-                    default:
-                        dict.Source = new Uri("Language/lang.en-US.xaml", UriKind.Relative);
-                        break;
-                }
+
+                dict.Source = new Uri(String.Format("pack://application:,,,/ScreamControl.View;component/Language/lang.{0}.xaml", value.Name), UriKind.RelativeOrAbsolute);
 
                 //3. Находим старую ResourceDictionary и удаляем его и добавляем новую ResourceDictionary
                 ResourceDictionary oldDict = (from d in System.Windows.Application.Current.Resources.MergedDictionaries
-                                              where d.Source != null && d.Source.OriginalString.StartsWith("Language/lang.")
+                                              where d.Source != null && d.Source.OriginalString.Contains("Language/lang.")
                                               select d).FirstOrDefault();
                 if (oldDict != null)
                 {
@@ -148,6 +140,7 @@ namespace ScreamControl_Client
             Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
             MainWindow window = new MainWindow();
             window.DataContext = new MainViewModel();
+            window.Show();
         }
 
         private void ChangeLogFile()

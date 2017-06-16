@@ -138,23 +138,22 @@
     <Compile Include="Model\MainModel.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Classes\AlarmSystem.cs" />
-    <Page Include="Language\lang.en-US.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Language\lang.ru-RU.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Compile Include="Classes\AlertOverlay.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="View\BlockingGridContentView.xaml.cs">
+      <DependentUpon>BlockingGridContentView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\DependencyProperties.cs" />
     <Compile Include="ViewModel\Command.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
+    <Page Include="View\BlockingGridContentView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -229,9 +228,7 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="View\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ScreamControl.View\ScreamControl.View.csproj">
       <Project>{77a9c63c-d83b-4beb-bb07-eea89f284712}</Project>
