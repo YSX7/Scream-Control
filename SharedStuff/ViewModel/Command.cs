@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace ScreamControl.ViewModel
 {
-    class Command : ICommand
+    public class Command : ICommand
     {
         #region Constructor
         public Command(Action<object> action)

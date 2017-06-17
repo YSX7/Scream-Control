@@ -19,7 +19,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace ScreamControl_Client.ViewModel
+namespace ScreamControl.ViewModel
 {
 
     class MainViewModel : INotifyPropertyChanged

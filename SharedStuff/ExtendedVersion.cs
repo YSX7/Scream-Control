@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 
-namespace ScreamControl_Client
+namespace ScreamControl
 {
-    class ExtendedVersion : ICloneable, IComparable, IComparable<ExtendedVersion>, IComparable<Version>, IEquatable<ExtendedVersion>, IEquatable<Version>
+    public class ExtendedVersion : ICloneable, IComparable, IComparable<ExtendedVersion>, IComparable<Version>, IEquatable<ExtendedVersion>, IEquatable<Version>
     {
         private const string PreReleaseTag = "pre";
 

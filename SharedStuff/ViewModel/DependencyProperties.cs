@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 
-namespace ScreamControl_Client.ViewModel
+namespace ScreamControl.ViewModel
 {
     //public class MouseBehaviour : System.Windows.Interactivity.Behavior<Border>
     //{

@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScreamControl.WCF;
-using ScreamControl_Client;
+using ScreamControl;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,7 +15,7 @@ using System.ServiceModel.Discovery;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScreamControl_Client.Tests
+namespace ScreamControl.Tests
 {
     [TestClass()]
     public class SCNetworkClientTests

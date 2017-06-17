@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScreamControl.Model
 {
+    //TODO: Doesn't know why I need this
     class MainModel
     {
 

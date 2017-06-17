@@ -8,11 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ScreamControl_Control.Properties {
+namespace ScreamControl.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "12.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -50,12 +50,12 @@ namespace ScreamControl_Control.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int Volume {
+        public int AlarmVolume {
             get {
-                return ((int)(this["Volume"]));
+                return ((int)(this["AlarmVolume"]));
             }
             set {
-                this["Volume"] = value;
+                this["AlarmVolume"] = value;
             }
         }
         
@@ -85,13 +85,61 @@ namespace ScreamControl_Control.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("80")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public float Threshold {
             get {
                 return ((float)(this["Threshold"]));
             }
             set {
                 this["Threshold"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int AlarmSystemVolume {
+            get {
+                return ((int)(this["AlarmSystemVolume"]));
+            }
+            set {
+                this["AlarmSystemVolume"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsOverlayAlertEnabled {
+            get {
+                return ((bool)(this["IsOverlayAlertEnabled"]));
+            }
+            set {
+                this["IsOverlayAlertEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsSoundAlertEnabled {
+            get {
+                return ((bool)(this["IsSoundAlertEnabled"]));
+            }
+            set {
+                this["IsSoundAlertEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool StealthMode {
+            get {
+                return ((bool)(this["StealthMode"]));
+            }
+            set {
+                this["StealthMode"] = value;
             }
         }
     }

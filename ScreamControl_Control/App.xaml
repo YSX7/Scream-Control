@@ -1,13 +1,12 @@
-﻿<Application x:Class="ScreamControl_Control.App"
+﻿<Application x:Class="ScreamControl.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:properties="clr-namespace:ScreamControl_Control.Properties"
-             StartupUri="SharedProject/MainWindow.xaml" LoadCompleted="Application_LoadCompleted" Startup="Application_Startup">
+             xmlns:properties="clr-namespace:ScreamControl.Properties"
+             xmlns:local="clr-namespace:ScreamControl"
+             LoadCompleted="Application_LoadCompleted" Startup="Application_Startup">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources.xaml"/>
-                <ResourceDictionary Source="Language/lang.en-US.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
@@ -15,6 +14,8 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/FlatSlider.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="OverlayLabelBG" Color="#FFFFF300" Opacity="0.75"/>
+            <local:BlockingGridContentView x:Key="BlockingGridContent"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

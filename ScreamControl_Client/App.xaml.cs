@@ -1,6 +1,7 @@
 ﻿using Octokit;
+using ScreamControl;
 using ScreamControl.View;
-using ScreamControl_Client.ViewModel;
+using ScreamControl.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 
-namespace ScreamControl_Client
+namespace ScreamControl
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -57,7 +58,7 @@ namespace ScreamControl_Client
             try
             {
                 Trace.TraceInformation("Updates check");
-                var silentArgument = ScreamControl_Client.Properties.Settings.Default.StealthMode ? " " + "s" : "";
+                var silentArgument = ScreamControl.Properties.Settings.Default.StealthMode ? " " + "s" : "";
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
@@ -126,18 +127,18 @@ namespace ScreamControl_Client
 
         private void App_LanguageChanged(Object sender, EventArgs e)
         {
-            ScreamControl_Client.Properties.Settings.Default.DefaultLanguage = Language;
-            ScreamControl_Client.Properties.Settings.Default.Save();
+            ScreamControl.Properties.Settings.Default.DefaultLanguage = Language;
+            ScreamControl.Properties.Settings.Default.Save();
         }
 
         private void Application_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
-            Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl.Properties.Settings.Default.DefaultLanguage;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl.Properties.Settings.Default.DefaultLanguage;
             MainWindow window = new MainWindow();
             window.DataContext = new MainViewModel();
             window.Show();

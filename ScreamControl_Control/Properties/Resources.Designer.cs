@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ScreamControl_Control.Properties {
+namespace ScreamControl.Properties {
     using System;
     
     

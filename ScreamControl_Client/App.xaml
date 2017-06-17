@@ -1,8 +1,8 @@
-﻿<Application x:Class="ScreamControl_Client.App"
+﻿<Application x:Class="ScreamControl.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:properties="clr-namespace:ScreamControl_Client.Properties"
-             xmlns:local="clr-namespace:ScreamControl_Client"
+             xmlns:properties="clr-namespace:ScreamControl.Properties"
+             xmlns:local="clr-namespace:ScreamControl"
              LoadCompleted="Application_LoadCompleted" Startup="Application_Startup">
     <Application.Resources>
         <ResourceDictionary>
