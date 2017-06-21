@@ -16,7 +16,7 @@ using Process.NET;
 using Process.NET.Memory;
 using Process.NET.Windows;
 
-namespace ScreamControl
+namespace ScreamControl.Alarms
 {
     //TODO: that invoke things scares me, maybe there is another way to update window
 

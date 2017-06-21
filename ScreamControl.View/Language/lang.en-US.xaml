@@ -16,9 +16,18 @@
     <v:String x:Key="m_Stealth">Activate stealth mode</v:String>
     <v:String x:Key="m_Volume">Alarm volume</v:String>
     <v:String x:Key="m_VolumeSystem">System volume</v:String>
-    <!-- Connection info strings -->
+    <!-- Client connection info strings -->
     <v:String x:Key="mc_Initializing">Service init...</v:String>
     <v:String x:Key="mc_Ready">Service ready, waiting for controller...</v:String>
     <v:String x:Key="mc_Connected">Controller connected, data transfer in process.</v:String>
+    <v:String x:Key="mc_SettingReceived">Received: {0}. New value: {1}</v:String>
     <v:String x:Key="mc_Disconnected">Controller disconnected</v:String>
+    <!--Parameters names-->
+    <!--TODO-->
+    <!--Controller connection info strings-->
+    <v:String x:Key="mh_Initializing">Controller init...</v:String>
+    <v:String x:Key="mh_Ready">Searching client...</v:String>
+    <v:String x:Key="mh_Connected">Connected</v:String>
+    <v:String x:Key="mh_Failed">Client not found</v:String>
+    <v:String x:Key="mh_Disconnected">Client disconnected</v:String>
 </ResourceDictionary>

@@ -1,20 +1,17 @@
 ﻿using Octokit;
-using ScreamControl;
+using ScreamControl.Controller.ViewModel;
 using ScreamControl.View;
-using ScreamControl;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace ScreamControl
+namespace ScreamControl.Controller
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -59,7 +56,7 @@ namespace ScreamControl
             try
             {
                 Trace.TraceInformation("Updates check");
-                var silentArgument = ScreamControl.Properties.Settings.Default.StealthMode ? " " + "s" : "";
+                var silentArgument = ScreamControl.Controller.Properties.Settings.Default.IsStealthMode ? " " + "s" : "";
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
@@ -101,15 +98,8 @@ namespace ScreamControl
 
                 //2. Создаём ResourceDictionary для новой культуры
                 ResourceDictionary dict = new ResourceDictionary();
-                switch (value.Name)
-                {
-                    case "ru-RU":
-                        dict.Source = new Uri(String.Format("Language/lang.{0}.xaml", value.Name), UriKind.Relative);
-                        break;
-                    default:
-                        dict.Source = new Uri("Language/lang.en-US.xaml", UriKind.Relative);
-                        break;
-                }
+
+                dict.Source = new Uri(String.Format("pack://application:,,,/ScreamControl.View;component/Language/lang.{0}.xaml", value.Name), UriKind.RelativeOrAbsolute);
 
                 //3. Находим старую ResourceDictionary и удаляем его и добавляем новую ResourceDictionary
                 ResourceDictionary oldDict = (from d in App.Current.Resources.MergedDictionaries
@@ -126,18 +116,18 @@ namespace ScreamControl
 
         private void App_LanguageChanged(Object sender, EventArgs e)
         {
-            ScreamControl.Properties.Settings.Default.DefaultLanguage = Language;
-            ScreamControl.Properties.Settings.Default.Save();
+            ScreamControl.Controller.Properties.Settings.Default.CurrentLanguage = Language;
+            ScreamControl.Controller.Properties.Settings.Default.Save();
         }
 
         private void Application_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
-            Language = ScreamControl.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl.Controller.Properties.Settings.Default.CurrentLanguage;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Language = ScreamControl.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl.Controller.Properties.Settings.Default.CurrentLanguage;
             MainWindow window = new MainWindow();
             window.DataContext = new MainViewModel();
             window.Show();

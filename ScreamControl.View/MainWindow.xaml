@@ -19,7 +19,7 @@
             <Inter:InvokeCommandAction Command="{Binding LoadedCommand}"/>
         </Inter:EventTrigger>
         <Inter:EventTrigger EventName="Closing">
-            <Ei:CallMethodAction TargetObject="{Binding}" MethodName="ClosingMethod"/>
+            <Ei:CallMethodAction TargetObject="{Binding}" MethodName="ClosingMethod" x:Name="interactivityFix"/>
         </Inter:EventTrigger>
     </Inter:Interaction.Triggers>
     <local:ExtendedMetroWindow.Resources>
@@ -30,6 +30,7 @@
             </ResourceDictionary.MergedDictionaries>
             <local:TimerValueConverter x:Key="TimerValueConverter"/>
             <local:ConnectionInfoConverter x:Key="ConnectionInfoConverter"/>
+            <local:ExpanderConverter x:Key="ExpanderConverter"/>
             <local:BindingProxy x:Key="SoundAlertHeaderProxy" Data="{DynamicResource m_SoundAlertExpander}"/>
             <local:BindingProxy x:Key="MessageAlertHeaderProxy" Data="{DynamicResource m_MessageAlertExpander}"/>
             <local:BindingProxy x:Key="DelayElapsedFinishProxy" Data="{DynamicResource m_DelayElapsedFinish}"/>
@@ -173,6 +174,12 @@
             </Grid>
 
             <Expander VerticalAlignment="Top" Margin="0,0,0,5">
+                <Expander.IsExpanded>
+                    <MultiBinding Converter="{StaticResource ExpanderConverter}">
+                        <Binding Path="CurrentConnectionState" />
+                        <Binding ElementName="gControllerBlock" Path="Visibility"/>
+                    </MultiBinding>
+                </Expander.IsExpanded>
                 <Expander.Header>
                     <Grid>
                         <Label Content="{Binding Source={StaticResource SoundAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"/>
@@ -230,7 +237,7 @@
                 </Grid>
             </Expander>
 
-            <Expander VerticalAlignment="Top" Margin="0">
+            <Expander VerticalAlignment="Top" Margin="0" IsExpanded="{Binding CurrentConnectionState}">
                 <Expander.Header>
                     <Grid>
                         <Label Content="{Binding Source={StaticResource MessageAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"></Label>

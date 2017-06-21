@@ -29,7 +29,7 @@ namespace ScreamControl.WCF
         [OperationContract(IsOneWay = true)]
         void SettingsReceiveAndApply(AppSettingsProperty value);
 
-        [OperationContract(IsOneWay = true)]
-        void VolumeReceive(float volume);
+        //[OperationContract(IsOneWay = true)]
+        //void VolumeReceive(float volume);
     }
 }

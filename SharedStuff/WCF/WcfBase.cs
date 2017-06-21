@@ -102,7 +102,7 @@ namespace ScreamControl.WCF
     /// <summary>
     /// WCF service for controller
     /// </summary>
-    class EventServiceController: ClientBase<IControllerService>, IControllerService
+    public class EventServiceController: ClientBase<IControllerService>, IControllerService
     {
         public EventServiceController(InstanceContext context, Binding binding, EndpointAddress address)
             : base(context, binding, address)

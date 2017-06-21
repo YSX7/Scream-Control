@@ -4,7 +4,7 @@ using System.ServiceModel;
 namespace ScreamControl.WCF
 {
     [ServiceContract(CallbackContract = typeof(IControllerServiceCallback), SessionMode = SessionMode.Required)]
-    interface IControllerService
+    public interface IControllerService
     {
         [OperationContract(IsInitiating = true, IsOneWay = true)]
         void Connect();

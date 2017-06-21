@@ -16,13 +16,14 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace ScreamControl
+namespace ScreamControl.Alarms
 {
-    class AlarmSystem
+    public class AlarmSystem
     {
 
         private bool _isSoundAlertEnabled = false;
         private bool _isOverlayAlertEnabled = false;
+        private bool _isControllerMode = false;
 
         public void PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -53,6 +54,10 @@ namespace ScreamControl
                     break;
                 case "Threshold":
                     _alarmThreshold = Convert.ToSingle(value);
+                    break;
+                case "MicVolume":
+                    if (this._isControllerMode)
+                        VolumeCheck(Convert.ToSingle(value));
                     break;
             }
         }
@@ -217,7 +222,8 @@ namespace ScreamControl
         #endregion
 
 
-        public AlarmSystem(int micCaptureBoost = 100,
+        public AlarmSystem(bool isController = false,
+                           int micCaptureBoost = 100,
                            float delayBeforeAlarm = 0,
                            float delayBeforeOverlay = 0,
                            float alarmVolume = 0,
@@ -230,15 +236,19 @@ namespace ScreamControl
             Trace.TraceInformation("Alarm system init");
             Trace.Indent();
             state = States.Running;
-            using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
+            this._isControllerMode = isController;
+            if (!isController)
             {
-                using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
+                using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
                 {
-                    _meter = AudioMeterInformation.FromDevice(device);
-                    _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
-                    _soundCapture.Initialize();
-                    _soundCapture.Start();
-                    Trace.TraceInformation("Sound Capture OK");
+                    using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
+                    {
+                        _meter = AudioMeterInformation.FromDevice(device);
+                        _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
+                        _soundCapture.Initialize();
+                        _soundCapture.Start();
+                        Trace.TraceInformation("Sound Capture OK");
+                    }
                 }
             }
             IWaveSource soundSource = GetSoundSource();
@@ -258,11 +268,14 @@ namespace ScreamControl
             _systemSimpleAudioVolume = GetSimpleAudioVolume();
             this.SystemVolume = systemVolume;
 
-            _bgInputListener.WorkerSupportsCancellation = true;
-            _bgInputListener.DoWork += bgInputListener_DoWork;
-            _bgInputListener.RunWorkerCompleted += bgInputListener_RunWorkerCompleted;
+            if (!isController)
+            {
+                _bgInputListener.WorkerSupportsCancellation = true;
+                _bgInputListener.DoWork += bgInputListener_DoWork;
+                _bgInputListener.RunWorkerCompleted += bgInputListener_RunWorkerCompleted;
 
-            _bgInputListener.RunWorkerAsync();
+                _bgInputListener.RunWorkerAsync();
+            }
             Trace.TraceInformation("Background worker running");
 
             #region Timers
@@ -280,13 +293,7 @@ namespace ScreamControl
                 }
 
                 OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
-                //if (!_timerAlarmDelay.Enabled)
-                //    _timerAlarmDelayArgs = null;
             };
-            //_timerAlarmDelay.Tick += (s, args) =>
-            //{
-
-            //};
 
             _timerOverlayShow = new System.Timers.Timer();
             _timerOverlayShow.Elapsed += (s, args) =>
@@ -295,7 +302,8 @@ namespace ScreamControl
                 {
                     _timerOverlayDelayArgs.alarmActive = true;
                     _timerOverlayShow.Stop();
-                     Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
+                    if(!isController)
+                        Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
                 }
                 OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                 //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
@@ -324,11 +332,6 @@ namespace ScreamControl
             Trace.Unindent();
         }
 
-        private void _timerAlarmDelay_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Close()
         {
             switch (state)
@@ -345,10 +348,6 @@ namespace ScreamControl
             }
             Trace.TraceInformation("Alarm System closing");
             state = States.Closing;
-            //_soundCapture.Stop();
-            //_soundCapture.Dispose();
-            //_soundOut.Stop();
-            //_soundOut.Dispose();
             _overlayWorking = false;
             _timerAlarmDelay.Stop();
             _timerOverlayShow.Stop();
@@ -380,6 +379,8 @@ namespace ScreamControl
             return CodecFactory.Instance.GetCodec("beep.mp3");
         }
 
+        #region Listen to mic input
+
         private void bgInputListener_DoWork(object sender, DoWorkEventArgs e)
         {
             try
@@ -402,8 +403,8 @@ namespace ScreamControl
         {
             Trace.TraceInformation("Background Microphone Listener closing. State: {0}", state.ToString());
             state = States.Stopping;
-            _soundCapture.Stop();
-            _soundCapture.Dispose();
+            _soundCapture?.Stop();
+            _soundCapture?.Dispose();
             if (_soundOut.PlaybackState != PlaybackState.Stopped)
             {
                 _soundOut.Stop();
@@ -428,6 +429,8 @@ namespace ScreamControl
                 Trace.TraceInformation("Something happend at volume monitor: {0}", ex);
             }
         }
+
+        #endregion
 
         private void VolumeCheck(float volume)
         {
@@ -512,13 +515,13 @@ namespace ScreamControl
             OnVolumeCheck(this, vca);
         }
 
-        private void PlayAlarm()
+        public void PlayAlarm()
         {
             if (_soundOut.PlaybackState == PlaybackState.Paused) _soundOut.Resume();
             else _soundOut.Play();
         }
 
-        private void ShowAlertWindow()
+        public void ShowAlertWindow()
         {
             System.Diagnostics.Process[] p = System.Diagnostics.Process.GetProcesses();
             var processSharp = new ProcessSharp((int)GetForegroundProcessId(), MemoryType.Remote);
@@ -607,7 +610,11 @@ namespace ScreamControl
             {
                 using (var device = enumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia))
                 {
-                    var sessionManager = AudioSessionManager2.FromMMDevice(device);
+                    AudioSessionManager2 sessionManager = null;
+                    Thread getSessionThread = new Thread(() => sessionManager = AudioSessionManager2.FromMMDevice(device));
+                    getSessionThread.SetApartmentState(ApartmentState.MTA);
+                    getSessionThread.Start();
+                    getSessionThread.Join();
                     return sessionManager;
                 }
             }

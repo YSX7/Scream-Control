@@ -43,6 +43,7 @@ namespace ScreamControl.View
 
         public MainWindow()
         {
+
             InitializeComponent();
 
             _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);

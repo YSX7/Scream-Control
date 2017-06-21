@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ScreamControl.Properties {
+namespace ScreamControl.Client.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -26,24 +26,24 @@ namespace ScreamControl.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("en-US")]
-        public global::System.Globalization.CultureInfo DefaultLanguage {
+        public global::System.Globalization.CultureInfo CurrentLanguage {
             get {
-                return ((global::System.Globalization.CultureInfo)(this["DefaultLanguage"]));
+                return ((global::System.Globalization.CultureInfo)(this["CurrentLanguage"]));
             }
             set {
-                this["DefaultLanguage"] = value;
+                this["CurrentLanguage"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("100")]
-        public int Boost {
+        public int MicCaptureBoost {
             get {
-                return ((int)(this["Boost"]));
+                return ((int)(this["MicCaptureBoost"]));
             }
             set {
-                this["Boost"] = value;
+                this["MicCaptureBoost"] = value;
             }
         }
         
@@ -62,24 +62,24 @@ namespace ScreamControl.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int SafeScreamZone {
+        public int DelayBeforeAlarm {
             get {
-                return ((int)(this["SafeScreamZone"]));
+                return ((int)(this["DelayBeforeAlarm"]));
             }
             set {
-                this["SafeScreamZone"] = value;
+                this["DelayBeforeAlarm"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int AlertOverlayDelay {
+        public int DelayBeforeOverlay {
             get {
-                return ((int)(this["AlertOverlayDelay"]));
+                return ((int)(this["DelayBeforeOverlay"]));
             }
             set {
-                this["AlertOverlayDelay"] = value;
+                this["DelayBeforeOverlay"] = value;
             }
         }
         
@@ -98,12 +98,12 @@ namespace ScreamControl.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool StealthMode {
+        public bool IsStealthMode {
             get {
-                return ((bool)(this["StealthMode"]));
+                return ((bool)(this["IsStealthMode"]));
             }
             set {
-                this["StealthMode"] = value;
+                this["IsStealthMode"] = value;
             }
         }
         

@@ -1,7 +1,7 @@
 ﻿//using MVVM_Test.ViewModel;
 using ScreamControl;
+using ScreamControl.Alarms;
 using ScreamControl.WCF;
-using ScreamControl.WCF.Host;
 using ScreamControl.Model;
 using ScreamControl.ViewModel;
 using System;
@@ -19,7 +19,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace ScreamControl.ViewModel
+namespace ScreamControl.Client.ViewModel
 {
 
     class MainViewModel : INotifyPropertyChanged
@@ -38,7 +38,7 @@ namespace ScreamControl.ViewModel
 
         #endregion
 
-        public MainModel mainModel;
+      //  public MainModel mainModel;
 
         #region Constructor
         public MainViewModel()
@@ -47,7 +47,7 @@ namespace ScreamControl.ViewModel
             LoadedCommand = new Command(arg => LoadedMethod());
             #endregion
 
-            this.mainModel = new MainModel();
+         //   this.mainModel = new MainModel();
 
             CurrentLanguage = App.Language;
             Languages = new ObservableCollection<CultureInfo>(App.Languages);
@@ -103,17 +103,17 @@ namespace ScreamControl.ViewModel
         {
             get
             {
-                return Properties.Settings.Default.StealthMode;
+                return Properties.Settings.Default.IsStealthMode;
             }
             set
             {
-                Properties.Settings.Default.StealthMode = value;
+                Properties.Settings.Default.IsStealthMode = value;
                 RaisePropertyChanged("IsStealthMode");
             }
         }
 
         /// <summary>
-        /// Get or set window visibility, based on IsStealthMode property
+        /// Get or set window visibility, based on IsStealthMode property. Used on app startup.
         /// </summary>
         public Visibility WindowVisibilityState
         {
@@ -125,7 +125,6 @@ namespace ScreamControl.ViewModel
                     return Visibility.Visible;
 
             }
-
             set
             {
                 WindowVisibilityState = value;
@@ -154,10 +153,6 @@ namespace ScreamControl.ViewModel
                 RaisePropertyChanged("CurrentConnectionState");
             }
         }
-
-        ///// <summary>
-        ///// Get or set available space for threshold value moving
-        ///// </summary>
 
         /// <summary>
         /// Get or set if sound alert enabled
@@ -315,10 +310,6 @@ namespace ScreamControl.ViewModel
                     return Visibility.Visible;
                 return Visibility.Collapsed;
             }
-            private set
-            {
-                throw new NotImplementedException();
-            }
         }
 
         /// <summary>
@@ -328,11 +319,11 @@ namespace ScreamControl.ViewModel
         {
             get
             {
-                return Properties.Settings.Default.Boost;
+                return Properties.Settings.Default.MicCaptureBoost;
             }
             set
             {
-                Properties.Settings.Default.Boost = value;
+                Properties.Settings.Default.MicCaptureBoost = value;
                 RaisePropertyChanged("MicCaptureBoost");
             }
         }
@@ -376,11 +367,11 @@ namespace ScreamControl.ViewModel
         {
             get
             {
-                return Properties.Settings.Default.SafeScreamZone;
+                return Properties.Settings.Default.DelayBeforeAlarm;
             }
             set
             {
-                Properties.Settings.Default.SafeScreamZone = value;
+                Properties.Settings.Default.DelayBeforeAlarm = value;
                 RaisePropertyChanged("DelayBeforeAlarm");
             }
         }
@@ -392,11 +383,11 @@ namespace ScreamControl.ViewModel
         {
             get
             {
-                return Properties.Settings.Default.AlertOverlayDelay;
+                return Properties.Settings.Default.DelayBeforeOverlay;
             }
             set
             {
-                Properties.Settings.Default.AlertOverlayDelay = value;
+                Properties.Settings.Default.DelayBeforeOverlay = value;
                 RaisePropertyChanged("DelayBeforeOverlay");
             }
         }
@@ -564,7 +555,7 @@ namespace ScreamControl.ViewModel
         {
             CurrentConnectionState = ConnectionInfoStates.Initializing;
 
-            _alarmSystem = new AlarmSystem(MicCaptureBoost, DelayBeforeAlarm, DelayBeforeOverlay, AlarmVolume, AlarmSystemVolume, Threshold, IsSoundAlertEnabled, IsOverlayAlertEnabled);
+            _alarmSystem = new AlarmSystem(false, MicCaptureBoost, DelayBeforeAlarm, DelayBeforeOverlay, AlarmVolume, AlarmSystemVolume, Threshold, IsSoundAlertEnabled, IsOverlayAlertEnabled);
             this.PropertyChanged += _alarmSystem.PropertyChanged;
             _alarmSystem.OnMonitorUpdate += new AlarmSystem.MonitorHandler(OnMonitorUpdate);
             _alarmSystem.OnVolumeCheck += new AlarmSystem.VolumeCheckHandler(OnVolumeCheck);
@@ -574,10 +565,10 @@ namespace ScreamControl.ViewModel
 
 
             this._WcfHost = new WcfScServiceHost();
-            this._WcfHost.Client.OnControllerConnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerConnected);
-            this._WcfHost.Client.OnControllerDisconnected += new WcfScServiceHost.HostClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
-            this._WcfHost.Client.OnRequestCurrentSettings += new WcfScServiceHost.HostClient.RequestCurrentSettingsHandler(OnRequestCurrentSettingsHandler);
-            this._WcfHost.Client.OnSettingReceive += new WcfScServiceHost.HostClient.SettingReceiveHandler(OnSettingReceive);
+            this._WcfHost.Client.OnControllerConnected += new WcfScServiceClient.ControllerConnectionChangedHandler(OnControllerConnected);
+            this._WcfHost.Client.OnControllerDisconnected += new WcfScServiceClient.ControllerConnectionChangedHandler(OnControllerDisconnected);
+            this._WcfHost.Client.OnRequestCurrentSettings += new WcfScServiceClient.RequestCurrentSettingsHandler(OnRequestCurrentSettingsHandler);
+            this._WcfHost.Client.OnSettingReceive += new WcfScServiceClient.SettingReceiveHandler(OnSettingReceive);
 
             CurrentConnectionState = ConnectionInfoStates.Ready;
         }
@@ -604,10 +595,6 @@ namespace ScreamControl.ViewModel
                 CloseTrigger = true;
             }
         }
-
-        #endregion
-
-        #region Helper methods
 
         #endregion
     }

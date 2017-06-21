@@ -63,6 +63,26 @@ namespace ScreamControl.View
         }
     }
 
+    public class ExpanderConverter : IMultiValueConverter
+    {
+
+        //TODO: if possible, redo this in more efficient way.
+
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
+        {
+            ConnectionInfoStates state = (ConnectionInfoStates)value[0];
+            Visibility visibility = (Visibility)value[1];
+            if (visibility == Visibility.Visible && new[] { ConnectionInfoStates.Connected }.Contains(state))
+                return true;
+            return false;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     //Thanks to Thomas Levesque
     public class BindingProxy : Freezable
     {
@@ -84,5 +104,5 @@ namespace ScreamControl.View
         // Using a DependencyProperty as the backing store for Data.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
-    }
+    } 
 }

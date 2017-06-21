@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControlDebug", "Screa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl.Client", "ScreamControl_Client\ScreamControl.Client.csproj", "{1DA774DC-D988-4058-B9BF-CBEBA7BAC32C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl.Control", "ScreamControl_Control\ScreamControl.Control.csproj", "{C282C3FB-7D57-4A39-8B99-9EB84F5E3FF2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl.Controller", "ScreamControl_Control\ScreamControl.Controller.csproj", "{C282C3FB-7D57-4A39-8B99-9EB84F5E3FF2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{A8B4EE7A-67E0-47B6-945E-B6ECB4ED2B07}"
 EndProject
