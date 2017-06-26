@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,7 +43,7 @@ namespace ScreamControl.View
         }
     }
 
-    public class ConnectionInfoConverter : IMultiValueConverter
+    public class PrefixLanguageConverter : IMultiValueConverter
     {
 
         //TODO: if possible, redo this in more efficient way.
@@ -63,7 +64,54 @@ namespace ScreamControl.View
         }
     }
 
-    public class ExpanderConverter : IMultiValueConverter
+    public class ConnectionStatesToVisibilityConverter : IMultiValueConverter
+    {
+
+        //TODO: if possible, redo this in more efficient way.
+
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value[1] != DependencyProperty.UnsetValue && value[0] != DependencyProperty.UnsetValue)
+            {
+                ConnectionInfoStates state = (ConnectionInfoStates)value[0];
+                Visibility visibility = (Visibility)value[1];
+                if (visibility == Visibility.Visible && new[] { ConnectionInfoStates.Ready }.Contains(state))
+                    return Visibility.Visible;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+
+    public class RetryConnectionConverter : IMultiValueConverter
+    {
+
+        //TODO: if possible, redo this in more efficient way.
+
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value[1] != DependencyProperty.UnsetValue && value[0]!= DependencyProperty.UnsetValue)
+            {
+                ConnectionInfoStates state = (ConnectionInfoStates)value[0];
+                Visibility visibility = (Visibility)value[1];
+                if (visibility == Visibility.Visible && new[] { ConnectionInfoStates.Failed }.Contains(state))
+                    return Visibility.Visible;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ConnectionStatesToExpandingConverter : IMultiValueConverter
     {
 
         //TODO: if possible, redo this in more efficient way.
@@ -79,9 +127,27 @@ namespace ScreamControl.View
 
         public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
         {
+            return null;
+        }
+    }
+
+    #region About window converters
+    [ValueConversion(typeof(string), typeof(string))]
+    public class VersionConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var str = value as string;
+            str = String.Format(str, Assembly.GetEntryAssembly().GetName().Version.ToString());
+            return string.IsNullOrEmpty(str) ? string.Empty : str;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
             throw new NotImplementedException();
         }
     }
+    #endregion
 
     //Thanks to Thomas Levesque
     public class BindingProxy : Freezable
@@ -104,5 +170,5 @@ namespace ScreamControl.View
         // Using a DependencyProperty as the backing store for Data.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
-    } 
+    }
 }

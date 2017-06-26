@@ -19,7 +19,7 @@ namespace ScreamControl.WCF
         void Disconnect();
     }
 
-    interface IControllerServiceCallback
+    public interface IControllerServiceCallback
     {
         [OperationContract(IsOneWay = true)]
         void ConnectionChanged();

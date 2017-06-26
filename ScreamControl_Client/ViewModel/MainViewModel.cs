@@ -18,6 +18,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Threading;
 
 namespace ScreamControl.Client.ViewModel
 {
@@ -38,7 +39,7 @@ namespace ScreamControl.Client.ViewModel
 
         #endregion
 
-      //  public MainModel mainModel;
+        //  public MainModel mainModel;
 
         #region Constructor
         public MainViewModel()
@@ -47,7 +48,7 @@ namespace ScreamControl.Client.ViewModel
             LoadedCommand = new Command(arg => LoadedMethod());
             #endregion
 
-         //   this.mainModel = new MainModel();
+            //   this.mainModel = new MainModel();
 
             CurrentLanguage = App.Language;
             Languages = new ObservableCollection<CultureInfo>(App.Languages);
@@ -306,7 +307,7 @@ namespace ScreamControl.Client.ViewModel
         {
             get
             {
-                if (CurrentConnectionState == ConnectionInfoStates.Connected)
+                if (!new[] { ConnectionInfoStates.Disconnected, ConnectionInfoStates.Failed, ConnectionInfoStates.Initializing, ConnectionInfoStates.Ready }.Contains(CurrentConnectionState))
                     return Visibility.Visible;
                 return Visibility.Collapsed;
             }
@@ -471,40 +472,22 @@ namespace ScreamControl.Client.ViewModel
 
         private void OnUpdateTimerAlarmDelay(object sender, AlarmSystem.TimerDelayArgs args)
         {
-            //if (!this.Dispatcher.CheckAccess())
-            //{
-            //    AlarmSystem.TimerDelayHandler eh = new AlarmSystem.TimerDelayHandler(OnUpdateTimerAlarmDelay);
-            //    this.Dispatcher.Invoke(eh, new object[] { sender, args });
-            //}
-            //else
-            //{
             SoundTimerValue = args.ElapsedTimeInt;
             if (args.alarmActive)
             {
                 SoundAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
-                //TODO: converter этого значения
-                SoundTimerValue = -1; // === lElapsed.Content = FindResource("m_DelayElapsedFinish");
+                SoundTimerValue = -1;
             }
-            //}
         }
 
         private void OnUpdateTimerOverlayDelay(object sender, AlarmSystem.TimerDelayArgs args)
         {
-            //if (!this.Dispatcher.CheckAccess())
-            //{
-            //    AlarmSystem.TimerDelayHandler eh = new AlarmSystem.TimerDelayHandler(OnUpdateTimerOverlayDelay);
-            //    this.Dispatcher.Invoke(eh, new object[] { sender, args });
-            //}
-            //else
-            //{
             OverlayTimerValue = args.ElapsedTimeInt;
             if (args.alarmActive)
             {
                 OverlayAlertTimerBrush = DEFAULT_ALERT_GOES_OFF_BRUSH;
-                //TODO: converter этого значения
-                OverlayTimerValue = -1; // === lWindowElapsed.Content = FindResource("m_AlertWindowElapsedFinish");
+                OverlayTimerValue = -1;
             }
-            //}
         }
 
         private void OnAlarmSystemClosed(object sender)
@@ -537,15 +520,15 @@ namespace ScreamControl.Client.ViewModel
 
         private void OnSettingReceive(AppSettingsProperty setting)
         {
-            try
-            {
-              this.GetType().GetProperty(setting.name).SetValue(this, Convert.ChangeType(setting.value, Type.GetType(setting.type)));
-            }
-           // Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
-           catch
-            {
-           //     MessageBox.Show(string.Format("{0} = {1}", setting.name, setting.value));
-            }
+            //try
+            //{
+            this.GetType().GetProperty(setting.name).SetValue(this, Convert.ChangeType(setting.value, Type.GetType(setting.type)));
+            //}
+            // Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
+            //catch
+            //{
+            //     MessageBox.Show(string.Format("{0} = {1}", setting.name, setting.value));
+            //}
         }
 
 

@@ -18,6 +18,8 @@ namespace ScreamControl.WCF
         private readonly string[] _ignoredProperties = new[] { "CurrentConnectionState", "VolumeBarBrush", "SoundTimerValue", "OverlayTimerValue", "SoundAlertTimerBrush",
                 "OverlayAlertTimerBrush", "CloseTrigger", "CurrentConnectionState", "IsControlsBlocked", "MicVolume" };
 
+        private Thread _broadcastSearch;
+
         public EventServiceController proxy;
         public bool _isClientConnected = false;
 
@@ -28,6 +30,7 @@ namespace ScreamControl.WCF
         public event ClientConnectionChangedHandler OnClientConnected;
         public event SettingReceiveHandler OnSettingReceive;
         public event VolumeReceivedHandler OnVolumeReceive;
+        public event ClientConnectionChangedHandler OnConnectionFailed;
         public event ClientConnectionChangedHandler OnClientDisconnected;
         #endregion
 
@@ -40,35 +43,32 @@ namespace ScreamControl.WCF
         public void Connect()
         {
             //Discover WCF service via broadcasting
-            Collection<EndpointDiscoveryMetadata> helloWorldServices = null;
-            Thread broadcastSearch = new Thread(() => {
+            _broadcastSearch = new Thread(() => {
                 DiscoveryClient discoveryClient = new DiscoveryClient(new UdpDiscoveryEndpoint());
-                helloWorldServices = discoveryClient.Find(new FindCriteria(typeof(IControllerService))).Endpoints;
+                Collection<EndpointDiscoveryMetadata> helloWorldServices = discoveryClient.Find(new FindCriteria(typeof(IControllerService))).Endpoints;
                 discoveryClient.Close();
+
+                if (helloWorldServices.Count == 0)
+                {
+                    OnConnectionFailed();
+                }
+                else
+                {
+                    EndpointAddress serviceAddress = helloWorldServices[0].Address;
+                    NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
+                    binding.ReliableSession.Enabled = true;
+                    binding.ReliableSession.Ordered = false;
+
+                    IControllerServiceCallback evnt = new ControllerCallback(this);
+                    InstanceContext evntCntx = new InstanceContext(evnt);
+
+                    proxy = new EventServiceController(evntCntx, binding, serviceAddress);
+
+                    proxy.Connect();
+                }
             });
-            broadcastSearch.Start();
-            broadcastSearch.Join();
 
-
-            if (helloWorldServices.Count == 0)
-            {
-                //TODO: let the user do reconnect
-                throw new Exception("Ничего не найдено");
-            }
-            else
-            {
-                EndpointAddress serviceAddress = helloWorldServices[0].Address;
-                NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
-                binding.ReliableSession.Enabled = true;
-                binding.ReliableSession.Ordered = false;
-
-                IControllerServiceCallback evnt = new ControllerCallback(this);
-                InstanceContext evntCntx = new InstanceContext(evnt);
-
-                proxy = new EventServiceController(evntCntx, binding, serviceAddress);
-
-                proxy.Connect();
-            }
+            _broadcastSearch.Start();      
         }
 
         public void PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -80,6 +80,17 @@ namespace ScreamControl.WCF
             AppSettingsProperty setting = new AppSettingsProperty(e.PropertyName, value.ToString(), property.PropertyType.FullName);
             if(_isClientConnected)
                 this.proxy.SendSettings(setting);
+        }
+
+        public void Close()
+        {
+            if (_broadcastSearch.IsAlive)
+                _broadcastSearch.Abort();
+            if (proxy == null)
+                return;
+            proxy.DisconnectPrepare();
+            proxy.Close();
+            proxy = null;
         }
 
         private class ControllerCallback : IControllerServiceCallback

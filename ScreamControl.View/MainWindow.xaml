@@ -26,11 +26,12 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ViewStyles.xaml"/>
-                
+
             </ResourceDictionary.MergedDictionaries>
             <local:TimerValueConverter x:Key="TimerValueConverter"/>
-            <local:ConnectionInfoConverter x:Key="ConnectionInfoConverter"/>
-            <local:ExpanderConverter x:Key="ExpanderConverter"/>
+            <local:PrefixLanguageConverter x:Key="PrefixLanguageConverter"/>
+            <local:ConnectionStatesToExpandingConverter x:Key="ConnectionStatesToExpandingConverter"/>
+            
             <local:BindingProxy x:Key="SoundAlertHeaderProxy" Data="{DynamicResource m_SoundAlertExpander}"/>
             <local:BindingProxy x:Key="MessageAlertHeaderProxy" Data="{DynamicResource m_MessageAlertExpander}"/>
             <local:BindingProxy x:Key="DelayElapsedFinishProxy" Data="{DynamicResource m_DelayElapsedFinish}"/>
@@ -104,9 +105,15 @@
                 </Setter>
             </Style>
         </ResourceDictionary>
-      
+
 
     </local:ExtendedMetroWindow.Resources>
+    <local:ExtendedMetroWindow.RightWindowCommands>
+        <Controls:WindowCommands>
+            <Button Content="?" Click="Button_Click" ToolTip="About" Width="20" FontSize="14" FontWeight="Bold"/>
+        </Controls:WindowCommands>
+
+    </local:ExtendedMetroWindow.RightWindowCommands>
 
     <Grid Width="446">
         <Grid.RowDefinitions>
@@ -124,7 +131,7 @@
 
 
         <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Panel.ZIndex="10" Grid.Row="1" Background="#BFFFFFFF" Visibility="{Binding IsControlsBlocked, Mode=OneWay}">
-            <ContentPresenter Content="{DynamicResource BlockingGridContent}"/>
+            <ContentPresenter Content="{DynamicResource BlockingGridContent}" Visibility="{Binding Visibility, ElementName=gControllerBlock}"/>
         </Grid>
         <Grid Background="#BFFFFFFF" Panel.ZIndex="10" Grid.Column="1" Visibility="{Binding Visibility, ElementName=gControllerBlock}"></Grid>
         <!-- Connection Info -->
@@ -132,7 +139,7 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Label x:Name="lConnectionStatus"  HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,2" VerticalContentAlignment="Center" VerticalAlignment="Center">
                 <Label.Content>
-                    <MultiBinding Converter="{StaticResource ConnectionInfoConverter}">
+                    <MultiBinding Converter="{StaticResource PrefixLanguageConverter}">
                         <Binding Path="CurrentConnectionState" />
                         <Binding Path="ConnectionInfoStringsPrefix" />
                     </MultiBinding>
@@ -173,9 +180,9 @@
                 </Grid.RowDefinitions>
             </Grid>
 
-            <Expander VerticalAlignment="Top" Margin="0,0,0,5">
+            <Expander x:Name="expander" VerticalAlignment="Top" Margin="0,0,0,5" >
                 <Expander.IsExpanded>
-                    <MultiBinding Converter="{StaticResource ExpanderConverter}">
+                    <MultiBinding Converter="{StaticResource ConnectionStatesToExpandingConverter}">
                         <Binding Path="CurrentConnectionState" />
                         <Binding ElementName="gControllerBlock" Path="Visibility"/>
                     </MultiBinding>
@@ -237,7 +244,13 @@
                 </Grid>
             </Expander>
 
-            <Expander VerticalAlignment="Top" Margin="0" IsExpanded="{Binding CurrentConnectionState}">
+            <Expander VerticalAlignment="Top" Margin="0">
+                <Expander.IsExpanded>
+                    <MultiBinding Converter="{StaticResource ConnectionStatesToExpandingConverter}">
+                        <Binding Path="CurrentConnectionState" />
+                        <Binding ElementName="gControllerBlock" Path="Visibility"/>
+                    </MultiBinding>
+                </Expander.IsExpanded>
                 <Expander.Header>
                     <Grid>
                         <Label Content="{Binding Source={StaticResource MessageAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"></Label>

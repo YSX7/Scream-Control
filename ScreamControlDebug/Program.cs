@@ -21,28 +21,28 @@ namespace MicrophoneTest
 
         readonly string[] YES_VARIANTS = { "yes", "y" };
 
-        class ControllerSubscriber : IControllerServiceCallback
+        private class ControllerCallback : IControllerServiceCallback
         {
+            WcfScServiceController _parent;
+
+            public ControllerCallback()
+            {
+
+            }
+
             public void ConnectionChanged()
             {
-                return;
+
             }
 
             public void SettingsReceive(List<AppSettingsProperty> settings)
             {
-                foreach (var item in settings)
-                    Console.WriteLine("{0} \t {1} \t {2}", item.name, item.value, item.type);
-            }
 
-            public void SettingsReceive(AppSettingsProperty value)
-            {
-                return;
             }
 
             public void VolumeReceive(float volume)
             {
-                //Console.WriteLine(volume);
-                //Console.CursorTop--;
+               
             }
         }
 
@@ -80,7 +80,7 @@ namespace MicrophoneTest
                     Console.WriteLine("Something finded, connecting...");
                     EndpointAddress serviceAddress = helloWorldServices[0].Address;
 
-                    IControllerServiceCallback evnt = new ControllerSubscriber();
+                    IControllerServiceCallback evnt = new ControllerCallback();
                     InstanceContext evntCntx = new InstanceContext(evnt);
 
                     NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);

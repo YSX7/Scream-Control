@@ -2,7 +2,7 @@
 
 namespace ScreamControl
 {
-    public enum ConnectionInfoStates { Initializing, Ready, Connected, Disconnected };
+    public enum ConnectionInfoStates { Initializing, Ready, Connected, Disconnected, Failed };
 
     public static class MathEx
     {

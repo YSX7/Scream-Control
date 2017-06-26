@@ -30,4 +30,12 @@
     <v:String x:Key="mh_Connected">Connected</v:String>
     <v:String x:Key="mh_Failed">Client not found</v:String>
     <v:String x:Key="mh_Disconnected">Client disconnected</v:String>
+    <v:String x:Key="mh_Retry">Retry search</v:String>
+    <!-- About window -->
+    <v:String x:Key="maw_Title">About</v:String>
+    <v:String x:Key="maw_Controller">Controller</v:String>
+    <v:String x:Key="maw_Client">Client</v:String>
+    <v:String x:Key="maw_Version">Version {0}</v:String>
+    <v:String x:Key="maw_Created">Created with:</v:String>
+    <v:String x:Key="maw_Footer">Suggestions and feedback</v:String>
 </ResourceDictionary>

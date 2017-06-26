@@ -334,17 +334,24 @@ namespace ScreamControl.Alarms
 
         public void Close()
         {
-            switch (state)
+            if (!_isControllerMode)
             {
-                case States.Closed:
-                    return;
-                case States.Closing:
-                    return;
-                case States.Stopped:
-                    break;
-                default:
-                    state = States.Stopping;
-                    return;
+                switch (state)
+                {
+                    case States.Closed:
+                        return;
+                    case States.Closing:
+                        return;
+                    case States.Stopped:
+                        break;
+                    default:
+                        state = States.Stopping;
+                        return;
+                }
+            }
+            else
+            {
+                _soundOut.Dispose();
             }
             Trace.TraceInformation("Alarm System closing");
             state = States.Closing;

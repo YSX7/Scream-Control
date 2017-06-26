@@ -13,6 +13,8 @@ namespace ScreamControl.View
 
     public partial class ExtendedMetroWindow : MetroWindow
     {
+        protected static bool _isWindowClosing;
+
         public bool CloseTrigger
         {
             get { return (bool)GetValue(CloseTriggerProperty); }
@@ -24,7 +26,8 @@ namespace ScreamControl.View
 
         private static void OnCloseTriggerChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
         {
-            (dp as MetroWindow).Close();
+            if(!_isWindowClosing)
+             (dp as MetroWindow).Close();
         }
     }
 
@@ -49,9 +52,10 @@ namespace ScreamControl.View
             _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
 
 #if !DEBUG
-            Startup.SetAutostart();
+           Startup.SetAutostart();
 #endif
-            this.Title += " " + Assembly.GetEntryAssembly().GetName().Version.ToString();
+           
+            this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
 
             Trace.TraceInformation("Window Initialized");
         }
@@ -67,6 +71,8 @@ namespace ScreamControl.View
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            _isWindowClosing = true;
+
             Trace.TraceInformation("Window closing at {0}", DateTime.Now);
 #if !DEBUG
              Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
@@ -128,6 +134,12 @@ namespace ScreamControl.View
         {
             double newBottom = (_availableHeight / 100 * sliderValue - lThreshold.ActualHeight / 2).Clamp(0, _availableHeight - lThreshold.ActualHeight);
             lThreshold.Margin = new Thickness(0, 0, 0, newBottom);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            AboutWindow aw = new AboutWindow();
+            aw.ShowDialog();
         }
     }
 }

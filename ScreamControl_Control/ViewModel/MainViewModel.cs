@@ -35,6 +35,7 @@ namespace ScreamControl.Controller.ViewModel
         public MainViewModel()
         {
             LoadedCommand = new Command(arg => LoadedMethod());
+            ReconnectCommand = new Command(arg => ReconnectMethod());
 
             //  this.mainModel = new MainModel();
 
@@ -77,6 +78,7 @@ namespace ScreamControl.Controller.ViewModel
         #region Properties
 
         public Command LoadedCommand { get; private set; }
+        public Command ReconnectCommand { get; private set; }
 
         /// <summary>
         /// Get prefix for localizable connection strings
@@ -479,8 +481,19 @@ namespace ScreamControl.Controller.ViewModel
             MicVolume = volume;
         }
 
+        private void OnConnectionFailed()
+        {
+            CurrentConnectionState = ConnectionInfoStates.Failed;
+        }
+
         #endregion
 
+        private void ReconnectMethod()
+        {
+            CurrentConnectionState = ConnectionInfoStates.Ready;
+            this._WcfController?.Connect();
+        }
+        
         private void LoadedMethod()
         {
             CurrentConnectionState = ConnectionInfoStates.Initializing;
@@ -498,13 +511,16 @@ namespace ScreamControl.Controller.ViewModel
             this._WcfController.OnClientDisconnected += new WcfScServiceController.ClientConnectionChangedHandler(OnControllerDisconnected);
             this._WcfController.OnSettingReceive += new WcfScServiceController.SettingReceiveHandler(OnSettingsReceive);
             this._WcfController.OnVolumeReceive += new WcfScServiceController.VolumeReceivedHandler(OnVolumeReceive);
+            this._WcfController.OnConnectionFailed += new WcfScServiceController.ClientConnectionChangedHandler(OnConnectionFailed);
             CurrentConnectionState = ConnectionInfoStates.Ready;
             this._WcfController.Connect();
         }
 
+
+
         public void ClosingMethod(object sender, CancelEventArgs e)
         {
-            this._WcfController.proxy.Close();
+            this._WcfController.Close();
 
             if (CloseTrigger)
                 return;
