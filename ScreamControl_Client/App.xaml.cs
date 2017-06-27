@@ -87,6 +87,7 @@ namespace ScreamControl.Client
                 {
                     Trace.TraceInformation("Go for updates");
                     System.Diagnostics.Process.Start("Updater.exe", updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + " " + _isUpdateUpdater);
+                    this.Shutdown();
                 }
             }
             catch (Octokit.NotFoundException ex)
