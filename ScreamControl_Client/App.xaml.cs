@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using System.IO.Compression;
 
 namespace ScreamControl.Client
 {
@@ -21,6 +22,7 @@ namespace ScreamControl.Client
     {
 
         private static List<CultureInfo> m_Languages = new List<CultureInfo>();
+        private static bool _isUpdateUpdater = false;
 
         internal static ExtendedVersion Version
         {
@@ -43,9 +45,9 @@ namespace ScreamControl.Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-        #if !DEBUG
+      //  #if !DEBUG
             GetUpdates();
-        #endif
+    //    #endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -55,6 +57,21 @@ namespace ScreamControl.Client
 
         private async void GetUpdates()
         {
+            if (_isUpdateUpdater)
+            {
+                ZipArchive za = ZipFile.OpenRead("temp.zip");
+                var updaterFiles = za.Entries.Where(element => element.Name.ToLower().Contains("updater"));
+                foreach (ZipArchiveEntry file in updaterFiles)
+                {
+                    if (file.Name == "")
+                    {// Assuming Empty for Directory
+                        Directory.CreateDirectory(Path.GetDirectoryName(file.FullName));
+                        continue;
+                    }
+                    file.ExtractToFile(file.FullName, true);
+                }
+                za.Dispose();
+            }
             try
             {
                 Trace.TraceInformation("Updates check");
@@ -64,18 +81,23 @@ namespace ScreamControl.Client
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
                 Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
-                string updateUrl = latest.HtmlUrl;
+                string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
+                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains(appType.ToLower())).BrowserDownloadUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
                     Trace.TraceInformation("Go for updates");
-                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
+                    System.Diagnostics.Process.Start("Updater.exe", updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + " " + _isUpdateUpdater);
                 }
             }
-            catch(Octokit.NotFoundException ex)
+            catch (Octokit.NotFoundException ex)
             {
                 Trace.TraceWarning("No updates found: {0}", ex.Message);
             }
-            catch(Exception ex)
+            catch(InvalidOperationException ex)
+            {
+                Trace.TraceWarning("No updates found: {0}", ex);
+            }
+            catch (Exception ex)
             {
                 Trace.TraceWarning("Something happend when checking: {0}", ex);
                 //no updates
@@ -138,6 +160,9 @@ namespace ScreamControl.Client
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            if (e.Args.Length > 0)
+                _isUpdateUpdater = Convert.ToBoolean(e.Args[0]);
+
             Language = ScreamControl.Client.Properties.Settings.Default.CurrentLanguage;
             MainWindow window = new MainWindow();
             window.DataContext = new MainViewModel();

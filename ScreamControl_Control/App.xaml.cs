@@ -7,6 +7,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -19,6 +20,7 @@ namespace ScreamControl.Controller
     public partial class App : System.Windows.Application
     {
         private static List<CultureInfo> m_Languages = new List<CultureInfo>();
+        private static bool _isUpdateUpdater = false;
 
         internal static ExtendedVersion Version
         {
@@ -53,6 +55,21 @@ namespace ScreamControl.Controller
 
         private async void GetUpdates()
         {
+            if (_isUpdateUpdater)
+            {
+                ZipArchive za = ZipFile.OpenRead("temp.zip");
+                var updaterFiles = za.Entries.Where(element => element.Name.ToLower().Contains("updater"));
+                foreach (ZipArchiveEntry file in updaterFiles)
+                {
+                    if (file.Name == "")
+                    {// Assuming Empty for Directory
+                        Directory.CreateDirectory(Path.GetDirectoryName(file.FullName));
+                        continue;
+                    }
+                    file.ExtractToFile(file.FullName, true);
+                }
+                za.Dispose();
+            }
             try
             {
                 Trace.TraceInformation("Updates check");
@@ -66,7 +83,7 @@ namespace ScreamControl.Controller
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
                     Trace.TraceInformation("Go for updates");
-                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
+                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + " " + _isUpdateUpdater);
                 }
             }
             catch (Octokit.NotFoundException ex)
@@ -127,6 +144,9 @@ namespace ScreamControl.Controller
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            if(e.Args.Length > 0)
+                _isUpdateUpdater = Convert.ToBoolean(e.Args[0]);
+
             Language = ScreamControl.Controller.Properties.Settings.Default.CurrentLanguage;
             MainWindow window = new MainWindow();
             window.DataContext = new MainViewModel();
