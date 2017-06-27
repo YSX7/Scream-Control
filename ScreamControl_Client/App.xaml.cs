@@ -1,17 +1,19 @@
 ﻿using Octokit;
+using ScreamControl;
+using ScreamControl.View;
+using ScreamControl.Client.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
+using System.IO.Compression;
 
-namespace ScreamControl_Client
+namespace ScreamControl.Client
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -20,6 +22,7 @@ namespace ScreamControl_Client
     {
 
         private static List<CultureInfo> m_Languages = new List<CultureInfo>();
+        private static bool _isUpdateUpdater = false;
 
         internal static ExtendedVersion Version
         {
@@ -42,9 +45,9 @@ namespace ScreamControl_Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-#if !DEBUG
+      //  #if !DEBUG
             GetUpdates();
-#endif
+    //    #endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -54,31 +57,48 @@ namespace ScreamControl_Client
 
         private async void GetUpdates()
         {
+            if (_isUpdateUpdater)
+            {
+                ZipArchive za = ZipFile.OpenRead("temp.zip");
+                var updaterFiles = za.Entries.Where(element => element.Name.ToLower().Contains("updater"));
+                foreach (ZipArchiveEntry file in updaterFiles)
+                {
+                    if (file.Name == "")
+                    {// Assuming Empty for Directory
+                        Directory.CreateDirectory(Path.GetDirectoryName(file.FullName));
+                        continue;
+                    }
+                    file.ExtractToFile(file.FullName, true);
+                }
+                za.Dispose();
+            }
             try
             {
                 Trace.TraceInformation("Updates check");
-                var silentArgument = ScreamControl_Client.Properties.Settings.Default.StealthMode ? " " + "s" : "";
+                var silentArgument = ScreamControl.Client.Properties.Settings.Default.IsStealthMode ? " " + "s" : "";
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
                 Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
-                // string updateUrl = latest.HtmlUrl;
+                string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
+                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains(appType.ToLower())).BrowserDownloadUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
-                    string downloadUrl = latest.Assets.First(p => p.Name.Contains("Update")).BrowserDownloadUrl;
-                    if (downloadUrl != null)
-                    {
-                        Trace.TraceInformation("Go for updates");
-                        System.Diagnostics.Process.Start("Updater.exe", downloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument);
-                    }
+                    Trace.TraceInformation("Go for updates");
+                    System.Diagnostics.Process.Start("Updater.exe", updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + " " + _isUpdateUpdater);
+                    this.Shutdown();
                 }
             }
-            catch(Octokit.NotFoundException ex)
+            catch (Octokit.NotFoundException ex)
             {
                 Trace.TraceWarning("No updates found: {0}", ex.Message);
             }
-            catch(Exception ex)
+            catch(InvalidOperationException ex)
+            {
+                Trace.TraceWarning("No updates found: {0}", ex);
+            }
+            catch (Exception ex)
             {
                 Trace.TraceWarning("Something happend when checking: {0}", ex);
                 //no updates
@@ -103,19 +123,12 @@ namespace ScreamControl_Client
 
                 //2. Создаём ResourceDictionary для новой культуры
                 ResourceDictionary dict = new ResourceDictionary();
-                switch (value.Name)
-                {
-                    case "ru-RU":
-                        dict.Source = new Uri(String.Format("Language/lang.{0}.xaml", value.Name), UriKind.Relative);
-                        break;
-                    default:
-                        dict.Source = new Uri("Language/lang.en-US.xaml", UriKind.Relative);
-                        break;
-                }
+
+                dict.Source = new Uri(String.Format("pack://application:,,,/ScreamControl.View;component/Language/lang.{0}.xaml", value.Name), UriKind.RelativeOrAbsolute);
 
                 //3. Находим старую ResourceDictionary и удаляем его и добавляем новую ResourceDictionary
                 ResourceDictionary oldDict = (from d in System.Windows.Application.Current.Resources.MergedDictionaries
-                                              where d.Source != null && d.Source.OriginalString.StartsWith("Language/lang.")
+                                              where d.Source != null && d.Source.OriginalString.Contains("Language/lang.")
                                               select d).FirstOrDefault();
                 if (oldDict != null)
                 {
@@ -137,18 +150,24 @@ namespace ScreamControl_Client
 
         private void App_LanguageChanged(Object sender, EventArgs e)
         {
-            ScreamControl_Client.Properties.Settings.Default.DefaultLanguage = Language;
-            ScreamControl_Client.Properties.Settings.Default.Save();
+            ScreamControl.Client.Properties.Settings.Default.CurrentLanguage = Language;
+            ScreamControl.Client.Properties.Settings.Default.Save();
         }
 
         private void Application_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
-            Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
+            Language = ScreamControl.Client.Properties.Settings.Default.CurrentLanguage;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Language = ScreamControl_Client.Properties.Settings.Default.DefaultLanguage;
+            if (e.Args.Length > 0)
+                _isUpdateUpdater = Convert.ToBoolean(e.Args[0]);
+
+            Language = ScreamControl.Client.Properties.Settings.Default.CurrentLanguage;
+            MainWindow window = new MainWindow();
+            window.DataContext = new MainViewModel();
+            window.Show();
         }
 
         private void ChangeLogFile()

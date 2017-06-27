@@ -19,8 +19,9 @@ namespace Updater
         const string FILE_NAME = "temp.zip";
 
         private static bool silentMode = false;
+        private static bool isUpdaterUpdated = true;
 
-        //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - 's' for silent update
+        //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - 's' for silent update, args[3] - Updated updater
         static void Main(string[] args)
         {
             try
@@ -29,6 +30,8 @@ namespace Updater
                 {
                     return;
                 }
+
+                isUpdaterUpdated = Convert.ToBoolean(args[3]);
 
                 var handle = GetConsoleWindow();
                 if (args.Length > 2)
@@ -64,7 +67,12 @@ namespace Updater
                     StartDownload(client, args[0]).Wait();
                 }
 
-                Extract();
+                if (!Extract())
+                {
+                    Process.Start(args[2], true.ToString());
+                    Console.WriteLine("Initiating self-update");
+                    return;
+                 }
                 File.Delete(FILE_NAME);
 
                 if (!silentMode)
@@ -73,13 +81,16 @@ namespace Updater
             }
             finally
             {
-                Process.Start(args[1]);
+                Process.Start(args[2], false.ToString());
             }
         }
 
-        private static void Extract()
+        private static bool Extract()
         {
             ZipArchive za = ZipFile.OpenRead(FILE_NAME);
+            if(!isUpdaterUpdated)
+                if (za.Entries.Any(element => element.Name.ToLower().Contains("updater")))
+                   return false;
             foreach (ZipArchiveEntry file in za.Entries)
             {
                 if (file.Name == "")
@@ -87,9 +98,11 @@ namespace Updater
                     Directory.CreateDirectory(Path.GetDirectoryName(file.FullName));
                     continue;
                 }
-                file.ExtractToFile(file.FullName, true);
+                if (!file.Name.ToLower().Contains("updater"))
+                    file.ExtractToFile(file.FullName, true);
             }
             za.Dispose();
+            return true;
         }
 
         private static async Task StartDownload(WebClient client, string address)

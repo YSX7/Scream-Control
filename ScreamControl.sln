@@ -5,11 +5,17 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControlDebug", "ScreamControlDebug\ScreamControlDebug.csproj", "{B46F4250-D812-4147-B381-61385DA6C078}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl_Client", "ScreamControl_Client\ScreamControl_Client.csproj", "{1DA774DC-D988-4058-B9BF-CBEBA7BAC32C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl.Client", "ScreamControl_Client\ScreamControl.Client.csproj", "{1DA774DC-D988-4058-B9BF-CBEBA7BAC32C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl_Control", "ScreamControl_Control\ScreamControl_Control.csproj", "{C282C3FB-7D57-4A39-8B99-9EB84F5E3FF2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl.Controller", "ScreamControl_Control\ScreamControl.Controller.csproj", "{C282C3FB-7D57-4A39-8B99-9EB84F5E3FF2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{A8B4EE7A-67E0-47B6-945E-B6ECB4ED2B07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl_ClientTests", "ScreamControl_ClientTests\ScreamControl_ClientTests.csproj", "{41FD70C8-D547-4EAD-B672-67A9FD5688E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreamControl.View", "ScreamControl.View\ScreamControl.View.csproj", "{77A9C63C-D83B-4BEB-BB07-EEA89F284712}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedStuff", "SharedStuff\SharedStuff.csproj", "{ED591F72-4DEC-4933-9543-33AE04B870D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +39,18 @@ Global
 		{A8B4EE7A-67E0-47B6-945E-B6ECB4ED2B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8B4EE7A-67E0-47B6-945E-B6ECB4ED2B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8B4EE7A-67E0-47B6-945E-B6ECB4ED2B07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41FD70C8-D547-4EAD-B672-67A9FD5688E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41FD70C8-D547-4EAD-B672-67A9FD5688E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41FD70C8-D547-4EAD-B672-67A9FD5688E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41FD70C8-D547-4EAD-B672-67A9FD5688E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77A9C63C-D83B-4BEB-BB07-EEA89F284712}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77A9C63C-D83B-4BEB-BB07-EEA89F284712}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77A9C63C-D83B-4BEB-BB07-EEA89F284712}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77A9C63C-D83B-4BEB-BB07-EEA89F284712}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED591F72-4DEC-4933-9543-33AE04B870D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED591F72-4DEC-4933-9543-33AE04B870D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED591F72-4DEC-4933-9543-33AE04B870D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED591F72-4DEC-4933-9543-33AE04B870D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

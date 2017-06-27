@@ -2,34 +2,34 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ScreamControl_Client.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="DefaultLanguage" Type="System.Globalization.CultureInfo" Scope="User">
+    <Setting Name="CurrentLanguage" Type="System.Globalization.CultureInfo" Scope="User">
       <Value Profile="(Default)">en-US</Value>
     </Setting>
-    <Setting Name="Boost" Type="System.Int32" Scope="User">
+    <Setting Name="MicCaptureBoost" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">100</Value>
     </Setting>
-    <Setting Name="Volume" Type="System.Int32" Scope="User">
+    <Setting Name="AlarmVolume" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="SafeScreamZone" Type="System.Int32" Scope="User">
+    <Setting Name="DelayBeforeAlarm" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="AlertOverlayDelay" Type="System.Int32" Scope="User">
+    <Setting Name="DelayBeforeOverlay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="SoundAlertEnabled" Type="System.Boolean" Scope="User">
+    <Setting Name="IsSoundAlertEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="StealthMode" Type="System.Boolean" Scope="User">
+    <Setting Name="IsStealthMode" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Threshold" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="VolumeSystem" Type="System.Int32" Scope="User">
+    <Setting Name="AlarmSystemVolume" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="MessageAlertEnabled" Type="System.Boolean" Scope="User">
+    <Setting Name="IsOverlayAlertEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

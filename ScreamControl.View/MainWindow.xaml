@@ -1,0 +1,303 @@
+﻿<local:ExtendedMetroWindow
+        BorderBrush="{DynamicResource AccentColorBrush}"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:local="clr-namespace:ScreamControl.View"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="ViewStyles.xaml"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:Ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:Inter="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl.View.MainWindow"
+        Title="Scream Control" Closing="Window_Closing" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" 
+        ShowMaxRestoreButton="False" BorderThickness="1"
+        Visibility="{Binding WindowVisibilityState}" CloseTrigger="{Binding CloseTrigger}" ResizeMode="CanMinimize" SizeChanged="wMain_SizeChanged" Loaded="Window_Loaded">
+    <!--<Controls:MetroWindow.DataContext>
+        <ViewModel:MainViewModel/>
+    </Controls:MetroWindow.DataContext>-->
+    <Inter:Interaction.Triggers>
+        <Inter:EventTrigger EventName="Loaded">
+            <Inter:InvokeCommandAction Command="{Binding LoadedCommand}"/>
+        </Inter:EventTrigger>
+        <Inter:EventTrigger EventName="Closing">
+            <Ei:CallMethodAction TargetObject="{Binding}" MethodName="ClosingMethod" x:Name="interactivityFix"/>
+        </Inter:EventTrigger>
+    </Inter:Interaction.Triggers>
+    <local:ExtendedMetroWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ViewStyles.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+            <local:TimerValueConverter x:Key="TimerValueConverter"/>
+            <local:PrefixLanguageConverter x:Key="PrefixLanguageConverter"/>
+            <local:ConnectionStatesToExpandingConverter x:Key="ConnectionStatesToExpandingConverter"/>
+            
+            <local:BindingProxy x:Key="SoundAlertHeaderProxy" Data="{DynamicResource m_SoundAlertExpander}"/>
+            <local:BindingProxy x:Key="MessageAlertHeaderProxy" Data="{DynamicResource m_MessageAlertExpander}"/>
+            <local:BindingProxy x:Key="DelayElapsedFinishProxy" Data="{DynamicResource m_DelayElapsedFinish}"/>
+
+            <local:ToUpperConverter x:Key="ToUpperConverter"/>
+            <SolidColorBrush x:Key="UnheckedToggleSwitchBrush" Color="#7A7574"/>
+            <SolidColorBrush x:Key="CheckedToggleSwitchBrush" Color="#FF4343"/>
+
+            <Style x:Key="SliderButtonStyle" TargetType="{x:Type RepeatButton}">
+                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                <Setter Property="OverridesDefaultStyle" Value="true"/>
+                <Setter Property="IsTabStop" Value="false"/>
+                <Setter Property="Focusable" Value="false"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                            <Border >
+                                <Border.Background>
+                                    <SolidColorBrush Opacity="0"/>
+                                </Border.Background>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="ProgressSliderThumb" TargetType="{x:Type Thumb}">
+                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Thumb}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Border BorderBrush="Red" BorderThickness="1" Height="2" VerticalAlignment="Center" Background="Red" Cursor="SizeNS" Grid.Column="1"/>
+                                <Rectangle Margin="-2,-5" Cursor="SizeNS" Fill="#00000000" Grid.Column="1"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="ProgressSlider" TargetType="{x:Type Slider}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Slider}">
+                            <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.InactiveBorderBrushKey}}" >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" MinWidth="{TemplateBinding MinWidth}"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TickBar x:Name="TopTick" Visibility="Collapsed" Placement="Left" Grid.Column="0"/>
+                                    <TickBar x:Name="BottomTick" Visibility="Collapsed" Placement="Right" Grid.Column="0"/>
+                                    <Border x:Name="TrackBackground"  Margin="5,0" HorizontalAlignment="Stretch" Width="Auto" Grid.Column="1" Background="#FF0CFF00" Visibility="Collapsed" />
+                                    <Track x:Name="PART_Track" Grid.Column="1">
+                                        <Track.DecreaseRepeatButton>
+                                            <RepeatButton x:Name="decreaseButton" Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.DecreaseLarge}"/>
+                                        </Track.DecreaseRepeatButton>
+                                        <Track.IncreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource SliderButtonStyle}" Command="{x:Static Slider.IncreaseLarge}"/>
+                                        </Track.IncreaseRepeatButton>
+                                        <Track.Thumb>
+                                            <Thumb Style="{StaticResource ProgressSliderThumb}" x:Name="Thumb" Background="Black"/>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+
+
+    </local:ExtendedMetroWindow.Resources>
+    <local:ExtendedMetroWindow.RightWindowCommands>
+        <Controls:WindowCommands>
+            <Button Content="?" Click="Button_Click" ToolTip="About" Width="20" FontSize="14" FontWeight="Bold"/>
+        </Controls:WindowCommands>
+
+    </local:ExtendedMetroWindow.RightWindowCommands>
+
+    <Grid Width="446">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Blocking grid -->
+
+
+        <Grid x:Name="gControllerBlock" Grid.RowSpan="3" Grid.ColumnSpan="2" Panel.ZIndex="10" Grid.Row="1" Background="#BFFFFFFF" Visibility="{Binding IsControlsBlocked, Mode=OneWay}">
+            <ContentPresenter Content="{DynamicResource BlockingGridContent}" Visibility="{Binding Visibility, ElementName=gControllerBlock}"/>
+        </Grid>
+        <Grid Background="#BFFFFFFF" Panel.ZIndex="10" Grid.Column="1" Visibility="{Binding Visibility, ElementName=gControllerBlock}"></Grid>
+        <!-- Connection Info -->
+        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0,0,0,1"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label x:Name="lConnectionStatus"  HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,2" VerticalContentAlignment="Center" VerticalAlignment="Center">
+                <Label.Content>
+                    <MultiBinding Converter="{StaticResource PrefixLanguageConverter}">
+                        <Binding Path="CurrentConnectionState" />
+                        <Binding Path="ConnectionInfoStringsPrefix" />
+                    </MultiBinding>
+                </Label.Content>
+            </Label>
+            <Button x:Name="bNetworkRetry" Style="{StaticResource AccentedSquareButtonStyle}" Padding="10,5" VerticalAlignment="Center" Controls:ControlsHelper.ContentCharacterCasing="Normal" Margin="10,5,0,5" Background="#CC5DAA7C" BorderThickness="1" Visibility="Collapsed">Retry
+            </Button>
+        </StackPanel>
+
+        <!-- Language Panel -->
+        <Expander Header="{DynamicResource m_Language}" VerticalAlignment="Top"  Controls:ControlsHelper.ContentCharacterCasing="Upper" Grid.Row="1">
+            <Grid Background="#FFE0E0E0">
+                <ComboBox x:Name="cbLang" ItemsSource="{Binding Path=Languages}" SelectedItem="{Binding Path=CurrentLanguage}" DisplayMemberPath="NativeName" HorizontalAlignment="Left" Margin="5" RenderTransformOrigin="-0.125,0.462" VerticalAlignment="Center" Padding="2"/>
+            </Grid>
+        </Expander>
+
+        <!-- Stealth mode -->
+        <StackPanel Margin="7,10,0,0" Grid.Row="2" VerticalAlignment="Top">
+            <Controls:ToggleSwitch x:Name="csStealth" IsChecked="{Binding IsStealthMode}" Header="{DynamicResource m_Stealth}" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="-5,0,0,0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12" Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <!-- Sound Controls -->
+        <StackPanel Grid.Row="3" Margin="7,0,0,7">
+            <Label Content="{DynamicResource m_Boost}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5" Width="58"/>
+            <Controls:NumericUpDown x:Name="numBoost" Background="{x:Null}" Foreground="Black" Value="{Binding MicCaptureBoost}" HorizontalAlignment="Left" RenderTransformOrigin="1.427,0.5" VerticalAlignment="Top" Margin="0">
+                <Controls:NumericUpDown.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource Gray6}"/>
+                </Controls:NumericUpDown.BorderBrush>
+            </Controls:NumericUpDown>
+            <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+            </Grid>
+
+            <Expander x:Name="expander" VerticalAlignment="Top" Margin="0,0,0,5" >
+                <Expander.IsExpanded>
+                    <MultiBinding Converter="{StaticResource ConnectionStatesToExpandingConverter}">
+                        <Binding Path="CurrentConnectionState" />
+                        <Binding ElementName="gControllerBlock" Path="Visibility"/>
+                    </MultiBinding>
+                </Expander.IsExpanded>
+                <Expander.Header>
+                    <Grid>
+                        <Label Content="{Binding Source={StaticResource SoundAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"/>
+                        <Label HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" FontWeight="Bold" Height="26" Foreground="{Binding SoundAlertTimerBrush}">
+                            <!--<Style TargetType="Label">
+                                <Setter Property="Content" Value="{Binding SoundTimerValue}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SoundTimerValue}" Value="-1">
+                                        <Setter Property="Content" Value="{DynamicResource m_DelayElapsedFinish}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>-->
+                            <Label.Content>
+                                <MultiBinding Converter="{StaticResource TimerValueConverter}">
+                                    <Binding Path="SoundTimerValue" />
+                                    <Binding Source="{StaticResource DelayElapsedFinishProxy}" Path="Data" />
+                                </MultiBinding>
+                            </Label.Content>
+                        </Label>
+                        <Controls:ToggleSwitch x:Name="tsSoundAlertSwitch" OnSwitchBrush="{StaticResource CheckedToggleSwitchBrush}" OffSwitchBrush="{StaticResource UnheckedToggleSwitchBrush}" Foreground="White" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="0" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Padding="0" IsChecked="{Binding IsSoundAlertEnabled}" />
+                    </Grid>
+                </Expander.Header>
+                <Grid Background="#FFE0E0E0" IsEnabled="{Binding IsChecked, ElementName=tsSoundAlertSwitch}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.Resources>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Margin" Value="3,3,3,3"></Setter>
+                        </Style>
+                    </Grid.Resources>
+                    <StackPanel Margin="10,10,3,3">
+                        <Label Content="{DynamicResource m_Volume}" Margin="0" Padding="0"/>
+                        <WrapPanel VerticalAlignment="Bottom" Margin="0,3,0,0">
+                            <Slider x:Name="sliderVolume" HorizontalAlignment="Left" Margin="0" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Value="{Binding AlarmVolume}" Grid.Row="1" VerticalAlignment="Top"/>
+                            <Label Content="{Binding Value, ElementName=sliderVolume, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0,0" Padding="0" Grid.Row="1" Height="16" Width="19"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Margin="10,3,3,10">
+                        <Label Content="{DynamicResource m_VolumeSystem}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="26" Padding="0,5,5,5"/>
+                        <WrapPanel>
+                            <Slider x:Name="sliderVolumeSystem" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Width="126" Foreground="#FFD4D4D4" BorderBrush="#00000000" Background="{x:Null}" Height="16" Value="{Binding AlarmSystemVolume}" Grid.Row="1"/>
+                            <Label Content="{Binding Value, ElementName=sliderVolumeSystem, Mode=OneWay}" ContentStringFormat="{}{0:0}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0,0" Padding="0" Height="16" Width="19"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel  Grid.RowSpan="2" Grid.Column="1" VerticalAlignment="Center" Margin="10,3,3,3">
+                        <Label Content="{DynamicResource m_Delay}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5"/>
+                        <Controls:NumericUpDown x:Name="nudDuration" Margin="0" Value="{Binding DelayBeforeAlarm}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1"/>
+                    </StackPanel>
+                </Grid>
+            </Expander>
+
+            <Expander VerticalAlignment="Top" Margin="0">
+                <Expander.IsExpanded>
+                    <MultiBinding Converter="{StaticResource ConnectionStatesToExpandingConverter}">
+                        <Binding Path="CurrentConnectionState" />
+                        <Binding ElementName="gControllerBlock" Path="Visibility"/>
+                    </MultiBinding>
+                </Expander.IsExpanded>
+                <Expander.Header>
+                    <Grid>
+                        <Label Content="{Binding Source={StaticResource MessageAlertHeaderProxy}, Path=Data, Converter={StaticResource ToUpperConverter}}" Foreground="White" HorizontalAlignment="Left" Controls:ControlsHelper.ContentCharacterCasing="Upper" VerticalAlignment="Center"></Label>
+                        <Label  HorizontalAlignment="Center" Margin="0" VerticalAlignment="Top" FontWeight="Bold" Foreground="{Binding OverlayAlertTimerBrush}">
+                            <!--<Style TargetType="Label">
+                                <Setter Property="Content" Value="{Binding SoundTimerValue}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SoundTimerValue}" Value="-1">
+                                        <Setter Property="Content" Value="{DynamicResource m_DelayElapsedFinish}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>-->
+                            <Label.Content>
+                                <MultiBinding Converter="{StaticResource TimerValueConverter}">
+                                    <Binding Path="OverlayTimerValue" />
+                                    <Binding Source="{StaticResource DelayElapsedFinishProxy}" Path="Data" />
+                                </MultiBinding>
+                            </Label.Content>
+                        </Label>
+                        <Controls:ToggleSwitch x:Name="tsMessageAlertSwitch" IsChecked="{Binding IsOverlayAlertEnabled}" OnSwitchBrush="{StaticResource CheckedToggleSwitchBrush}" OffSwitchBrush="{StaticResource UnheckedToggleSwitchBrush}" Foreground="White" FontSize="12" FontFamily="Segoe UI" Controls:ControlsHelper.HeaderFontSize="12" Controls:ControlsHelper.HeaderMargin="0" OffLabel="{DynamicResource m_Off}" OnLabel="{DynamicResource m_On}" ThumbIndicatorWidth="12"  Margin="0" HorizontalAlignment="Right" Grid.RowSpan="3" VerticalAlignment="Center" Padding="0" Height="32" />
+                    </Grid>
+                </Expander.Header>
+                <Grid Background="#FFE0E0E0" IsEnabled="{Binding IsChecked, ElementName=tsMessageAlertSwitch}">
+                    <StackPanel Margin="10,10,10,10">
+                        <Label Content="{DynamicResource m_AlertWindowLabel}" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Padding="0,5,5,5" Grid.Row="1"/>
+                        <Controls:NumericUpDown x:Name="nudAlertWindow" Margin="0" Value="{Binding DelayBeforeOverlay}" Minimum="0" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Grid.Row="1"/>
+                    </StackPanel>
+                </Grid>
+            </Expander>
+
+            <Label x:Name="lDebug" Content="Label" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="26" Grid.Row="1" Visibility="Collapsed"/>
+        </StackPanel>
+
+        <!-- Sound bar -->
+        <Grid x:Name="GridVolume" Margin="0,10,10,10" MinWidth="40" MinHeight="70" Width="77" HorizontalAlignment="Right" Grid.Column="1" Grid.RowSpan="4">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="lThreshold" Padding="0" MinHeight="15" MinWidth="24" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Center" ContentStringFormat="{}{0:n0}" Content="{Binding Threshold}"/>
+            <Controls:MetroProgressBar Value="{Binding MicVolume}" Orientation="Vertical" Grid.Column="1" Height="Auto" Background="White" HorizontalAlignment="Stretch" Foreground="{Binding VolumeBarBrush}" BorderBrush="#FFECECEC" BorderThickness="2"/>
+            <Slider x:Name="slThreshold" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1" Value="{Binding Threshold}" ValueChanged="slider_ValueChanged"/>
+            <Label Grid.Column="1" x:Name="lVolume" Content="{Binding MicVolume}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0" Height="17" ContentStringFormat="{}{0:n1}"/>
+        </Grid>
+
+    </Grid>
+</local:ExtendedMetroWindow>

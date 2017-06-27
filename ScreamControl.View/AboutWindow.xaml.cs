@@ -1,0 +1,47 @@
+﻿using MahApps.Metro.Controls;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+
+namespace ScreamControl.View
+{
+    /// <summary>
+    /// Interaction logic for AboutWindow.xaml
+    /// </summary>
+    public partial class AboutWindow : MetroWindow
+    {
+        public AboutWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+        }
+
+        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            var postfix = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
+            string searchResource = "maw_" + postfix;
+
+            Binding binding = new Binding();
+            binding.Source = Application.Current.FindResource(searchResource);  // view model?
+
+            BindingOperations.SetBinding(tbAppRole, TextBlock.TextProperty, binding);
+        }
+    }
+}
