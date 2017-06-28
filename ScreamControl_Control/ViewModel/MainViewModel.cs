@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows;
 using ScreamControl.Alarms;
 using System.Diagnostics;
+using System.Threading;
 
 namespace ScreamControl.Controller.ViewModel
 {
@@ -525,7 +526,11 @@ namespace ScreamControl.Controller.ViewModel
             if (CloseTrigger)
                 return;
             if (_alarmSystem.state != AlarmSystem.States.Closed && _alarmSystem.state != AlarmSystem.States.Closing)
-                _alarmSystem.Close();
+            {
+               Thread alarmSystemCloseDelay = new Thread(() => { _alarmSystem.Close(); });
+                alarmSystemCloseDelay.Priority = ThreadPriority.Lowest;
+                alarmSystemCloseDelay.Start();
+            }
 
             if (_alarmSystem.state != AlarmSystem.States.Closed)
             {

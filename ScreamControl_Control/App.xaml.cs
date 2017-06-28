@@ -73,17 +73,18 @@ namespace ScreamControl.Controller
             try
             {
                 Trace.TraceInformation("Updates check");
-                var silentArgument = ScreamControl.Controller.Properties.Settings.Default.IsStealthMode ? " " + "s" : "";
+                var silentArgument = ScreamControl.Controller.Properties.Settings.Default.IsStealthMode ? true : false;
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
                 Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
-                string updateUrl = latest.HtmlUrl;
+                string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
+                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update." + appType.ToLower())).BrowserDownloadUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
                     Trace.TraceInformation("Go for updates");
-                    System.Diagnostics.Process.Start("Updater.exe", latest.Assets[0].BrowserDownloadUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + " " + _isUpdateUpdater);
+                    System.Diagnostics.Process.Start("Updater.exe", updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + " " + silentArgument + " " + _isUpdateUpdater);
                 }
             }
             catch (Octokit.NotFoundException ex)

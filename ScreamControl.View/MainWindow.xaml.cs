@@ -26,8 +26,9 @@ namespace ScreamControl.View
 
         private static void OnCloseTriggerChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
         {
-            if(!_isWindowClosing)
-             (dp as MetroWindow).Close();
+           // if(!_isWindowClosing)
+           if((bool)e.NewValue == true)
+                (dp as MetroWindow).Close();
         }
     }
 
@@ -54,7 +55,7 @@ namespace ScreamControl.View
 #if !DEBUG
            Startup.SetAutostart();
 #endif
-           
+
             this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
 
             Trace.TraceInformation("Window Initialized");
@@ -72,7 +73,6 @@ namespace ScreamControl.View
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             _isWindowClosing = true;
-
             Trace.TraceInformation("Window closing at {0}", DateTime.Now);
 #if !DEBUG
              Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);

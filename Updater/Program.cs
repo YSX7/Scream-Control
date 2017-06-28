@@ -21,7 +21,7 @@ namespace Updater
         private static bool silentMode = false;
         private static bool isUpdaterUpdated = true;
 
-        //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - 's' for silent update, args[3] - Updated updater
+        //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - is silent update, args[3] - Updated updater
         static void Main(string[] args)
         {
             try
@@ -31,15 +31,15 @@ namespace Updater
                     return;
                 }
 
+                bool isSilentUpdate = args.Length < 3 ? false : Convert.ToBoolean(args[2]);
                 isUpdaterUpdated = args.Length < 4 ? false : Convert.ToBoolean(args[3]);
 
                 var handle = GetConsoleWindow();
-                if (args.Length > 2)
-                    if (args[2] == "s")
-                    {
-                        HideWindow(handle, SW_HIDE);
-                        silentMode = true;
-                    }
+                if (isSilentUpdate)
+                {
+                    HideWindow(handle, SW_HIDE);
+                    silentMode = true;
+                }
 
                 Console.WriteLine("Waiting for app close...");
                 bool appClosed = false;
@@ -69,10 +69,11 @@ namespace Updater
 
                 if (!Extract())
                 {
-                    Process.Start(args[2], true.ToString());
+                    var dir = Directory.EnumerateFiles(Directory.GetCurrentDirectory());
+                    Process.Start(args[1], true.ToString());
                     Console.WriteLine("Initiating self-update");
                     return;
-                 }
+                }
                 File.Delete(FILE_NAME);
 
                 if (!silentMode)
@@ -81,7 +82,7 @@ namespace Updater
             }
             finally
             {
-                Process.Start(args[2], false.ToString());
+                Process.Start(args[1], false.ToString());
             }
         }
 
