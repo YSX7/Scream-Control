@@ -31,7 +31,7 @@ namespace Updater
                     return;
                 }
 
-                isUpdaterUpdated = Convert.ToBoolean(args[3]);
+                isUpdaterUpdated = args.Length < 4 ? false : Convert.ToBoolean(args[3]);
 
                 var handle = GetConsoleWindow();
                 if (args.Length > 2)
@@ -73,10 +73,8 @@ namespace Updater
 
         private static bool Extract()
         {
+            bool returnResult = true;
             ZipArchive za = ZipFile.OpenRead(FILE_NAME);
-            if(!isUpdaterUpdated)
-                if (za.Entries.Any(element => element.Name.ToLower().Contains("updater")))
-                   return false;
             foreach (ZipArchiveEntry file in za.Entries)
             {
                 if (file.Name == "")
@@ -86,9 +84,12 @@ namespace Updater
                 }
                 if (!file.Name.ToLower().Contains("updater"))
                     file.ExtractToFile(file.FullName, true);
+                else
+                    returnResult = false;
+
             }
             za.Dispose();
-            return true;
+            return returnResult;
         }
 
         private static async Task StartDownload(WebClient client, string address)

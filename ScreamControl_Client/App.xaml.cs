@@ -45,9 +45,9 @@ namespace ScreamControl.Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-      //  #if !DEBUG
+        #if !DEBUG
             GetUpdates();
-    //    #endif
+        #endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -82,7 +82,7 @@ namespace ScreamControl.Client
                 bool updateAvailable = version > App.Version;
                 Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
                 string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
-                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains(appType.ToLower())).BrowserDownloadUrl;
+                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update "+ appType.ToLower())).BrowserDownloadUrl;
                 if (updateAvailable && File.Exists("Updater.exe"))
                 {
                     Trace.TraceInformation("Go for updates");
