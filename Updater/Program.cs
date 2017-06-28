@@ -42,7 +42,21 @@ namespace Updater
                     }
 
                 Console.WriteLine("Waiting for app close...");
-                CheckMainAppClosed(args[2]);
+                bool appClosed = false;
+                while (!appClosed)
+                {
+                    try
+                    {
+                        CheckMainAppClosed(args[1]);
+                        appClosed = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Error while closing app: {0}", e.Message);
+                        Console.WriteLine("Press any key to try again...");
+                        Console.ReadLine();
+                    }
+                }
 
                 Console.WriteLine("Update started.");
                 using (WebClient client = new WebClient())
@@ -111,7 +125,9 @@ namespace Updater
         private static void WaitForClosed(string exeName)
         {
             while (Process.GetProcessesByName(exeName).Length > 0)
-            { }
+            {
+                Process.GetProcessesByName(exeName)[0].Kill();
+            }
         }
 
         private static void OnFileDownloadProgress(object sender, DownloadProgressChangedEventArgs e)
