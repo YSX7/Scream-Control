@@ -26,8 +26,8 @@ namespace ScreamControl.View
 
         private static void OnCloseTriggerChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
         {
-           // if(!_isWindowClosing)
-           if((bool)e.NewValue == true)
+            // if(!_isWindowClosing)
+            if ((bool)e.NewValue == true)
                 (dp as MetroWindow).Close();
         }
     }
@@ -40,8 +40,8 @@ namespace ScreamControl.View
     {
 
         private Hotkey _hotkeyStealth;
-
         private double _availableHeight;
+        private bool _isController;
 
         delegate float MonitorVolumeCallback();
 
@@ -50,11 +50,15 @@ namespace ScreamControl.View
 
             InitializeComponent();
 
-            _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
+            _isController = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1] == "Controller";
 
+            if (!_isController)
+            {
+                _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
 #if !DEBUG
-           Startup.SetAutostart();
+                Startup.SetAutostart();
 #endif
+            }
 
             this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
 
@@ -74,11 +78,14 @@ namespace ScreamControl.View
         {
             _isWindowClosing = true;
             Trace.TraceInformation("Window closing at {0}", DateTime.Now);
+            if (!_isController)
+            {
 #if !DEBUG
-             Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
+                Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
 #endif
-            _hotkeyStealth.Unregister();
-            _hotkeyStealth.Dispose();
+                _hotkeyStealth.Unregister();
+                _hotkeyStealth.Dispose();
+            }
         }
 
         private void wMain_Closed(object sender, EventArgs e)
