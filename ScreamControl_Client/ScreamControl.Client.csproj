@@ -186,9 +186,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="beep.mp3">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
