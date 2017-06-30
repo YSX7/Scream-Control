@@ -20,9 +20,10 @@ namespace Updater
 
         private static bool silentMode = false;
         private static bool isUpdaterUpdated = false;
+        private static bool isSelfUpdateAvailable = false;
         private static bool isDebugMode = false;
 
-        //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - is silent update, args[3] - Updated updater
+        //args[0] - Download URL, args[1] - target EXE to close before update and run after, "s" - is silent update, "d" - debug mode, "u" - update updater
         static void Main(string[] args)
         {
             try
@@ -77,29 +78,37 @@ namespace Updater
                     client.DownloadFileCompleted += new AsyncCompletedEventHandler(OnFileDownloadCompleted);
                     StartDownload(client, args[0]).Wait();
                 }
-
-                if (!Extract())
+                isSelfUpdateAvailable = Extract();
+                if (isSelfUpdateAvailable)
                 {
-                    var dir = Directory.EnumerateFiles(Directory.GetCurrentDirectory());
-                    Process.Start(args[1], true.ToString());
                     Console.WriteLine("Initiating self-update");
                     return;
                 }
+
                 File.Delete(FILE_NAME);
 
+                if (isDebugMode)
+                {
+                    Console.WriteLine("Press any key...");
+                    Console.ReadKey();
+                }
                 if (!silentMode)
                     System.Threading.Thread.Sleep(2000);
 
             }
             finally
-            {
-                Process.Start(args[1], false.ToString());
+            {      
+                Process.Start(args[1], (isSelfUpdateAvailable).ToString());
             }
         }
 
+        /// <summary>
+        /// Extract updated files from archive
+        /// </summary>
+        /// <returns>is self update available</returns>
         private static bool Extract()
         {
-            bool returnResult = true;
+            bool returnResult = false;
             ZipArchive za = ZipFile.OpenRead(FILE_NAME);
             foreach (ZipArchiveEntry file in za.Entries)
             {
@@ -112,7 +121,7 @@ namespace Updater
                     file.ExtractToFile(file.FullName, true);
                 else
                     if(!isUpdaterUpdated)
-                         returnResult = false;
+                         returnResult = true;
 
             }
             za.Dispose();

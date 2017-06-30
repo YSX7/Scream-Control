@@ -1,5 +1,4 @@
-﻿using Octokit;
-using ScreamControl;
+﻿using ScreamControl;
 using ScreamControl.View;
 using ScreamControl.Client.ViewModel;
 using System;
@@ -11,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using System.IO.Compression;
 
 namespace ScreamControl.Client
 {
@@ -46,70 +44,17 @@ namespace ScreamControl.Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-            GetUpdates();
 #if !DEBUG
-            GetUpdates();
+            var checkUpdates = CheckUpdates.Check(App.Version, _isUpdateUpdater, ScreamControl.Client.Properties.Settings.Default.IsStealthMode, _isDebugMode);
+            checkUpdates.RunSynchronously();
+            if (!checkUpdates.Result)
+                this.Shutdown();
 #endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
 
             App.LanguageChanged += App_LanguageChanged;
-        }
-
-        private async void GetUpdates()
-        {
-            if (_isUpdateUpdater)
-            {
-                ZipArchive za = ZipFile.OpenRead("temp.zip");
-                var updaterFiles = za.Entries.Where(element => element.Name.ToLower().Contains("updater"));
-                foreach (ZipArchiveEntry file in updaterFiles)
-                {
-                    if (file.Name == "")
-                    {// Assuming Empty for Directory
-                        Directory.CreateDirectory(Path.GetDirectoryName(file.FullName));
-                        continue;
-                    }
-                    file.ExtractToFile(file.FullName, true);
-                }
-                za.Dispose();
-            }
-            try
-            {
-                Trace.TraceInformation("Updates check");
-                var silentArgument = ScreamControl.Client.Properties.Settings.Default.IsStealthMode ? " s" : "";
-                var updatedUpdaterArgument = _isUpdateUpdater ? " u" : "";
-                var debugArgument = _isDebugMode ? " d" : "";
-
-                var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
-                var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
-                var version = new ExtendedVersion(latest.TagName);
-                bool updateAvailable = version > App.Version;
-                Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
-                string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
-                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update." + appType.ToLower())).BrowserDownloadUrl;
-                if ((updateAvailable || _isDebugMode) && File.Exists("Updater.exe"))
-                {
-                    Trace.TraceInformation("Go for updates");
-                    string commandLine = updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + updatedUpdaterArgument + debugArgument;
-                    if (_isDebugMode) Trace.TraceInformation("Command line: " + commandLine);
-                    System.Diagnostics.Process.Start("Updater.exe", commandLine);
-                    this.Shutdown();
-                }
-            }
-            catch (Octokit.NotFoundException ex)
-            {
-                Trace.TraceWarning("No updates found: {0}", ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Trace.TraceWarning("No updates found: {0}", ex);
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceWarning("Something happend when checking: {0}", ex);
-                //no updates
-            }
         }
 
         public static event EventHandler LanguageChanged;
