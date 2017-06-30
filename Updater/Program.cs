@@ -88,11 +88,6 @@ namespace Updater
 
                 File.Delete(FILE_NAME);
 
-                if (isDebugMode)
-                {
-                    Console.WriteLine("Press any key...");
-                    Console.ReadKey();
-                }
                 if (!silentMode)
                     System.Threading.Thread.Sleep(2000);
 
@@ -101,7 +96,14 @@ namespace Updater
             {
 
             }
+            Console.WriteLine("Done");
             Process.Start(args[1], (isSelfUpdateAvailable).ToString());
+
+            if (isDebugMode)
+            {
+                Console.WriteLine("Press any key...");
+                Console.ReadKey();
+            }
         }
 
         /// <summary>
