@@ -46,7 +46,7 @@ namespace ScreamControl.Client
             Trace.TraceInformation("Scream Control started");
 #if !DEBUG
             var checkUpdates = CheckUpdates.Check(App.Version, _isUpdateUpdater, ScreamControl.Client.Properties.Settings.Default.IsStealthMode, _isDebugMode);
-            checkUpdates.RunSynchronously();
+            checkUpdates.Wait();
             if (!checkUpdates.Result)
                 this.Shutdown();
 #endif
