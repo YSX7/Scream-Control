@@ -19,20 +19,31 @@ namespace Updater
         const string FILE_NAME = "temp.zip";
 
         private static bool silentMode = false;
-        private static bool isUpdaterUpdated = true;
+        private static bool isUpdaterUpdated = false;
+        private static bool isDebugMode = false;
 
         //args[0] - Download URL, args[1] - target EXE to close before update and run after, args[2] - is silent update, args[3] - Updated updater
         static void Main(string[] args)
         {
             try
             {
-                if (args.Length == 0)
+
+                bool isSilentUpdate = false;
+
+                if (args.Length < 2)
                 {
                     return;
                 }
 
-                bool isSilentUpdate = args.Length < 3 ? false : Convert.ToBoolean(args[2]);
-                isUpdaterUpdated = args.Length < 4 ? false : Convert.ToBoolean(args[3]);
+                foreach(string item in args)
+                {
+                    switch(item)
+                    {
+                        case "u": isUpdaterUpdated = true; break;
+                        case "d": isDebugMode = true; break;
+                        case "s": isSilentUpdate = true; break;
+                    }
+                }
 
                 var handle = GetConsoleWindow();
                 if (isSilentUpdate)
@@ -100,7 +111,8 @@ namespace Updater
                 if (!file.Name.ToLower().Contains("updater"))
                     file.ExtractToFile(file.FullName, true);
                 else
-                    returnResult = false;
+                    if(!isUpdaterUpdated)
+                         returnResult = false;
 
             }
             za.Dispose();

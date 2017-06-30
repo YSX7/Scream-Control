@@ -23,6 +23,7 @@ namespace ScreamControl.Client
 
         private static List<CultureInfo> m_Languages = new List<CultureInfo>();
         private static bool _isUpdateUpdater = false;
+        private static bool _isDebugMode = false;
 
         internal static ExtendedVersion Version
         {
@@ -45,14 +46,15 @@ namespace ScreamControl.Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-        #if !DEBUG
             GetUpdates();
-        #endif
+#if !DEBUG
+            GetUpdates();
+#endif
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
 
-           App.LanguageChanged += App_LanguageChanged;
+            App.LanguageChanged += App_LanguageChanged;
         }
 
         private async void GetUpdates()
@@ -75,18 +77,23 @@ namespace ScreamControl.Client
             try
             {
                 Trace.TraceInformation("Updates check");
-                var silentArgument = ScreamControl.Client.Properties.Settings.Default.IsStealthMode ? true : false;
+                var silentArgument = ScreamControl.Client.Properties.Settings.Default.IsStealthMode ? " s" : "";
+                var updatedUpdaterArgument = _isUpdateUpdater ? " u" : "";
+                var debugArgument = _isDebugMode ? " d" : "";
+
                 var client = new GitHubClient(new ProductHeaderValue("Scream-Control"));
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var version = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = version > App.Version;
                 Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
                 string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
-                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update."+ appType.ToLower())).BrowserDownloadUrl;
-                if (updateAvailable && File.Exists("Updater.exe"))
+                string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update." + appType.ToLower())).BrowserDownloadUrl;
+                if ((updateAvailable || _isDebugMode) && File.Exists("Updater.exe"))
                 {
                     Trace.TraceInformation("Go for updates");
-                    System.Diagnostics.Process.Start("Updater.exe", updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + " " + silentArgument + " " + _isUpdateUpdater);
+                    string commandLine = updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + updatedUpdaterArgument + debugArgument;
+                    if (_isDebugMode) Trace.TraceInformation("Command line: " + commandLine);
+                    System.Diagnostics.Process.Start("Updater.exe", commandLine);
                     this.Shutdown();
                 }
             }
@@ -94,7 +101,7 @@ namespace ScreamControl.Client
             {
                 Trace.TraceWarning("No updates found: {0}", ex.Message);
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 Trace.TraceWarning("No updates found: {0}", ex);
             }
@@ -142,10 +149,10 @@ namespace ScreamControl.Client
                 }
 
                 //4. Вызываем евент для оповещения всех окон.
-                if(LanguageChanged!=null)
-                     LanguageChanged(System.Windows.Application.Current, new EventArgs());
+                if (LanguageChanged != null)
+                    LanguageChanged(System.Windows.Application.Current, new EventArgs());
             }
-            
+
         }
 
         private void App_LanguageChanged(Object sender, EventArgs e)
@@ -162,7 +169,18 @@ namespace ScreamControl.Client
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             if (e.Args.Length > 0)
-                _isUpdateUpdater = Convert.ToBoolean(e.Args[0]);
+                foreach (string item in e.Args)
+                {
+                    switch (item)
+                    {
+                        case "d":
+                            _isDebugMode = true;
+                            break;
+                        default:
+                            _isUpdateUpdater = Convert.ToBoolean(item);
+                            break;
+                    }
+                }
 
             Language = ScreamControl.Client.Properties.Settings.Default.CurrentLanguage;
             MainWindow window = new MainWindow();

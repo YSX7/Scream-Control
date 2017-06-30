@@ -17,7 +17,7 @@ namespace ScreamControl.View
     {
         public static void SetAutostart()
         {
-            Assembly curAssembly = Assembly.GetExecutingAssembly();
+            Assembly curAssembly = Assembly.GetEntryAssembly();
 
             try
             {

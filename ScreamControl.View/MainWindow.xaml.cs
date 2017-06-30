@@ -55,9 +55,6 @@ namespace ScreamControl.View
             if (!_isController)
             {
                 _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
-#if !DEBUG
-                Startup.SetAutostart();
-#endif
             }
 
             this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
@@ -67,6 +64,9 @@ namespace ScreamControl.View
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+#if !DEBUG
+            Startup.SetAutostart();
+#endif
 
             Trace.TraceInformation("Window loaded");
 
@@ -80,9 +80,6 @@ namespace ScreamControl.View
             Trace.TraceInformation("Window closing at {0}", DateTime.Now);
             if (!_isController)
             {
-#if !DEBUG
-                Startup.CheckAutostartEnabled(Assembly.GetExecutingAssembly().GetName().Name);
-#endif
                 _hotkeyStealth.Unregister();
                 _hotkeyStealth.Dispose();
             }
@@ -90,6 +87,10 @@ namespace ScreamControl.View
 
         private void wMain_Closed(object sender, EventArgs e)
         {
+#if !DEBUG
+            Startup.CheckAutostartEnabled(Assembly.GetEntryAssembly().GetName().Name);
+#endif
+
             Trace.TraceInformation("Window closed");
             Application.Current.Shutdown();
         }

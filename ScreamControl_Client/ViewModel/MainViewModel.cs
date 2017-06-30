@@ -574,6 +574,7 @@ namespace ScreamControl.Client.ViewModel
             else
             {
                 Trace.TraceInformation("Closing approved");
+
                 Properties.Settings.Default.Save();
                 CloseTrigger = true;
             }
