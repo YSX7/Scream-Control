@@ -96,10 +96,11 @@ namespace Updater
                     System.Threading.Thread.Sleep(2000);
 
             }
-            finally
-            {      
-                Process.Start(args[1], (isSelfUpdateAvailable).ToString());
+            catch
+            {
+
             }
+            Process.Start(args[1], (isSelfUpdateAvailable).ToString());
         }
 
         /// <summary>

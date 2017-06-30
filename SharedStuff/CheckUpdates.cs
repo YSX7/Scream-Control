@@ -44,7 +44,7 @@ namespace ScreamControl
                 var latest = await client.Repository.Release.GetLatest("YSXrus", "Scream-Control");
                 var gitVersion = new ExtendedVersion(latest.TagName);
                 bool updateAvailable = gitVersion > currentVersion;
-                Trace.TraceInformation("Updates available: {0}", updateAvailable.ToString());
+                Trace.TraceInformation("Updates available: {0}. Current: {1}. Git latest: {2}", updateAvailable.ToString(), currentVersion, gitVersion);
                 string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
                 string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update." + appType.ToLower())).BrowserDownloadUrl;
                 if ((updateAvailable || isDebugMode) && File.Exists("Updater.exe"))
