@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Updater
 {
@@ -59,7 +60,7 @@ namespace Updater
                 {
                     try
                     {
-                        CheckMainAppClosed(args[1]);
+                        CheckMainAppClosed(Path.GetFileNameWithoutExtension(args[1]));
                         appClosed = true;
                     }
                     catch (Exception e)
@@ -150,6 +151,7 @@ namespace Updater
             while (Process.GetProcessesByName(exeName).Length > 0)
             {
                 Process.GetProcessesByName(exeName)[0].Kill();
+                Thread.Sleep(20);
             }
         }
 
