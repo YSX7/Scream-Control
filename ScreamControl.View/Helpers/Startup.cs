@@ -15,10 +15,10 @@ namespace ScreamControl.View
 {
     static class Startup
     {
-        public static void SetAutostart()
-        {
-            Assembly curAssembly = Assembly.GetEntryAssembly();
+        static Assembly curAssembly = Assembly.GetEntryAssembly();
 
+        public static void SetAutostart(bool debugMode = false)
+        {
             try
             {
                 //if (!IsStartupItem(curAssembly))
@@ -34,6 +34,8 @@ namespace ScreamControl.View
                 string startUpFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
                 string lnkPath = startUpFolderPath + "\\" +
                     curAssembly.GetName().Name + ".lnk";
+
+                if (debugMode) Trace.TraceInformation("Startup assembly name: {0}", curAssembly.GetName().Name);
 
                 if (!System.IO.File.Exists(lnkPath))
                 {
@@ -54,21 +56,21 @@ namespace ScreamControl.View
                 Trace.TraceError("Something happened at Autostart set: {0}", e);
             }
 
-            CheckAutostartEnabled(curAssembly.GetName().Name);
+            CheckAutostartEnabled(debugMode);
          }
 
-        public static void CheckAutostartEnabled(String appName)
+        public static void CheckAutostartEnabled(bool debugMode)
         {
             try
             {
                 RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", true);
                 if (key != null)
                 {
-                    byte[] newValue = (byte[])key.GetValue(appName + ".lnk");
+                    byte[] newValue = (byte[])key.GetValue(curAssembly.GetName().Name + ".lnk");
                     if (newValue[0] != 2)
                     {
                         newValue[0] = 2;
-                        key.SetValue(appName + ".lnk", newValue);
+                        key.SetValue(curAssembly.GetName().Name + ".lnk", newValue);
                         Trace.TraceInformation("Autostart Enabled");
                     }
                 }

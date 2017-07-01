@@ -42,11 +42,13 @@ namespace ScreamControl.View
         private Hotkey _hotkeyStealth;
         private double _availableHeight;
         private bool _isController;
+        private bool _isDebugMode;
 
         delegate float MonitorVolumeCallback();
 
-        public MainWindow()
+        public MainWindow(bool debugMode = false)
         {
+            _isDebugMode = debugMode;
 
             InitializeComponent();
 
@@ -64,8 +66,9 @@ namespace ScreamControl.View
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            
 #if !DEBUG
-            Startup.SetAutostart();
+            Startup.SetAutostart(_isDebugMode);
 #endif
 
             Trace.TraceInformation("Window loaded");
@@ -88,7 +91,7 @@ namespace ScreamControl.View
         private void wMain_Closed(object sender, EventArgs e)
         {
 #if !DEBUG
-            Startup.CheckAutostartEnabled(Assembly.GetEntryAssembly().GetName().Name);
+            Startup.CheckAutostartEnabled(_isDebugMode);
 #endif
 
             Trace.TraceInformation("Window closed");

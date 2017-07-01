@@ -128,7 +128,7 @@ namespace ScreamControl.Client
                 }
 
             Language = ScreamControl.Client.Properties.Settings.Default.CurrentLanguage;
-            MainWindow window = new MainWindow();
+            MainWindow window = new MainWindow(_isDebugMode);
             window.DataContext = new MainViewModel();
             window.Show();
         }
