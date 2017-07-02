@@ -15,6 +15,12 @@ namespace Updater
 {
     class Program
     {
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll", CallingConvention = CallingConvention.StdCall)]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
         const int SW_HIDE = 0;
         const int SW_SHOW = 5;
         const string FILE_NAME = "temp.zip";
@@ -50,10 +56,16 @@ namespace Updater
                 if (isDebugMode) Console.WriteLine("DEBUG MODE");
 
                 var handle = GetConsoleWindow();
+              //   var handle = Process.GetCurrentProcess().MainWindowHandle;
                 if (isSilentUpdate)
                 {
-                    HideWindow(handle, SW_HIDE);
-                    silentMode = true;
+                    if (!isDebugMode)
+                    {
+                        ShowWindow(handle, SW_HIDE);
+                        silentMode = true;
+                    }
+                    else
+                        Console.WriteLine("App in stealth mode");
                 }
 
                 Console.WriteLine("Waiting for app close...");
@@ -97,7 +109,7 @@ namespace Updater
             }
             catch(Exception e)
             {
-                Console.WriteLine();
+                Console.WriteLine(e);
             }
             finally
             {
@@ -178,12 +190,6 @@ namespace Updater
             Console.SetCursorPosition(0, 3);
             //   Console.WriteLine("Press any key...");
         }
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetConsoleWindow();
-
-        [DllImport("user32.dll")]
-        static extern bool HideWindow(IntPtr hWnd, int nCmdShow);
 
     }
 }
