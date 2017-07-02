@@ -97,18 +97,6 @@ namespace ScreamControl.Client.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool IsStealthMode {
-            get {
-                return ((bool)(this["IsStealthMode"]));
-            }
-            set {
-                this["IsStealthMode"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public float Threshold {
             get {
@@ -140,6 +128,18 @@ namespace ScreamControl.Client.Properties {
             }
             set {
                 this["IsOverlayAlertEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsStealthMode {
+            get {
+                return ((bool)(this["IsStealthMode"]));
+            }
+            set {
+                this["IsStealthMode"] = value;
             }
         }
     }

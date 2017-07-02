@@ -20,9 +20,6 @@
     <Setting Name="IsSoundAlertEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="IsStealthMode" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
     <Setting Name="Threshold" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
@@ -30,6 +27,9 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="IsOverlayAlertEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="IsStealthMode" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
