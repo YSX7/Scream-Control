@@ -23,7 +23,7 @@ namespace ScreamControl.View
             {
                 //if (!IsStartupItem(curAssembly))
                 //{
-                //    RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                //    RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", true);
 
                 //    key.SetValue(curAssembly.GetName().Name, curAssembly.Location);
 
@@ -56,22 +56,28 @@ namespace ScreamControl.View
                 Trace.TraceError("Something happened at Autostart set: {0}", e);
             }
 
-            CheckAutostartEnabled(debugMode);
+         //   CheckAutostartEnabled(debugMode);
          }
 
-        public static void CheckAutostartEnabled(bool debugMode)
+        public static void CheckAutostartEnabled(bool debugMode = false)
         {
             try
             {
+                //string startUpFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+                //string lnkPath = startUpFolderPath + "\\" +
+                //    curAssembly.GetName().Name + ".lnk";
                 RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", true);
                 if (key != null)
                 {
                     byte[] newValue = (byte[])key.GetValue(curAssembly.GetName().Name + ".lnk");
-                    if (newValue[0] != 2)
+                    if (newValue != null)
                     {
-                        newValue[0] = 2;
-                        key.SetValue(curAssembly.GetName().Name + ".lnk", newValue);
-                        Trace.TraceInformation("Autostart Enabled");
+                        if (newValue[0] != 2)
+                        {
+                            newValue[0] = 2;
+                            key.SetValue(curAssembly.GetName().Name + ".lnk", newValue);
+                            Trace.TraceInformation("Autostart Enabled");
+                        }
                     }
                 }
                 else
@@ -85,16 +91,16 @@ namespace ScreamControl.View
             }
         }
 
-        //private static bool IsStartupItem(Assembly curAssembly)
-        //{
-        //    //RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        private static bool IsStartupItem(Assembly curAssembly)
+        {
+            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", true);
 
-        //    //if (rkApp.GetValue(curAssembly.GetName().Name) != null)
-        //    //{
-        //    //    if ((string)rkApp.GetValue(curAssembly.GetName().Name) == curAssembly.Location)
-        //    //        return true;
-        //    //}
-        //    return false;
-        //}
+            if (rkApp.GetValue(curAssembly.GetName().Name) != null)
+            {
+                if ((string)rkApp.GetValue(curAssembly.GetName().Name) == curAssembly.Location)
+                    return true;
+            }
+            return false;
+        }
     }
 }

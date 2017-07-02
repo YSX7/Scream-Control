@@ -67,10 +67,10 @@ namespace ScreamControl.View
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-#if !DEBUG
+//#if !DEBUG
             if(!_isController)
               Startup.SetAutostart(_isDebugMode);
-#endif
+//#endif
             Trace.TraceInformation("Window loaded");
 
             _availableHeight = GridVolume.ActualHeight;
