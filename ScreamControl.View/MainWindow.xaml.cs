@@ -68,7 +68,8 @@ namespace ScreamControl.View
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 #if !DEBUG
-            Startup.SetAutostart(_isDebugMode);
+            if(!_isController)
+              Startup.SetAutostart(_isDebugMode);
 #endif
 
             Trace.TraceInformation("Window loaded");
@@ -91,7 +92,8 @@ namespace ScreamControl.View
         private void wMain_Closed(object sender, EventArgs e)
         {
 #if !DEBUG
-            Startup.CheckAutostartEnabled(_isDebugMode);
+            if (!_isController)
+                Startup.CheckAutostartEnabled(_isDebugMode);
 #endif
 
             Trace.TraceInformation("Window closed");
