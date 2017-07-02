@@ -42,12 +42,7 @@ namespace ScreamControl.Controller
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-#if !DEBUG
-            var checkUpdates = CheckUpdates.Check(App.Version, _isUpdateUpdater, ScreamControl.Controller.Properties.Settings.Default.IsStealthMode);
-            checkUpdates.Wait();
-            if (!checkUpdates.Result)
-                this.Shutdown();
-#endif
+
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -103,6 +98,13 @@ namespace ScreamControl.Controller
         {
             if(e.Args.Length > 0)
                 _isUpdateUpdater = Convert.ToBoolean(e.Args[0]);
+
+#if !DEBUG
+            var checkUpdates = CheckUpdates.Check(App.Version, _isUpdateUpdater, ScreamControl.Controller.Properties.Settings.Default.IsStealthMode);
+            checkUpdates.Wait();
+            if (!checkUpdates.Result)
+                this.Shutdown();
+#endif
 
             Language = ScreamControl.Controller.Properties.Settings.Default.CurrentLanguage;
             MainWindow window = new MainWindow();

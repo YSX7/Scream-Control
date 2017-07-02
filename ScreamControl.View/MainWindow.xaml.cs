@@ -62,11 +62,11 @@ namespace ScreamControl.View
             this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
 
             Trace.TraceInformation("Window Initialized");
+            if (_isDebugMode) Trace.TraceInformation("DEBUG MODE");
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
 #if !DEBUG
             Startup.SetAutostart(_isDebugMode);
 #endif

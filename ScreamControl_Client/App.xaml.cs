@@ -44,12 +44,7 @@ namespace ScreamControl.Client
         {
             ChangeLogFile();
             Trace.TraceInformation("Scream Control started");
-#if !DEBUG
-            var checkUpdates = CheckUpdates.Check(App.Version, _isUpdateUpdater, ScreamControl.Client.Properties.Settings.Default.IsStealthMode, _isDebugMode);
-            checkUpdates.Wait();
-            if (!checkUpdates.Result)
-                this.Shutdown();
-#endif
+
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
@@ -126,6 +121,13 @@ namespace ScreamControl.Client
                             break;
                     }
                 }
+
+            #if !DEBUG
+            var checkUpdates = CheckUpdates.Check(App.Version, _isUpdateUpdater, ScreamControl.Client.Properties.Settings.Default.IsStealthMode, _isDebugMode);
+            checkUpdates.Wait();
+            if (!checkUpdates.Result)
+                this.Shutdown();
+            #endif
 
             Language = ScreamControl.Client.Properties.Settings.Default.CurrentLanguage;
             MainWindow window = new MainWindow(_isDebugMode);

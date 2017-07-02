@@ -47,6 +47,8 @@ namespace Updater
                     }
                 }
 
+                if (isDebugMode) Console.WriteLine("DEBUG MODE");
+
                 var handle = GetConsoleWindow();
                 if (isSilentUpdate)
                 {
@@ -80,6 +82,7 @@ namespace Updater
                     StartDownload(client, args[0]).Wait();
                 }
                 isSelfUpdateAvailable = Extract();
+                if (isDebugMode) Console.WriteLine("Self update: {0}. Updater updated: {1}");
                 if (isSelfUpdateAvailable)
                 {
                     Console.WriteLine("Initiating self-update");
@@ -92,18 +95,22 @@ namespace Updater
                     System.Threading.Thread.Sleep(2000);
 
             }
-            catch
+            catch(Exception e)
             {
-
+                Console.WriteLine();
             }
-            Console.WriteLine("Done");
-            Process.Start(args[1], (isSelfUpdateAvailable).ToString());
-
-            if (isDebugMode)
+            finally
             {
-                Console.WriteLine("Press any key...");
-                Console.ReadKey();
+                if (isDebugMode)
+                {
+                    Console.WriteLine("Press any key...");
+                    Console.ReadKey();
+                }
+
+                Console.WriteLine("Done");
+                Process.Start(args[1], (isSelfUpdateAvailable).ToString());
             }
+
         }
 
         /// <summary>
