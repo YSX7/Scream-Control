@@ -108,7 +108,7 @@ namespace ScreamControl.Controller.ViewModel
         /// </summary>
         public Visibility WindowVisibilityState
         {
-            get { return Visibility.Visible; }
+            get; set;
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace ScreamControl.Controller.ViewModel
             CurrentConnectionState = ConnectionInfoStates.Ready;
             this._WcfController?.Connect();
         }
-        
+
         private void LoadedMethod()
         {
             CurrentConnectionState = ConnectionInfoStates.Initializing;

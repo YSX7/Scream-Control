@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
@@ -40,6 +41,11 @@ namespace ScreamControl.WCF
             
         }
 
+        private void ChannelFactory_Faulted(object sender, EventArgs e)
+        {
+            MessageBox.Show("Error");
+        }
+
         public void Connect()
         {
             //Discover WCF service via broadcasting
@@ -64,7 +70,9 @@ namespace ScreamControl.WCF
 
                     proxy = new EventServiceController(evntCntx, binding, serviceAddress);
 
+                    proxy.ChannelFactory.Faulted += new EventHandler(ChannelFactory_Faulted);
                     proxy.Connect();
+
                 }
             });
 
@@ -84,13 +92,25 @@ namespace ScreamControl.WCF
 
         public void Close()
         {
-            if (_broadcastSearch.IsAlive)
-                _broadcastSearch.Abort();
-            if (proxy == null)
-                return;
-            proxy.DisconnectPrepare();
-            proxy.Close();
-            proxy = null;
+            try
+            {
+                if (_broadcastSearch.IsAlive)
+                    _broadcastSearch.Abort();
+                if (proxy == null)
+                    return;
+                if (proxy.State == CommunicationState.Faulted)
+                    proxy.Abort();
+                else
+                {
+                    proxy.DisconnectPrepare();
+                    proxy.Close();
+                }
+                proxy = null;
+            }
+            catch(Exception e)
+            {
+                Trace.TraceError("Something happend at closing connection: {0}", e);
+            }
         }
 
         private class ControllerCallback : IControllerServiceCallback

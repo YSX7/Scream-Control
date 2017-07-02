@@ -139,9 +139,10 @@ namespace ScreamControl.Client
         {
             if (!File.Exists("log.txt"))
                 File.Create("log.txt").Close();
+            else
+                File.Move("log.txt", "log-prev.txt");
             if (File.Exists("log-prev.txt"))
                 File.Delete("log-prev.txt");
-            File.Move("log.txt", "log-prev.txt");
             Trace.TraceInformation("Created at {0}", DateTime.Now.ToString());
         }
     }
