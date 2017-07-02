@@ -71,7 +71,6 @@ namespace ScreamControl.View
             if(!_isController)
               Startup.SetAutostart(_isDebugMode);
 #endif
-
             Trace.TraceInformation("Window loaded");
 
             _availableHeight = GridVolume.ActualHeight;

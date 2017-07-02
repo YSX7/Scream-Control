@@ -82,7 +82,7 @@ namespace Updater
                     StartDownload(client, args[0]).Wait();
                 }
                 isSelfUpdateAvailable = Extract();
-                if (isDebugMode) Console.WriteLine("Self update: {0}. Updater updated: {1}");
+                if (isDebugMode) Console.WriteLine("Self update: {0}. Updater updated: {1}", isSelfUpdateAvailable, isUpdaterUpdated);
                 if (isSelfUpdateAvailable)
                 {
                     Console.WriteLine("Initiating self-update");

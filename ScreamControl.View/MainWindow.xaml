@@ -10,7 +10,7 @@
         xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="wMain" x:Class="ScreamControl.View.MainWindow"
         Title="Scream Control" Closing="Window_Closing" Closed="wMain_Closed" SizeToContent="Height" Width="452" StateChanged="wMain_StateChanged" 
         ShowMaxRestoreButton="False" BorderThickness="1"
-        Visibility="{Binding WindowVisibilityState}" CloseTrigger="{Binding CloseTrigger}" ResizeMode="CanMinimize" SizeChanged="wMain_SizeChanged" Loaded="Window_Loaded">
+        Visibility="{Binding WindowVisibilityState, Mode=TwoWay}" CloseTrigger="{Binding CloseTrigger}" ResizeMode="CanMinimize" SizeChanged="wMain_SizeChanged" Loaded="Window_Loaded">
     <!--<Controls:MetroWindow.DataContext>
         <ViewModel:MainViewModel/>
     </Controls:MetroWindow.DataContext>-->

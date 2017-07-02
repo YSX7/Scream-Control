@@ -70,6 +70,8 @@ namespace ScreamControl.Client.ViewModel
         /// </summary>
         private float _micVolume;
 
+        private Visibility _windowVisibilityState;
+
         /// <summary>
         /// Window closing trigger
         /// </summary>
@@ -114,26 +116,6 @@ namespace ScreamControl.Client.ViewModel
         }
 
         /// <summary>
-        /// Get or set window visibility, based on IsStealthMode property. Used on app startup.
-        /// </summary>
-        public Visibility WindowVisibilityState
-        {
-            get
-            {
-                if (IsStealthMode)
-                    return Visibility.Hidden;
-                else
-                    return Visibility.Visible;
-
-            }
-            set
-            {
-                WindowVisibilityState = value;
-                RaisePropertyChanged("WindowVisibilityState");
-            }
-        }
-
-        /// <summary>
         /// Get or set available languages
         /// </summary>
         public ObservableCollection<CultureInfo> Languages { get; set; }
@@ -152,6 +134,19 @@ namespace ScreamControl.Client.ViewModel
                 App.Language = value;
                 RaisePropertyChanged("CurrentLanguage");
                 RaisePropertyChanged("CurrentConnectionState");
+            }
+        }
+
+        public Visibility WindowVisibilityState
+        {
+            get
+            {
+                return _windowVisibilityState;
+            }
+            set
+            {
+                _windowVisibilityState = value;
+                RaisePropertyChanged("WindowVisibilityState");
             }
         }
 
@@ -554,6 +549,8 @@ namespace ScreamControl.Client.ViewModel
             this._WcfHost.Client.OnSettingReceive += new WcfScServiceClient.SettingReceiveHandler(OnSettingReceive);
 
             CurrentConnectionState = ConnectionInfoStates.Ready;
+
+            WindowVisibilityState = IsStealthMode ? Visibility.Hidden : Visibility.Visible;
         }
 
         public void ClosingMethod(object sender, CancelEventArgs e)
