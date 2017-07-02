@@ -49,6 +49,8 @@ namespace ScreamControl.View
                     shortcut.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
                     shortcut.Description = "Scream Control Launch";
                     shortcut.Save();
+
+                    Trace.TraceInformation("App added to autostart");
                 }
             }
             catch(Exception e)
@@ -56,7 +58,7 @@ namespace ScreamControl.View
                 Trace.TraceError("Something happened at Autostart set: {0}", e);
             }
 
-         //   CheckAutostartEnabled(debugMode);
+            CheckAutostartEnabled(debugMode);
          }
 
         public static void CheckAutostartEnabled(bool debugMode = false)
@@ -77,13 +79,11 @@ namespace ScreamControl.View
                             newValue[0] = 2;
                             key.SetValue(curAssembly.GetName().Name + ".lnk", newValue);
                             Trace.TraceInformation("Autostart Enabled");
+                            return;
                         }
                     }
                 }
-                else
-                {
-                    Trace.TraceWarning("No registry key found");
-                }
+                Trace.TraceWarning("No registry key found");
             }
             catch(Exception e)
             {

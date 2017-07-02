@@ -551,6 +551,8 @@ namespace ScreamControl.Client.ViewModel
             CurrentConnectionState = ConnectionInfoStates.Ready;
 
             WindowVisibilityState = IsStealthMode ? Visibility.Hidden : Visibility.Visible;
+
+            Trace.TraceInformation("ViewModel loaded");
         }
 
         public void ClosingMethod(object sender, CancelEventArgs e)
