@@ -48,7 +48,11 @@ namespace ScreamControl.View
 
         public MainWindow(bool debugMode = false)
         {
+            Trace.TraceInformation("Window initializing... ");
+            Trace.Indent();
+
             _isDebugMode = debugMode;
+            if (_isDebugMode) Trace.TraceInformation("DEBUG MODE");
 
             InitializeComponent();
 
@@ -61,20 +65,23 @@ namespace ScreamControl.View
 
             this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
 
-            Trace.TraceInformation("Window Initialized");
-            if (_isDebugMode) Trace.TraceInformation("DEBUG MODE");
+            Trace.Unindent();
+            Trace.TraceInformation("... OK");
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Trace.TraceInformation("Internal window loading...");
+            Trace.Indent();
 #if !DEBUG
             if(!_isController)
               Startup.SetAutostart(_isDebugMode);
 #endif
-            Trace.TraceInformation("Window loaded");
-
             _availableHeight = GridVolume.ActualHeight;
             SetThresholdContentMargin(slThreshold.Value);
+
+            Trace.Unindent();
+            Trace.TraceInformation("... OK");
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

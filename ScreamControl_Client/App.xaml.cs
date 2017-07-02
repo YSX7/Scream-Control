@@ -43,13 +43,18 @@ namespace ScreamControl.Client
         public App()
         {
             ChangeLogFile();
-            Trace.TraceInformation("Scream Control started");
+
+            Trace.TraceInformation("Scream Control initiating...");
+            Trace.Indent();
 
             m_Languages.Clear();
             m_Languages.Add(new CultureInfo("en-US"));
             m_Languages.Add(new CultureInfo("ru-RU"));
 
             App.LanguageChanged += App_LanguageChanged;
+
+            Trace.Unindent();
+            Trace.TraceInformation("... OK");
         }
 
         public static event EventHandler LanguageChanged;
@@ -108,6 +113,9 @@ namespace ScreamControl.Client
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            Trace.TraceInformation("Scream Control startup...");
+            Trace.Indent();
+
             if (e.Args.Length > 0)
                 foreach (string item in e.Args)
                 {
@@ -133,16 +141,20 @@ namespace ScreamControl.Client
             MainWindow window = new MainWindow(_isDebugMode);
             window.DataContext = new MainViewModel();
             window.Show();
+
+            Trace.Unindent();
+            Trace.TraceInformation("... Done");
         }
 
         private void ChangeLogFile()
         {
-            if (!File.Exists("log.txt"))
-                File.Create("log.txt").Close();
-            else
-                File.Move("log.txt", "log-prev.txt");
-            if (File.Exists("log-prev.txt"))
-                File.Delete("log-prev.txt");
+            if (File.Exists("log.txt"))
+            {
+                File.Copy("log.txt", "log-prev.txt", true);
+                File.Delete("log.txt");
+            }
+            File.Create("log.txt").Close();
+                
             Trace.TraceInformation("Created at {0}", DateTime.Now.ToString());
         }
     }

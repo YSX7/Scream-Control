@@ -531,6 +531,9 @@ namespace ScreamControl.Client.ViewModel
 
         private void LoadedMethod()
         {
+            Trace.TraceInformation("ViewModel loading...");
+            Trace.Indent();
+
             CurrentConnectionState = ConnectionInfoStates.Initializing;
 
             _alarmSystem = new AlarmSystem(false, MicCaptureBoost, DelayBeforeAlarm, DelayBeforeOverlay, AlarmVolume, AlarmSystemVolume, Threshold, IsSoundAlertEnabled, IsOverlayAlertEnabled);
@@ -552,7 +555,8 @@ namespace ScreamControl.Client.ViewModel
 
             WindowVisibilityState = IsStealthMode ? Visibility.Hidden : Visibility.Visible;
 
-            Trace.TraceInformation("ViewModel loaded");
+            Trace.Unindent();
+            Trace.TraceInformation("... Done");
         }
 
         public void ClosingMethod(object sender, CancelEventArgs e)

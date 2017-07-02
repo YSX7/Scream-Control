@@ -3,6 +3,7 @@ using System.ServiceModel;
 using System.ServiceModel.Discovery;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 
 namespace ScreamControl.WCF
 {
@@ -16,6 +17,9 @@ namespace ScreamControl.WCF
         public WcfScServiceHost()
         {
             //    this._settingsToSerialize = settings;
+
+            Trace.TraceInformation("Service hosting...");
+            Trace.Indent();
 
             var baseAddress = new UriBuilder("net.tcp", System.Net.Dns.GetHostName(), 13640, "wcf");
 
@@ -32,6 +36,9 @@ namespace ScreamControl.WCF
             _serviceHost.Open();
 
             Client = new WcfScServiceClient(baseAddress.Uri + "/client", binding);
+
+            Trace.Unindent();
+            Trace.TraceInformation("... Done");
         }
 
         public void Close()
