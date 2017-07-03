@@ -20,10 +20,10 @@
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md]() file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/YSXrus/Scream-Control/blob/master/LICENSE) file for details
 
 ## Acknowledgments
 
-Проект был создан для себя, в первую очередь с целью заткнуть неугомонного брата хоть чуть-чуть. Попутно стало интересно изучить WCF, корректно использовать WPF с MVVM, а не просто через события.
+Проект был создан для себя, в первую очередь с целью заткнуть неугомонного брата хоть чуть-чуть. Попутно стало интересно изучить WCF, корректно использовать WPF с MVVM, а не просто через события, ну и разобраться с Github'ом.
 
 TODO and DONE list in Trello (Warning! Russian language ahead!): https://trello.com/b/aHKh01Z7/scream-control
