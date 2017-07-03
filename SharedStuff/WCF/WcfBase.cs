@@ -46,10 +46,17 @@ namespace ScreamControl.WCF
         #region Hosting client
         string IHostingClientService.Connect()
         {
-            clientCallback = OperationContext.Current.GetCallbackChannel<IHostingClientServiceCallback>();
-            m_ConnectionChanged += clientCallback.ConnectionChanged;
-            if (controllerCallback != null)
-                m_ConnectionChanged();
+            try
+            {
+                clientCallback = OperationContext.Current.GetCallbackChannel<IHostingClientServiceCallback>();
+                m_ConnectionChanged += clientCallback.ConnectionChanged;
+                if (controllerCallback != null)
+                    m_ConnectionChanged();
+            }
+            catch(Exception e)
+            {
+                Trace.TraceInformation("[WCF] {0}", e);
+            }
             return OperationContext.Current.Channel.State.ToString();
         }
 
@@ -61,12 +68,26 @@ namespace ScreamControl.WCF
 
         void IHostingClientService.SendMicInput(float volume)
         {
-              controllerCallback?.VolumeReceive(volume);
+            try
+            {
+                controllerCallback?.VolumeReceive(volume);
+            }
+            catch (Exception e)
+            {
+                Trace.TraceInformation("[WCF] {0}", e);
+            }
         }
 
         void IHostingClientService.SendSettings(List<AppSettingsProperty> settings)
         {
-            controllerCallback?.SettingsReceive(settings);
+            try
+            {
+                controllerCallback?.SettingsReceive(settings);
+            }
+            catch (Exception e)
+            {
+                Trace.TraceInformation("[WCF] {0}", e);
+            }
         }
         #endregion
 
@@ -86,6 +107,8 @@ namespace ScreamControl.WCF
 
                 fault.Result = false;
                 fault.Message = e.Message;
+
+                Trace.TraceError("[WCF] {0}", e);
 
                 throw new FaultException<FaultContract>(fault);
             }
@@ -108,6 +131,8 @@ namespace ScreamControl.WCF
                 fault.Result = false;
                 fault.Message = e.Message;
 
+                Trace.TraceError("[WCF] {0}", e);
+
                 throw new FaultException<FaultContract>(fault);
             }
         }
@@ -129,6 +154,8 @@ namespace ScreamControl.WCF
 
                 fault.Result = false;
                 fault.Message = e.Message;
+
+                Trace.TraceError("[WCF] {0}", e);
 
                 throw new FaultException<FaultContract>(fault);
             }

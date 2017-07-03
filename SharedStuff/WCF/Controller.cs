@@ -7,11 +7,9 @@ namespace ScreamControl.WCF
     public interface IControllerService
     {
         [OperationContract(IsInitiating = true, IsOneWay = true)]
-        [FaultContract(typeof(FaultContract))]
         void Connect();
 
         [OperationContract(IsOneWay = true, IsInitiating = false)]
-        [FaultContract(typeof(FaultContract))]
         void SendSettings(AppSettingsProperty value);
 
         [OperationContract(IsInitiating = false, IsOneWay = false)]
@@ -19,7 +17,6 @@ namespace ScreamControl.WCF
         string DisconnectPrepare();
 
         [OperationContract(IsTerminating = true, IsInitiating = false, IsOneWay = true)]
-        [FaultContract(typeof(FaultContract))]
         void Disconnect();
     }
 

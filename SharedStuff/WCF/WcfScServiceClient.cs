@@ -26,6 +26,11 @@ namespace ScreamControl.WCF
 
         public string temp;
 
+        private void ChannelFactory_Faulted(object sender, EventArgs e)
+        {
+            throw new Exception("Faulted");
+        }
+
         public WcfScServiceClient(string baseAddress, NetTcpBinding binding)
         {
             EndpointAddress serviceAddress = new EndpointAddress(baseAddress);
@@ -35,6 +40,7 @@ namespace ScreamControl.WCF
 
             proxy = new EventServiceHostingClient(evntCntx, binding, serviceAddress);
 
+            proxy.ChannelFactory.Faulted += new EventHandler(ChannelFactory_Faulted);
             temp = proxy.Connect();
         }
 

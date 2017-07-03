@@ -25,6 +25,8 @@ namespace ScreamControl.WCF
 
             _serviceHost = new ServiceHost(typeof(ServiceClient));
             NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
+            binding.ReceiveTimeout = new TimeSpan(2, 0, 0, 0);
+            binding.ReliableSession.InactivityTimeout = new TimeSpan(2, 0, 0, 0);
             binding.ReliableSession.Enabled = true;
             binding.ReliableSession.Ordered = false;
             _serviceHost.AddServiceEndpoint(typeof(IHostingClientService), binding, baseAddress.Uri + "/client");
