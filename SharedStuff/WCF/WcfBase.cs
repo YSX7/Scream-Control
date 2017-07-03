@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
@@ -72,19 +73,43 @@ namespace ScreamControl.WCF
         #region Controller
         void IControllerService.Connect()
         {
-            controllerCallback = OperationContext.Current.GetCallbackChannel<IControllerServiceCallback>();
-            m_ConnectionChanged += controllerCallback.ConnectionChanged;
-            if (clientCallback != null)
-                m_ConnectionChanged();
+            try
+            {
+                controllerCallback = OperationContext.Current.GetCallbackChannel<IControllerServiceCallback>();
+                m_ConnectionChanged += controllerCallback.ConnectionChanged;
+                if (clientCallback != null)
+                    m_ConnectionChanged();
+            }
+            catch (Exception e)
+            {
+                FaultContract fault = new FaultContract();
+
+                fault.Result = false;
+                fault.Message = e.Message;
+
+                throw new FaultException<FaultContract>(fault);
+            }
         }
 
         string IControllerService.DisconnectPrepare()
         {
-            m_ConnectionChanged -= controllerCallback.ConnectionChanged;
-            m_ConnectionChanged();
-            //   OperationContext.Current.Channel.Close();
-            controllerCallback = null;
-            return "disconnected";
+            try
+            {
+                m_ConnectionChanged -= controllerCallback.ConnectionChanged;
+                m_ConnectionChanged();
+                //   OperationContext.Current.Channel.Close();
+                controllerCallback = null;
+                return "disconnected";
+            }
+            catch (Exception e)
+            {
+                FaultContract fault = new FaultContract();
+
+                fault.Result = false;
+                fault.Message = e.Message;
+
+                throw new FaultException<FaultContract>(fault);
+            }
         }
 
         void IControllerService.Disconnect()
@@ -94,7 +119,19 @@ namespace ScreamControl.WCF
 
         void IControllerService.SendSettings(AppSettingsProperty value)
         {
-            clientCallback?.SettingsReceiveAndApply(value);
+            try
+            {
+                clientCallback?.SettingsReceiveAndApply(value);
+            }
+            catch (Exception e)
+            {
+                FaultContract fault = new FaultContract();
+
+                fault.Result = false;
+                fault.Message = e.Message;
+
+                throw new FaultException<FaultContract>(fault);
+            }
         }
         #endregion
     }

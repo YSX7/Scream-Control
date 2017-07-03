@@ -105,6 +105,7 @@
     <Compile Include="ViewModel\Command.cs" />
     <Compile Include="ViewModel\DependencyProperties.cs" />
     <Compile Include="WCF\Controller.cs" />
+    <Compile Include="WCF\FaultContract.cs" />
     <Compile Include="WCF\HostingClient.cs" />
     <Compile Include="WCF\WcfBase.cs" />
     <Compile Include="WCF\WcfScServiceClient.cs" />

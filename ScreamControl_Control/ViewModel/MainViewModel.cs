@@ -471,10 +471,13 @@ namespace ScreamControl.Controller.ViewModel
         private void OnSettingsReceive(List<AppSettingsProperty> settings)
         {
             foreach (var item in settings)
-                if(Type.GetType(item.type) == typeof(CultureInfo))
+            {
+                if (Type.GetType(item.type) == typeof(CultureInfo))
                     Properties.Settings.Default[item.name] = new CultureInfo(item.value);
                 else
-                Properties.Settings.Default[item.name] = Convert.ChangeType(item.value, Type.GetType(item.type));
+                    Properties.Settings.Default[item.name] = Convert.ChangeType(item.value, Type.GetType(item.type));
+                RaisePropertyChanged(item.name);
+            }
         }
 
         private void OnVolumeReceive(float volume)
