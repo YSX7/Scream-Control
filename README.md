@@ -16,7 +16,7 @@ More info about app and how to get started in the [Wiki](https://github.com/YSXr
 
 ## Contributing
 
-The code most likely contains a bunch of errors, is written crookedly and at its writing probably antipatterns are applied. But open to learning, so you can help in any way, whether it's code editing or just advice.
+The code most likely contains a bunch of errors, is written crookedly and at its writing probably antipatterns are applied. So you can help in any way, whether it's code editing or just advice.
 
 ## License
 
