@@ -599,15 +599,20 @@ namespace ScreamControl.Alarms
             try
             {
                 Trace.TraceInformation("Getting simple audio volume device...");
+                Trace.Indent();
                 using (var sessionManager = GetDefaultAudioSessionManager2(DataFlow.Render))
                 {
+                    Trace.TraceInformation("Session manager OK");
                     using (var sessionEnumerator = sessionManager.GetSessionEnumerator())
                     {
+                        Trace.TraceInformation("Session enumerator OK");
+                        Trace.TraceInformation("Num. of sessions: {0}", sessionEnumerator.Count);
                         foreach (var session in sessionEnumerator)
                         {
                             var asControl2 = session.QueryInterface<AudioSessionControl2>();
                             if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
-                            {
+                            { 
+                                Trace.Unindent();
                                 Trace.TraceInformation("... Simple audio volume OK");
                                 return session.QueryInterface<SimpleAudioVolume>();
                             }
@@ -619,6 +624,7 @@ namespace ScreamControl.Alarms
             {
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
+                Trace.Unindent();
                 Thread.Sleep(10000);
                 return GetSimpleAudioVolume();
             }
@@ -636,15 +642,19 @@ namespace ScreamControl.Alarms
             try
             {
                 Trace.TraceInformation("Getting default audio session manager...");
+                Trace.Indent();
                 using (var enumerator = new MMDeviceEnumerator())
                 {
+                    Trace.TraceInformation("Device enumerator OK");
                     using (var device = enumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia))
                     {
+                        Trace.TraceInformation("Default audio endpoint OK");
                         AudioSessionManager2 sessionManager = null;
                         Thread getSessionThread = new Thread(() => sessionManager = AudioSessionManager2.FromMMDevice(device));
                         getSessionThread.SetApartmentState(ApartmentState.MTA);
                         getSessionThread.Start();
                         getSessionThread.Join();
+                        Trace.Unindent();
                         Trace.TraceInformation("... Default audio session manager OK");
                         return sessionManager;
                     }
@@ -654,6 +664,7 @@ namespace ScreamControl.Alarms
             {
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
+                Trace.Unindent();
                 Thread.Sleep(10000);
                 return GetDefaultAudioSessionManager2(dataFlow);
             }
