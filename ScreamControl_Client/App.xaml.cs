@@ -42,6 +42,12 @@ namespace ScreamControl.Client
 
         public App()
         {
+            if (!ScreamControl.Client.Properties.Settings.Default.IsUpgraded)
+            {
+                ScreamControl.Client.Properties.Settings.Default.Upgrade();
+                ScreamControl.Client.Properties.Settings.Default.IsUpgraded = true;
+            }
+
             ChangeLogFile();
 
             Trace.TraceInformation("Scream Control initiating...");

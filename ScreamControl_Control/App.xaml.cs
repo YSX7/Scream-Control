@@ -41,6 +41,13 @@ namespace ScreamControl.Controller
         public App()
         {
             ChangeLogFile();
+
+            if (!ScreamControl.Controller.Properties.Settings.Default.IsUpgraded)
+            {
+                ScreamControl.Controller.Properties.Settings.Default.Upgrade();
+                ScreamControl.Controller.Properties.Settings.Default.IsUpgraded = true;
+            }
+
             Trace.TraceInformation("Scream Control started");
 
             m_Languages.Clear();
