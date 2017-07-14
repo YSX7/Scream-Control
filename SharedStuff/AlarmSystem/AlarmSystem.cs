@@ -233,103 +233,112 @@ namespace ScreamControl.Alarms
                            bool isOverlayAlertEnabled = false)
         {
             //_loggingEnabled = Trace.Listeners.Count > 1;
-            Trace.TraceInformation("Alarm system init");
-            Trace.Indent();
-            state = States.Running;
-            this._isControllerMode = isController;
-            if (!isController)
+            try
             {
-                using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
+                Trace.TraceInformation("Alarm system init");
+                Trace.Indent();
+                state = States.Running;
+                this._isControllerMode = isController;
+                if (!isController)
                 {
-                    using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
+                    using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
                     {
-                        _meter = AudioMeterInformation.FromDevice(device);
-                        _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
-                        _soundCapture.Initialize();
-                        _soundCapture.Start();
-                        Trace.TraceInformation("Sound Capture OK");
+                        using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
+                        {
+                            _meter = AudioMeterInformation.FromDevice(device);
+                            _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
+                            _soundCapture.Initialize();
+                            _soundCapture.Start();
+                            Trace.TraceInformation("Sound Capture OK");
+                        }
                     }
                 }
-            }
-            IWaveSource soundSource = GetSoundSource();
-            soundSource = soundSource.Loop();
-            _soundOut = GetSoundOut();
-            _soundOut.Initialize(soundSource);
-            Trace.TraceInformation("Sound Out OK");
+                IWaveSource soundSource = GetSoundSource();
+                soundSource = soundSource.Loop();
+                _soundOut = GetSoundOut();
+                _soundOut.Initialize(soundSource);
+                Trace.TraceInformation("Sound Out OK");
 
-            this._isSoundAlertEnabled = isSoundAlertEnabled;
-            this._isOverlayAlertEnabled = isOverlayAlertEnabled;
-            this._micCaptureBoost = micCaptureBoost;
-            this._delayBeforeAlarm = delayBeforeAlarm;
-            this._delayBeforeOverlay = delayBeforeOverlay;
-            this.AlarmVolume = alarmVolume;
-            this._alarmThreshold = threshold;
+                this._isSoundAlertEnabled = isSoundAlertEnabled;
+                this._isOverlayAlertEnabled = isOverlayAlertEnabled;
+                this._micCaptureBoost = micCaptureBoost;
+                this._delayBeforeAlarm = delayBeforeAlarm;
+                this._delayBeforeOverlay = delayBeforeOverlay;
+                this.AlarmVolume = alarmVolume;
+                this._alarmThreshold = threshold;
 
-            _systemSimpleAudioVolume = GetSimpleAudioVolume();
-            this.SystemVolume = systemVolume;
+                _systemSimpleAudioVolume = GetSimpleAudioVolume();
+                this.SystemVolume = systemVolume;
 
-            if (!isController)
-            {
-                _bgInputListener.WorkerSupportsCancellation = true;
-                _bgInputListener.DoWork += bgInputListener_DoWork;
-                _bgInputListener.RunWorkerCompleted += bgInputListener_RunWorkerCompleted;
-
-                _bgInputListener.RunWorkerAsync();
-            }
-            Trace.TraceInformation("Background worker running");
-
-            #region Timers
-
-            _timerAlarmDelay = new System.Timers.Timer();
-            _timerAlarmDelay.Elapsed += (s, args) =>
-            {
-                if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
+                if (!isController)
                 {
-                    _timerAlarmDelayArgs.alarmActive = true;
+                    _bgInputListener.WorkerSupportsCancellation = true;
+                    _bgInputListener.DoWork += bgInputListener_DoWork;
+                    _bgInputListener.RunWorkerCompleted += bgInputListener_RunWorkerCompleted;
 
-                    _timerAlarmDelay.Stop();
-                    PlayAlarm();
-
+                    _bgInputListener.RunWorkerAsync();
                 }
+                Trace.TraceInformation("Background worker running");
 
-                OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
-            };
+                #region Timers
 
-            _timerOverlayShow = new System.Timers.Timer();
-            _timerOverlayShow.Elapsed += (s, args) =>
-            {
-                if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
+                _timerAlarmDelay = new System.Timers.Timer();
+                _timerAlarmDelay.Elapsed += (s, args) =>
                 {
-                    _timerOverlayDelayArgs.alarmActive = true;
-                    _timerOverlayShow.Stop();
-                    if(!isController)
-                        Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
-                }
-                OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
+                    if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
+                    {
+                        _timerAlarmDelayArgs.alarmActive = true;
+
+                        _timerAlarmDelay.Stop();
+                        PlayAlarm();
+
+                    }
+
+                    OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
+                };
+
+                _timerOverlayShow = new System.Timers.Timer();
+                _timerOverlayShow.Elapsed += (s, args) =>
+                {
+                    if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
+                    {
+                        _timerOverlayDelayArgs.alarmActive = true;
+                        _timerOverlayShow.Stop();
+                        if (!isController)
+                            Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
+                    }
+                    OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                 //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
                 //    _timerOverlayDelayArgs = null;
             };
 
-            _timerOverlayUpdate = new System.Timers.Timer();
-            _timerOverlayUpdate.Interval = 10;
-            _timerOverlayUpdate.Elapsed += (s, args) =>
-            {
-                _alertOverlay.Update();
-                if (!_overlayWorking)
+                _timerOverlayUpdate = new System.Timers.Timer();
+                _timerOverlayUpdate.Interval = 10;
+                _timerOverlayUpdate.Elapsed += (s, args) =>
                 {
-                    _timerOverlayUpdate.Stop();
-                    if (_alertOverlay != null)
+                    _alertOverlay.Update();
+                    if (!_overlayWorking)
                     {
-                        _alertOverlay.Dispose();
-                        _alertOverlay = null;
+                        _timerOverlayUpdate.Stop();
+                        if (_alertOverlay != null)
+                        {
+                            _alertOverlay.Dispose();
+                            _alertOverlay = null;
+                        }
                     }
-                }
-            };
-            #endregion
+                };
+                #endregion
 
-            Trace.TraceInformation("Timers initialized");
-            Trace.TraceInformation("Alarm System up and running!");
-            Trace.Unindent();
+                Trace.TraceInformation("Timers initialized");
+                Trace.TraceInformation("Alarm System up and running!");
+                Trace.Unindent();
+            }
+            catch(Exception e)
+            {
+                Trace.TraceError(e.Message);
+                Trace.TraceError(e.StackTrace);
+                Application.Current.Shutdown();
+            }
         }
 
         public void Close()
