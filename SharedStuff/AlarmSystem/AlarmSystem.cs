@@ -596,20 +596,31 @@ namespace ScreamControl.Alarms
         #region System volume
         private SimpleAudioVolume GetSimpleAudioVolume()
         {
-            using (var sessionManager = GetDefaultAudioSessionManager2(DataFlow.Render))
+            try
             {
-                using (var sessionEnumerator = sessionManager.GetSessionEnumerator())
+                Trace.TraceInformation("Getting simple audio volume device...");
+                using (var sessionManager = GetDefaultAudioSessionManager2(DataFlow.Render))
                 {
-                    foreach (var session in sessionEnumerator)
+                    using (var sessionEnumerator = sessionManager.GetSessionEnumerator())
                     {
-                        var asControl2 = session.QueryInterface<AudioSessionControl2>();
-                        if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                        foreach (var session in sessionEnumerator)
                         {
-                            Trace.TraceInformation("Simple audio volume OK");
-                            return session.QueryInterface<SimpleAudioVolume>();
+                            var asControl2 = session.QueryInterface<AudioSessionControl2>();
+                            if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                            {
+                                Trace.TraceInformation("... Simple audio volume OK");
+                                return session.QueryInterface<SimpleAudioVolume>();
+                            }
                         }
                     }
                 }
+            }
+            catch(Exception e)
+            {
+                Trace.TraceError(e.Message);
+                Trace.TraceError(e.StackTrace);
+                Thread.Sleep(10000);
+                return GetSimpleAudioVolume();
             }
             return null;
         }
@@ -622,17 +633,29 @@ namespace ScreamControl.Alarms
 
         private AudioSessionManager2 GetDefaultAudioSessionManager2(DataFlow dataFlow)
         {
-            using (var enumerator = new MMDeviceEnumerator())
+            try
             {
-                using (var device = enumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia))
+                Trace.TraceInformation("Getting default audio session manager...");
+                using (var enumerator = new MMDeviceEnumerator())
                 {
-                    AudioSessionManager2 sessionManager = null;
-                    Thread getSessionThread = new Thread(() => sessionManager = AudioSessionManager2.FromMMDevice(device));
-                    getSessionThread.SetApartmentState(ApartmentState.MTA);
-                    getSessionThread.Start();
-                    getSessionThread.Join();
-                    return sessionManager;
+                    using (var device = enumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia))
+                    {
+                        AudioSessionManager2 sessionManager = null;
+                        Thread getSessionThread = new Thread(() => sessionManager = AudioSessionManager2.FromMMDevice(device));
+                        getSessionThread.SetApartmentState(ApartmentState.MTA);
+                        getSessionThread.Start();
+                        getSessionThread.Join();
+                        Trace.TraceInformation("... Default audio session manager OK");
+                        return sessionManager;
+                    }
                 }
+            }
+            catch(Exception e)
+            {
+                Trace.TraceError(e.Message);
+                Trace.TraceError(e.StackTrace);
+                Thread.Sleep(10000);
+                return GetDefaultAudioSessionManager2(dataFlow);
             }
         }
         #endregion
