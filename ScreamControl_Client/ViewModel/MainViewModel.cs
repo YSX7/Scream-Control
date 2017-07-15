@@ -508,22 +508,25 @@ namespace ScreamControl.Client.ViewModel
             settingsArg = new List<AppSettingsProperty>();
             foreach (SettingsPropertyValue item in Properties.Settings.Default.PropertyValues)
             {
-                var listItem = new AppSettingsProperty(item.Name, item.PropertyValue.ToString(), item.Property.PropertyType.FullName);
-                settingsArg.Add(listItem);
+                if (item.Name != "IsUpgraded")
+                {
+                    var listItem = new AppSettingsProperty(item.Name, item.PropertyValue.ToString(), item.Property.PropertyType.FullName);
+                    settingsArg.Add(listItem);
+                }
             }
         }
 
         private void OnSettingReceive(AppSettingsProperty setting)
         {
-            //try
-            //{
-            this.GetType().GetProperty(setting.name).SetValue(this, Convert.ChangeType(setting.value, Type.GetType(setting.type)));
-            //}
-            // Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
-            //catch
-            //{
-            //     MessageBox.Show(string.Format("{0} = {1}", setting.name, setting.value));
-            //}
+            try
+            {
+                this.GetType().GetProperty(setting.name).SetValue(this, Convert.ChangeType(setting.value, Type.GetType(setting.type)));
+            }
+         //    Properties.Settings.Default[setting.name] = Convert.ChangeType(setting.value, Type.GetType(setting.type));
+            catch
+            {
+                Trace.TraceError("{0} = {1} [{2}]", setting.name, setting.value, setting.type);
+            }
         }
 
 
