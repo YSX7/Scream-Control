@@ -308,9 +308,9 @@ namespace ScreamControl.Alarms
                             Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
                     }
                     OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
-                //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
-                //    _timerOverlayDelayArgs = null;
-            };
+                    //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
+                    //    _timerOverlayDelayArgs = null;
+                };
 
                 _timerOverlayUpdate = new System.Timers.Timer();
                 _timerOverlayUpdate.Interval = 10;
@@ -333,7 +333,7 @@ namespace ScreamControl.Alarms
                 Trace.TraceInformation("Alarm System up and running!");
                 Trace.Unindent();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
@@ -479,7 +479,7 @@ namespace ScreamControl.Alarms
                         vca.resetSoundLabelColor = true;
                         vca.resetSoundLabelContent = true;
                     }
-                    
+
                 }
                 if (_isOverlayAlertEnabled)
                 {
@@ -610,17 +610,20 @@ namespace ScreamControl.Alarms
                         foreach (var session in sessionEnumerator)
                         {
                             var asControl2 = session.QueryInterface<AudioSessionControl2>();
-                            if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
-                            { 
-                                Trace.Unindent();
-                                Trace.TraceInformation("... Simple audio volume OK");
-                                return session.QueryInterface<SimpleAudioVolume>();
+                            if (asControl2 != null)
+                            {
+                                if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                                {
+                                    Trace.Unindent();
+                                    Trace.TraceInformation("... Simple audio volume OK");
+                                    return session.QueryInterface<SimpleAudioVolume>();
+                                }
                             }
                         }
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
@@ -660,7 +663,7 @@ namespace ScreamControl.Alarms
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
