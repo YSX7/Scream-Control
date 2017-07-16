@@ -501,6 +501,7 @@ namespace ScreamControl.Client.ViewModel
         private void OnControllerDisconnected()
         {
             CurrentConnectionState = ConnectionInfoStates.Disconnected;
+            Properties.Settings.Default.Save();
         }
 
         private void OnRequestCurrentSettingsHandler(ref List<AppSettingsProperty> settingsArg)
