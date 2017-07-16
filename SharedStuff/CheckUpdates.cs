@@ -53,7 +53,7 @@ namespace ScreamControl
                     Trace.TraceInformation("Updates available: {0}. Current: {1}. Git latest: {2}", updateAvailable.ToString(), currentVersion, gitVersion);
                     string appType = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1];
                     string updateUrl = latest.Assets.First(element => element.Name.ToLower().Contains("update." + appType.ToLower())).BrowserDownloadUrl;
-                    if ((updateAvailable || isDebugMode) && File.Exists("Updater.exe"))
+                    if ((updateAvailable || isDebugMode) && File.Exists("Updater.exe") && updateUrl != null)
                     {
                         Trace.TraceInformation("Go for updates");
                         string commandLine = updateUrl + " " + System.AppDomain.CurrentDomain.FriendlyName + silentArgument + updatedUpdaterArgument + debugArgument;
