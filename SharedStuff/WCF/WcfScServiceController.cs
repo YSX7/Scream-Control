@@ -57,9 +57,11 @@ namespace ScreamControl.WCF
                 if (helloWorldServices.Count == 0)
                 {
                     OnConnectionFailed();
+                    Trace.TraceWarning("Client not found");
                 }
                 else
                 {
+                    Trace.TraceInformation("Connecting to client");
                     EndpointAddress serviceAddress = helloWorldServices[0].Address;
                     NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
                     binding.ReliableSession.Enabled = true;
