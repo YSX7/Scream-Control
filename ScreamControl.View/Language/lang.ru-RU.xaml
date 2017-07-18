@@ -16,6 +16,9 @@
     <v:String x:Key="m_Stealth">Включить скрытный режим</v:String>
     <v:String x:Key="m_Volume">Громкость</v:String>
     <v:String x:Key="m_VolumeSystem">Системная громкость</v:String>
+    <!-- Popup info -->
+    <v:String x:Key="mp_Added">Приложение добавлено в автозапуск</v:String>
+    <v:String x:Key="mp_Readded">Приложение включено в автозапуске</v:String>
     <!-- Client connection info strings -->
     <v:String x:Key="mc_Initializing">Инициализация сервиса...</v:String>
     <v:String x:Key="mc_Ready">Сервис готов, ждём контроллер...</v:String>

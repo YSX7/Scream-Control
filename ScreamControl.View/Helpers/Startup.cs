@@ -15,9 +15,11 @@ namespace ScreamControl.View
 {
     static class Startup
     {
-        static Assembly curAssembly = Assembly.GetEntryAssembly();
+        private static Assembly curAssembly = Assembly.GetEntryAssembly();
+        private const string STARTUP_ADDED = "mp_Added";
+        private const string STARTUP_READDED = "mp_Readded";
 
-        public static void SetAutostart(bool debugMode = false)
+        public static void SetAutostart(bool debugMode, bool showPopup)
         {
             try
             {
@@ -50,6 +52,14 @@ namespace ScreamControl.View
                     shortcut.Description = "Scream Control Launch";
                     shortcut.Save();
 
+                    if (showPopup)
+                    {
+                        InfoPopupView infoPopup = new InfoPopupView();
+                        infoPopup.Owner = Application.Current.MainWindow;
+                        infoPopup.textBlock.Text = Application.Current.FindResource(STARTUP_ADDED).ToString();
+                        infoPopup.Show();
+                    }
+
                     Trace.TraceInformation("App added to autostart");
                 }
             }
@@ -58,10 +68,10 @@ namespace ScreamControl.View
                 Trace.TraceError("Something happened at Autostart set: {0}", e);
             }
 
-            CheckAutostartEnabled(debugMode);
+            CheckAutostartEnabled(debugMode, showPopup);
          }
 
-        public static void CheckAutostartEnabled(bool debugMode = false)
+        public static void CheckAutostartEnabled(bool debugMode, bool showPopup)
         {
             try
             {
@@ -78,7 +88,16 @@ namespace ScreamControl.View
                         {
                             newValue[0] = 2;
                             key.SetValue(curAssembly.GetName().Name + ".lnk", newValue);
-                            Trace.TraceInformation("Autostart Enabled");
+
+                            if (showPopup)
+                            {
+                                InfoPopupView infoPopup = new InfoPopupView();
+                                infoPopup.Owner = Application.Current.MainWindow;
+                                infoPopup.textBlock.Text = Application.Current.FindResource(STARTUP_READDED).ToString();
+                                infoPopup.Show();
+                            }
+
+                            Trace.TraceInformation("Autostart Reenabled");
                             return;
                         }
                     }

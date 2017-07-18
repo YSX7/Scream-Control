@@ -73,9 +73,10 @@ namespace ScreamControl.View
         {
             Trace.TraceInformation("Internal window loading...");
             Trace.Indent();
+
 #if !DEBUG
             if(!_isController)
-              Startup.SetAutostart(_isDebugMode);
+              Startup.SetAutostart(_isDebugMode, this.IsVisible);
 #endif
             _availableHeight = GridVolume.ActualHeight;
             SetThresholdContentMargin(slThreshold.Value);
@@ -99,7 +100,7 @@ namespace ScreamControl.View
         {
 #if !DEBUG
             if (!_isController)
-                Startup.CheckAutostartEnabled(_isDebugMode);
+                Startup.CheckAutostartEnabled(_isDebugMode, false);
 #endif
 
             Trace.TraceInformation("Window closed");
