@@ -48,25 +48,33 @@ namespace ScreamControl.View
 
         public MainWindow(bool debugMode = false)
         {
-            Trace.TraceInformation("Window initializing... ");
-            Trace.Indent();
-
-            _isDebugMode = debugMode;
-            if (_isDebugMode) Trace.TraceInformation("DEBUG MODE");
-
-            InitializeComponent();
-
-            _isController = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1] == "Controller";
-
-            if (!_isController)
+            try
             {
-                _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
+                Trace.TraceInformation("Window initializing... ");
+                Trace.Indent();
+
+                _isDebugMode = debugMode;
+                if (_isDebugMode) Trace.TraceInformation("DEBUG MODE");
+
+                InitializeComponent();
+
+                _isController = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title.Split(' ')[1] == "Controller";
+
+                if (!_isController)
+                {
+                    _hotkeyStealth = new Hotkey(Key.S, KeyModifier.Ctrl | KeyModifier.Alt, OnStealthHotkeyHandler);
+                }
+
+                this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
+
+                Trace.Unindent();
+                Trace.TraceInformation("... OK");
             }
-
-            this.Title = ((AssemblyTitleAttribute)Assembly.GetEntryAssembly().GetCustomAttribute(typeof(AssemblyTitleAttribute))).Title;
-
-            Trace.Unindent();
-            Trace.TraceInformation("... OK");
+            catch(Exception e)
+            {
+                Trace.TraceError(e.Message);
+                Trace.TraceError(e.StackTrace);
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
