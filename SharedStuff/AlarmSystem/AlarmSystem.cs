@@ -649,10 +649,12 @@ namespace ScreamControl.Alarms
                                         Trace.TraceInformation("... Simple audio volume OK");
                                         return session.QueryInterface<SimpleAudioVolume>();
                                     }
+                                    else
+                                        Trace.TraceInformation("No Scream Control in this process, trying another one.");
                                 }
                                 else
                                 {
-                                    Trace.TraceInformation("No process for this session control, trying another one");
+                                    Trace.TraceInformation("No process for this session control, trying another one.");
                                 }
                             }
                         }
