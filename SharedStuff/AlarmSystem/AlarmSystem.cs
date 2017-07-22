@@ -285,54 +285,52 @@ namespace ScreamControl.Alarms
 
                 #region Timers
 
-                if (!isController)
+                _timerAlarmDelay = new System.Timers.Timer();
+                _timerAlarmDelay.Elapsed += (s, args) =>
                 {
-                    _timerAlarmDelay = new System.Timers.Timer();
-                    _timerAlarmDelay.Elapsed += (s, args) =>
+                    if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
                     {
-                        if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
-                        {
-                            _timerAlarmDelayArgs.alarmActive = true;
+                        _timerAlarmDelayArgs.alarmActive = true;
 
-                            _timerAlarmDelay.Stop();
+                        _timerAlarmDelay.Stop();
+                        if (!_isControllerMode)
                             PlayAlarm();
 
-                        }
+                    }
 
-                        OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
-                    };
+                    OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
+                };
 
-                    _timerOverlayShow = new System.Timers.Timer();
-                    _timerOverlayShow.Elapsed += (s, args) =>
+                _timerOverlayShow = new System.Timers.Timer();
+                _timerOverlayShow.Elapsed += (s, args) =>
+                {
+                    if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
                     {
-                        if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
-                        {
-                            _timerOverlayDelayArgs.alarmActive = true;
-                            _timerOverlayShow.Stop();
-                            if (!isController)
-                                Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
-                        }
-                        OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
+                        _timerOverlayDelayArgs.alarmActive = true;
+                        _timerOverlayShow.Stop();
+                        if (!isController)
+                            Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
+                    }
+                    OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                     //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
                     //    _timerOverlayDelayArgs = null;
                 };
 
-                    _timerOverlayUpdate = new System.Timers.Timer();
-                    _timerOverlayUpdate.Interval = 10;
-                    _timerOverlayUpdate.Elapsed += (s, args) =>
+                _timerOverlayUpdate = new System.Timers.Timer();
+                _timerOverlayUpdate.Interval = 10;
+                _timerOverlayUpdate.Elapsed += (s, args) =>
+                {
+                    _alertOverlay.Update();
+                    if (!_overlayWorking)
                     {
-                        _alertOverlay.Update();
-                        if (!_overlayWorking)
+                        _timerOverlayUpdate.Stop();
+                        if (_alertOverlay != null)
                         {
-                            _timerOverlayUpdate.Stop();
-                            if (_alertOverlay != null)
-                            {
-                                _alertOverlay.Dispose();
-                                _alertOverlay = null;
-                            }
+                            _alertOverlay.Dispose();
+                            _alertOverlay = null;
                         }
-                    };
-                }
+                    }
+                };
                 #endregion
 
                 Trace.TraceInformation("Timers initialized");
@@ -371,12 +369,9 @@ namespace ScreamControl.Alarms
             Trace.TraceInformation("Alarm System closing");
             state = States.Closing;
             _overlayWorking = false;
-            if (!_isControllerMode)
-            {
-                _timerAlarmDelay.Stop();
-                _timerOverlayShow.Stop();
-                _timerOverlayUpdate.Stop();
-            }
+            _timerAlarmDelay.Stop();
+            _timerOverlayShow.Stop();
+            _timerOverlayUpdate.Stop();
             if (_alertOverlay != null)
             {
                 _alertOverlay.Disable();
@@ -478,6 +473,7 @@ namespace ScreamControl.Alarms
                         //  else return;
                     }
                     else
+                    if (!_isControllerMode)
                         PlayAlarm();
                 }
                 else
@@ -522,20 +518,17 @@ namespace ScreamControl.Alarms
                 vca.resetOverlayLabelContent = true;
                 _soundOut.Pause();
 
-                if (!_isControllerMode)
+                if (_timerAlarmDelay.Enabled)
                 {
-                    if (_timerAlarmDelay.Enabled)
-                    {
-                        _timerAlarmDelay.Stop();
-                    }
-                    if (_timerOverlayShow.Enabled)
-                    {
-                        _timerOverlayShow.Stop();
-                    }
-                    if (_overlayWorking)
-                    {
-                        _overlayWorking = false;
-                    }
+                    _timerAlarmDelay.Stop();
+                }
+                if (_timerOverlayShow.Enabled)
+                {
+                    _timerOverlayShow.Stop();
+                }
+                if (_overlayWorking)
+                {
+                    _overlayWorking = false;
                 }
                 //}
             }
@@ -625,11 +618,19 @@ namespace ScreamControl.Alarms
                             if (asControl2 != null)
                             {
                                 Trace.TraceInformation("Audio Session Control OK");
-                                if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                                if (asControl2.Process != null)
                                 {
-                                    Trace.Unindent();
-                                    Trace.TraceInformation("... Simple audio volume OK");
-                                    return session.QueryInterface<SimpleAudioVolume>();
+                                    Trace.TraceInformation("Audio Session Control Process OK");
+                                    if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
+                                    {
+                                        Trace.Unindent();
+                                        Trace.TraceInformation("... Simple audio volume OK");
+                                        return session.QueryInterface<SimpleAudioVolume>();
+                                    }
+                                }
+                                else
+                                {
+                                    Trace.TraceInformation("");
                                 }
                             }
                         }
