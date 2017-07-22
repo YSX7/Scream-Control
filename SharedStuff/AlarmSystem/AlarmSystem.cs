@@ -691,6 +691,7 @@ namespace ScreamControl.Alarms
                 else
                     return GetDefaultAudioSessionManager2(dataFlow);
             }
+            return null;
         }
         #endregion
     }
