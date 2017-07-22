@@ -624,6 +624,7 @@ namespace ScreamControl.Alarms
                             var asControl2 = session.QueryInterface<AudioSessionControl2>();
                             if (asControl2 != null)
                             {
+                                Trace.TraceInformation("Audio Session Control OK");
                                 if (asControl2.Process.ProcessName.ToLower().Contains("screamcontrol"))
                                 {
                                     Trace.Unindent();
