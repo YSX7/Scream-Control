@@ -69,8 +69,8 @@ namespace ScreamControl.Alarms
             {
                 Application.Current.Dispatcher.Invoke((Action)delegate
                 {
-                    if(OverlayWindow!= null)
-                      OverlayWindow.Update();
+                    if (OverlayWindow != null)
+                        OverlayWindow.Update();
                 });
             }
         }
@@ -123,12 +123,19 @@ namespace ScreamControl.Alarms
                 Disable();
             }
 
-            Application.Current.Dispatcher.Invoke((Action)delegate
-            {
-                OverlayWindow.Hide();
-                OverlayWindow.Close();
-                OverlayWindow = null;
-            });
+                Application.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    try
+                    {
+                        OverlayWindow.Hide();
+                        OverlayWindow.Close();
+                        OverlayWindow = null;
+                    }
+                    catch(NullReferenceException e)
+                    {
+                        
+                    }
+                });
 
             _tickEngine.Stop();
 
@@ -143,7 +150,8 @@ namespace ScreamControl.Alarms
 
         void SetUp()
         {
-            Application.Current.Dispatcher.Invoke((Action)delegate {
+            Application.Current.Dispatcher.Invoke((Action)delegate
+            {
 
                 var _grid = new Grid
                 {

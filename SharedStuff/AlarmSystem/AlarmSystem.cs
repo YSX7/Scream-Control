@@ -25,6 +25,9 @@ namespace ScreamControl.Alarms
         private bool _isOverlayAlertEnabled = false;
         private bool _isControllerMode = false;
 
+        private bool _isSoundAlertPlaying = false;
+        private bool _isOverlayAlertPlaying = false;
+
         private int _audioVolumeTryCount = 0;
         private int _sessionManagerTryCount = 0;
 
@@ -293,8 +296,7 @@ namespace ScreamControl.Alarms
                         _timerAlarmDelayArgs.alarmActive = true;
 
                         _timerAlarmDelay.Stop();
-                        if (!_isControllerMode)
-                            PlayAlarm();
+                        PlayAlarm(!_isControllerMode);
 
                     }
 
@@ -308,8 +310,7 @@ namespace ScreamControl.Alarms
                     {
                         _timerOverlayDelayArgs.alarmActive = true;
                         _timerOverlayShow.Stop();
-                        if (!isController)
-                            Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
+                            Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(!_isControllerMode); });
                     }
                     OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                     //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
@@ -425,6 +426,8 @@ namespace ScreamControl.Alarms
             state = States.Stopping;
             _soundCapture?.Stop();
             _soundCapture?.Dispose();
+
+            _isSoundAlertPlaying = false;
             if (_soundOut.PlaybackState != PlaybackState.Stopped)
             {
                 _soundOut.Stop();
@@ -464,7 +467,7 @@ namespace ScreamControl.Alarms
                 {
                     if (_delayBeforeAlarm > 0)
                     {
-                        if (!_timerAlarmDelay.Enabled && _soundOut.PlaybackState != PlaybackState.Playing)
+                        if (!_timerAlarmDelay.Enabled && !_isSoundAlertPlaying)
                         {
                             vca.resetSoundLabelColor = true;
                             _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
@@ -473,14 +476,14 @@ namespace ScreamControl.Alarms
                         //  else return;
                     }
                     else
-                    if (!_isControllerMode)
-                        PlayAlarm();
+                       PlayAlarm(!_isControllerMode);
                 }
                 else
                 {
-                    if (_soundOut.PlaybackState == PlaybackState.Playing)
+                    if (_isSoundAlertPlaying)
                     {
                         _soundOut.Stop();
+                        _isSoundAlertPlaying = false;
                         vca.resetSoundLabelColor = true;
                         vca.resetSoundLabelContent = true;
                     }
@@ -488,7 +491,7 @@ namespace ScreamControl.Alarms
                 }
                 if (_isOverlayAlertEnabled)
                 {
-                    if (!_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled)
+                    if (!_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled && !_isOverlayAlertPlaying)
                     {
                         vca.resetOverlayLabelColor = true;
                         _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
@@ -501,11 +504,13 @@ namespace ScreamControl.Alarms
                     {
                         _timerOverlayShow.Stop();
                         vca.resetOverlayLabelColor = true;
+                        _isOverlayAlertPlaying = false;
                     }
                     if (_overlayWorking)
                     {
                         vca.resetOverlayLabelContent = true;
                         _overlayWorking = false;
+                        _isOverlayAlertPlaying = false;
                     }
                 }
             }
@@ -517,6 +522,9 @@ namespace ScreamControl.Alarms
                 vca.resetSoundLabelContent = true;
                 vca.resetOverlayLabelContent = true;
                 _soundOut.Pause();
+                _isSoundAlertPlaying = false;
+
+                _isOverlayAlertPlaying = false;
 
                 if (_timerAlarmDelay.Enabled)
                 {
@@ -536,14 +544,28 @@ namespace ScreamControl.Alarms
             OnVolumeCheck(this, vca);
         }
 
-        public void PlayAlarm()
+        public void PlayAlarm(bool playAlarm = true)
         {
+            _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
+            _timerAlarmDelayArgs.alarmActive = true;
+            OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
+            _isSoundAlertPlaying = true;
+            if (!playAlarm) return;
+
             if (_soundOut.PlaybackState == PlaybackState.Paused) _soundOut.Resume();
             else _soundOut.Play();
         }
 
-        public void ShowAlertWindow()
+        public void ShowAlertWindow(bool playAlarm = true)
         {
+            _isOverlayAlertPlaying = true;
+
+            if (!playAlarm)
+            {
+                _overlayWorking = true;
+                return;
+            }
+
             System.Diagnostics.Process[] p = System.Diagnostics.Process.GetProcesses();
             var processSharp = new ProcessSharp((int)GetForegroundProcessId(), MemoryType.Remote);
             if (_alertOverlay != null)
