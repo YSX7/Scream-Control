@@ -432,7 +432,7 @@ namespace ScreamControl.Client.ViewModel
         private void OnMonitorUpdate(object sender, AlarmSystem.MonitorArgs args)
         {
             this.MicVolume = args.MicVolume;
-            if (CurrentConnectionState == ConnectionInfoStates.Connected)
+            if (CurrentConnectionState == ConnectionInfoStates.Connected && _WcfHost.Client.proxy.State == System.ServiceModel.CommunicationState.Opened)
                 _WcfHost.Client.proxy.SendMicInput(args.MicVolume);
         }
 
