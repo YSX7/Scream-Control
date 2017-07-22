@@ -25,6 +25,9 @@ namespace ScreamControl.Alarms
         private bool _isOverlayAlertEnabled = false;
         private bool _isControllerMode = false;
 
+        private int _audioVolumeTryCount = 0;
+        private int _sessionManagerTryCount = 0;
+
         public void PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
 
@@ -282,51 +285,54 @@ namespace ScreamControl.Alarms
 
                 #region Timers
 
-                _timerAlarmDelay = new System.Timers.Timer();
-                _timerAlarmDelay.Elapsed += (s, args) =>
+                if (!isController)
                 {
-                    if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
+                    _timerAlarmDelay = new System.Timers.Timer();
+                    _timerAlarmDelay.Elapsed += (s, args) =>
                     {
-                        _timerAlarmDelayArgs.alarmActive = true;
+                        if (_timerAlarmDelayArgs.ElapsedTime.Seconds >= _delayBeforeAlarm)
+                        {
+                            _timerAlarmDelayArgs.alarmActive = true;
 
-                        _timerAlarmDelay.Stop();
-                        PlayAlarm();
+                            _timerAlarmDelay.Stop();
+                            PlayAlarm();
 
-                    }
+                        }
 
-                    OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
-                };
+                        OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
+                    };
 
-                _timerOverlayShow = new System.Timers.Timer();
-                _timerOverlayShow.Elapsed += (s, args) =>
-                {
-                    if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
+                    _timerOverlayShow = new System.Timers.Timer();
+                    _timerOverlayShow.Elapsed += (s, args) =>
                     {
-                        _timerOverlayDelayArgs.alarmActive = true;
-                        _timerOverlayShow.Stop();
-                        if (!isController)
-                            Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
-                    }
-                    OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
+                        if (_timerOverlayDelayArgs.ElapsedTime.Seconds >= _delayBeforeOverlay)
+                        {
+                            _timerOverlayDelayArgs.alarmActive = true;
+                            _timerOverlayShow.Stop();
+                            if (!isController)
+                                Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(); });
+                        }
+                        OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                     //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
                     //    _timerOverlayDelayArgs = null;
                 };
 
-                _timerOverlayUpdate = new System.Timers.Timer();
-                _timerOverlayUpdate.Interval = 10;
-                _timerOverlayUpdate.Elapsed += (s, args) =>
-                {
-                    _alertOverlay.Update();
-                    if (!_overlayWorking)
+                    _timerOverlayUpdate = new System.Timers.Timer();
+                    _timerOverlayUpdate.Interval = 10;
+                    _timerOverlayUpdate.Elapsed += (s, args) =>
                     {
-                        _timerOverlayUpdate.Stop();
-                        if (_alertOverlay != null)
+                        _alertOverlay.Update();
+                        if (!_overlayWorking)
                         {
-                            _alertOverlay.Dispose();
-                            _alertOverlay = null;
+                            _timerOverlayUpdate.Stop();
+                            if (_alertOverlay != null)
+                            {
+                                _alertOverlay.Dispose();
+                                _alertOverlay = null;
+                            }
                         }
-                    }
-                };
+                    };
+                }
                 #endregion
 
                 Trace.TraceInformation("Timers initialized");
@@ -365,9 +371,12 @@ namespace ScreamControl.Alarms
             Trace.TraceInformation("Alarm System closing");
             state = States.Closing;
             _overlayWorking = false;
-            _timerAlarmDelay.Stop();
-            _timerOverlayShow.Stop();
-            _timerOverlayUpdate.Stop();
+            if (!_isControllerMode)
+            {
+                _timerAlarmDelay.Stop();
+                _timerOverlayShow.Stop();
+                _timerOverlayUpdate.Stop();
+            }
             if (_alertOverlay != null)
             {
                 _alertOverlay.Disable();
@@ -513,17 +522,20 @@ namespace ScreamControl.Alarms
                 vca.resetOverlayLabelContent = true;
                 _soundOut.Pause();
 
-                if (_timerAlarmDelay.Enabled)
+                if (!_isControllerMode)
                 {
-                    _timerAlarmDelay.Stop();
-                }
-                if (_timerOverlayShow.Enabled)
-                {
-                    _timerOverlayShow.Stop();
-                }
-                if (_overlayWorking)
-                {
-                    _overlayWorking = false;
+                    if (_timerAlarmDelay.Enabled)
+                    {
+                        _timerAlarmDelay.Stop();
+                    }
+                    if (_timerOverlayShow.Enabled)
+                    {
+                        _timerOverlayShow.Stop();
+                    }
+                    if (_overlayWorking)
+                    {
+                        _overlayWorking = false;
+                    }
                 }
                 //}
             }
@@ -625,11 +637,15 @@ namespace ScreamControl.Alarms
             }
             catch (Exception e)
             {
+                _audioVolumeTryCount++;
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
                 Trace.Unindent();
                 Thread.Sleep(10000);
-                return GetSimpleAudioVolume();
+                if (_audioVolumeTryCount > 5)
+                    System.Windows.Forms.Application.Restart();
+                else
+                    return GetSimpleAudioVolume();
             }
             return null;
         }
@@ -665,11 +681,15 @@ namespace ScreamControl.Alarms
             }
             catch (Exception e)
             {
+                _sessionManagerTryCount++;
                 Trace.TraceError(e.Message);
                 Trace.TraceError(e.StackTrace);
                 Trace.Unindent();
                 Thread.Sleep(10000);
-                return GetDefaultAudioSessionManager2(dataFlow);
+                if (_sessionManagerTryCount > 5)
+                    System.Windows.Forms.Application.Restart();
+                else
+                    return GetDefaultAudioSessionManager2(dataFlow);
             }
         }
         #endregion
