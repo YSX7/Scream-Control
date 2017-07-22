@@ -630,7 +630,7 @@ namespace ScreamControl.Alarms
                                 }
                                 else
                                 {
-                                    Trace.TraceInformation("");
+                                    Trace.TraceInformation("No process for this session control, trying another one");
                                 }
                             }
                         }
