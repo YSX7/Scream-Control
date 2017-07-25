@@ -296,7 +296,11 @@
             <Label x:Name="lThreshold" Padding="0" MinHeight="15" MinWidth="24" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Center" ContentStringFormat="{}{0:n0}" Content="{Binding Threshold}"/>
             <Controls:MetroProgressBar Value="{Binding MicVolume}" Orientation="Vertical" Grid.Column="1" Height="Auto" Background="White" HorizontalAlignment="Stretch" Foreground="{Binding VolumeBarBrush}" BorderBrush="#FFECECEC" BorderThickness="2"/>
             <Slider x:Name="slThreshold" Style="{StaticResource ProgressSlider}" TickFrequency="0.5" Minimum="0" Margin="0" Orientation="Vertical" Maximum="100"  Background="{x:Null}" BorderBrush="Transparent" Grid.Column="1" Value="{Binding Threshold}" ValueChanged="slider_ValueChanged"/>
-            <Label Grid.Column="1" x:Name="lVolume" Content="{Binding MicVolume}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0" Height="17" ContentStringFormat="{}{0:n1}"/>
+            <Label Grid.Column="1" x:Name="lVolume" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" HorizontalContentAlignment="Center" FontWeight="Medium" Padding="2,2,2,0" Height="17" ContentStringFormat="{}{0:n1}" IsHitTestVisible="False" Content="{Binding MicVolume}" Panel.ZIndex="10">
+                <Label.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="5" Direction="0" ShadowDepth="0"/>
+                </Label.Effect>
+            </Label>
         </Grid>
 
     </Grid>
