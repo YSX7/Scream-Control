@@ -113,7 +113,7 @@ namespace Updater
             }
             finally
             {
-                if (isDebugMode)
+                if (isDebugMode || !silentMode)
                 {
                     Console.WriteLine("Press any key...");
                     Console.ReadKey();
