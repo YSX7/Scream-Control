@@ -154,13 +154,25 @@ namespace ScreamControl.Client
 
         private void ChangeLogFile()
         {
-            if (File.Exists("log.txt"))
+            if (File.Exists("logs/log.txt"))
             {
-                File.Copy("log.txt", "log-prev.txt", true);
-                File.Delete("log.txt");
+                if (!Directory.Exists("logs"))
+                    Directory.CreateDirectory("logs");
+
+                File.Copy("logs/log.txt", "logs/log" + DateTime.Now.ToString("ddMM-HHmm") + ".txt", true);
+                File.Delete("logs/log.txt");
             }
-            File.Create("log.txt").Close();
-                
+            File.Create("logs/log.txt").Close();
+
+            string[] files = Directory.GetFiles("logs");
+
+            foreach (string file in files)
+            {
+                FileInfo fi = new FileInfo(file);
+                if (fi.LastWriteTime < DateTime.Now.AddDays(7))
+                    fi.Delete();
+            }
+
             Trace.TraceInformation("Created at {0}", DateTime.Now.ToString());
         }
     }

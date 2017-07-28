@@ -454,22 +454,29 @@ namespace ScreamControl.Client.ViewModel
             //}
             //else
             //{
-            VolumeBarBrush = args.meterColor;
-            if (args.resetSoundLabelColor)
+            try
             {
-                SoundAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
+                VolumeBarBrush = args.meterColor;
+                if (args.resetSoundLabelColor)
+                {
+                    SoundAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
+                }
+                if (args.resetOverlayLabelColor)
+                {
+                    OverlayAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
+                }
+                if (args.resetSoundLabelContent)
+                {
+                    SoundTimerValue = 0;
+                }
+                if (args.resetOverlayLabelContent)
+                {
+                    OverlayTimerValue = 0;
+                }
             }
-            if (args.resetOverlayLabelColor)
+            catch(Exception e)
             {
-                OverlayAlertTimerBrush = DEFAULT_NORMAL_BRUSH;
-            }
-            if (args.resetSoundLabelContent)
-            {
-                SoundTimerValue = 0;
-            }
-            if (args.resetOverlayLabelContent)
-            {
-                OverlayTimerValue = 0;
+                Trace.TraceError("Volume check error: " + e);
             }
             //}
         }

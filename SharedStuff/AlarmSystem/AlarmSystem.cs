@@ -457,91 +457,99 @@ namespace ScreamControl.Alarms
 
         private void VolumeCheck(float volume)
         {
-            VolumeCheckArgs vca;
-            vca = new VolumeCheckArgs(VOLUME_OK);
-            if (volume >= _alarmThreshold)
+            try
             {
-                KeepSystemVolume();
-                vca.meterColor = VOLUME_HIGH;
-                if (_isSoundAlertEnabled)
+                VolumeCheckArgs vca;
+                vca = new VolumeCheckArgs(VOLUME_OK);
+                if (volume >= _alarmThreshold)
                 {
-                    if (_delayBeforeAlarm > 0)
+                    KeepSystemVolume();
+                    vca.meterColor = VOLUME_HIGH;
+                    if (_isSoundAlertEnabled)
                     {
-                        if (!_timerAlarmDelay.Enabled && !_isSoundAlertPlaying)
+                        if (_delayBeforeAlarm > 0)
                         {
-                            vca.resetSoundLabelColor = true;
-                            _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
-                            _timerAlarmDelay.Start();
+                            if (!_timerAlarmDelay.Enabled && !_isSoundAlertPlaying)
+                            {
+                                vca.resetSoundLabelColor = true;
+                                _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
+                                _timerAlarmDelay.Start();
+                            }
+                            //  else return;
                         }
-                        //  else return;
+                        else
+                            PlayAlarm(!_isControllerMode);
                     }
                     else
-                       PlayAlarm(!_isControllerMode);
-                }
-                else
-                {
-                    if (_isSoundAlertPlaying)
                     {
-                        _soundOut.Stop();
-                        _isSoundAlertPlaying = false;
-                        vca.resetSoundLabelColor = true;
-                        vca.resetSoundLabelContent = true;
-                    }
+                        if (_isSoundAlertPlaying)
+                        {
+                            _soundOut.Stop();
+                            _isSoundAlertPlaying = false;
+                            vca.resetSoundLabelColor = true;
+                            vca.resetSoundLabelContent = true;
+                        }
 
-                }
-                if (_isOverlayAlertEnabled)
-                {
-                    if (!_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled && !_isOverlayAlertPlaying)
+                    }
+                    if (_isOverlayAlertEnabled)
                     {
-                        vca.resetOverlayLabelColor = true;
-                        _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
-                        _timerOverlayShow.Start();
+                        if (!_timerOverlayShow.Enabled && !_timerOverlayUpdate.Enabled && !_isOverlayAlertPlaying)
+                        {
+                            vca.resetOverlayLabelColor = true;
+                            _timerOverlayDelayArgs = new TimerDelayArgs(DateTime.Now);
+                            _timerOverlayShow.Start();
+                        }
+                    }
+                    else
+                    {
+                        if (_timerOverlayShow.Enabled)
+                        {
+                            _timerOverlayShow.Stop();
+                            vca.resetOverlayLabelColor = true;
+                            _isOverlayAlertPlaying = false;
+                        }
+                        if (_overlayWorking)
+                        {
+                            vca.resetOverlayLabelContent = true;
+                            _overlayWorking = false;
+                            _isOverlayAlertPlaying = false;
+                        }
                     }
                 }
                 else
                 {
+                    //if (_soundOut.PlaybackState == PlaybackState.Playing)
+                    //{
+                    vca.meterColor = VOLUME_OK;
+                    vca.resetSoundLabelContent = true;
+                    vca.resetOverlayLabelContent = true;
+                    _soundOut.Pause();
+                    _isSoundAlertPlaying = false;
+
+                    _isOverlayAlertPlaying = false;
+
+                    if(_timerAlarmDelay != null)
+                        if (_timerAlarmDelay.Enabled)
+                        {
+                            _timerAlarmDelay.Stop();
+                        }
                     if (_timerOverlayShow.Enabled)
                     {
                         _timerOverlayShow.Stop();
-                        vca.resetOverlayLabelColor = true;
-                        _isOverlayAlertPlaying = false;
                     }
                     if (_overlayWorking)
                     {
-                        vca.resetOverlayLabelContent = true;
                         _overlayWorking = false;
-                        _isOverlayAlertPlaying = false;
                     }
+                    //}
                 }
+
+                OnVolumeCheck(this, vca);
             }
-            else
+            catch(Exception e)
             {
-                //if (_soundOut.PlaybackState == PlaybackState.Playing)
-                //{
-                vca.meterColor = VOLUME_OK;
-                vca.resetSoundLabelContent = true;
-                vca.resetOverlayLabelContent = true;
-                _soundOut.Pause();
-                _isSoundAlertPlaying = false;
-
-                _isOverlayAlertPlaying = false;
-
-                if (_timerAlarmDelay.Enabled)
-                {
-                    _timerAlarmDelay.Stop();
-                }
-                if (_timerOverlayShow.Enabled)
-                {
-                    _timerOverlayShow.Stop();
-                }
-                if (_overlayWorking)
-                {
-                    _overlayWorking = false;
-                }
-                //}
+                Trace.TraceError("Volume check error: " + e);
             }
-
-            OnVolumeCheck(this, vca);
         }
 
         public void PlayAlarm(bool playAlarm = true)

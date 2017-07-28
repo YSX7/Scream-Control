@@ -107,6 +107,7 @@ namespace ScreamControl.WCF
 
                 fault.Result = false;
                 fault.Message = e.Message;
+                fault.Description = "WCF error";
 
                 Trace.TraceError("[WCF] {0}", e);
 
@@ -130,6 +131,7 @@ namespace ScreamControl.WCF
 
                 fault.Result = false;
                 fault.Message = e.Message;
+                fault.Description = "WCF error";
 
                 Trace.TraceError("[WCF] {0}", e);
 
@@ -154,6 +156,7 @@ namespace ScreamControl.WCF
 
                 fault.Result = false;
                 fault.Message = e.Message;
+                fault.Description = "WCF description";
 
                 Trace.TraceError("[WCF] {0}", e);
 
