@@ -111,7 +111,7 @@ namespace ScreamControl.WCF
 
                 Trace.TraceError("[WCF] {0}", e);
 
-                throw new FaultException<FaultContract>(fault);
+                throw new FaultException<FaultContract>(fault, new FaultReason(e.Message));
             }
         }
 
@@ -135,7 +135,7 @@ namespace ScreamControl.WCF
 
                 Trace.TraceError("[WCF] {0}", e);
 
-                throw new FaultException<FaultContract>(fault);
+                throw new FaultException<FaultContract>(fault, new FaultReason(e.Message));
             }
         }
 
@@ -160,7 +160,7 @@ namespace ScreamControl.WCF
 
                 Trace.TraceError("[WCF] {0}", e);
 
-                throw new FaultException<FaultContract>(fault);
+                throw new FaultException<FaultContract>(fault, new FaultReason(e.Message));
             }
         }
         #endregion

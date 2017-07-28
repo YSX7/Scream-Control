@@ -154,11 +154,11 @@ namespace ScreamControl.Client
 
         private void ChangeLogFile()
         {
+            if (!Directory.Exists("logs"))
+                Directory.CreateDirectory("logs");
+
             if (File.Exists("logs/log.txt"))
             {
-                if (!Directory.Exists("logs"))
-                    Directory.CreateDirectory("logs");
-
                 File.Copy("logs/log.txt", "logs/log" + DateTime.Now.ToString("ddMM-HHmm") + ".txt", true);
                 File.Delete("logs/log.txt");
             }
