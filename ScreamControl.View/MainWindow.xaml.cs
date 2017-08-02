@@ -44,6 +44,8 @@ namespace ScreamControl.View
         private bool _isController;
         private bool _isDebugMode;
 
+        private double _currentSliderValue;
+
         delegate float MonitorVolumeCallback();
 
         public MainWindow(bool debugMode = false)
@@ -151,11 +153,13 @@ namespace ScreamControl.View
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             SetThresholdContentMargin(e.NewValue);
+            _currentSliderValue = e.NewValue;
         }
 
         private void wMain_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             _availableHeight = GridVolume.ActualHeight;
+            SetThresholdContentMargin(_currentSliderValue);
         }
 
         private void SetThresholdContentMargin(double sliderValue)
