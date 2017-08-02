@@ -25,6 +25,8 @@ namespace ScreamControl.Alarms
         private bool _isOverlayAlertEnabled = false;
         private bool _isControllerMode = false;
 
+        private bool _defaultDeviceChanged = false;
+
         private bool _isSoundAlertPlaying = false;
         private bool _isOverlayAlertPlaying = false;
 
@@ -78,6 +80,7 @@ namespace ScreamControl.Alarms
         public enum States { Stopped, Running, Stopping, Closing, Closed };
         public States state = States.Stopped;
 
+        private IWaveSource _soundSource;
 
         private float _alarmVolume;
         private float AlarmVolume
@@ -245,25 +248,20 @@ namespace ScreamControl.Alarms
                 Trace.Indent();
                 state = States.Running;
                 this._isControllerMode = isController;
-                if (!isController)
-                {
-                    using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
-                    {
-                        using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
-                        {
-                            _meter = AudioMeterInformation.FromDevice(device);
-                            _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
-                            _soundCapture.Initialize();
-                            _soundCapture.Start();
-                            Trace.TraceInformation("Sound Capture OK");
-                        }
-                    }
-                }
-                IWaveSource soundSource = GetSoundSource();
-                soundSource = soundSource.Loop();
-                _soundOut = GetSoundOut();
-                _soundOut.Initialize(soundSource);
+
+                MMNotificationClient deviceNotification = new MMNotificationClient();
+                deviceNotification.DefaultDeviceChanged += DeviceNotification_DefaultDeviceChanged;
+                deviceNotification.DeviceAdded += DeviceNotification_DeviceAdded;
+                deviceNotification.DeviceRemoved += DeviceNotification_DeviceRemoved;
+
+                GetCapture(isController);
+                Trace.TraceInformation("Sound Capture OK");
+
+                _soundSource = GetSoundSource();
+                _soundSource = _soundSource.Loop();
+                GetOutputSound();
                 Trace.TraceInformation("Sound Out OK");
+
 
                 this._isSoundAlertEnabled = isSoundAlertEnabled;
                 this._isOverlayAlertEnabled = isOverlayAlertEnabled;
@@ -310,7 +308,7 @@ namespace ScreamControl.Alarms
                     {
                         _timerOverlayDelayArgs.alarmActive = true;
                         _timerOverlayShow.Stop();
-                            Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(!_isControllerMode); });
+                        Application.Current.Dispatcher.Invoke((Action)delegate { ShowAlertWindow(!_isControllerMode); });
                     }
                     OnUpdateTimerOverlayDelay(this, _timerOverlayDelayArgs);
                     //if (_timerOverlayShow.Dispatcher.HasShutdownStarted)
@@ -344,6 +342,52 @@ namespace ScreamControl.Alarms
                 Trace.TraceError(e.StackTrace);
                 Application.Current.Shutdown();
             }
+        }
+
+        private void DeviceNotification_DeviceAdded(object sender, DeviceNotificationEventArgs e)
+        {
+            _defaultDeviceChanged = true;
+        }
+
+        private void DeviceNotification_DeviceRemoved(object sender, DeviceNotificationEventArgs e)
+        {
+            _defaultDeviceChanged = true;
+        }
+
+        private void DeviceNotification_DefaultDeviceChanged(object sender, DefaultDeviceChangedEventArgs e)
+        {
+            try
+            {
+                _defaultDeviceChanged = true;
+                Trace.TraceInformation("Default device changed. New device: {0}, {1}", e.DataFlow.ToString(), e.Role.ToString());
+                switch (e.DataFlow)
+                {
+                    case DataFlow.Capture:
+                        GetCapture(_isControllerMode, e.DeviceId);
+                        break;
+                    case DataFlow.Render:
+                        GetNewSoundOut();
+                        break;
+                }
+
+            }
+            catch (Exception exp)
+            {
+                Trace.TraceError(exp.Message);
+            }
+            finally
+            {
+                _defaultDeviceChanged = false;
+            }
+        }
+
+        private void GetNewSoundOut()
+        {
+            _soundOut.Stop();
+            _soundOut.WaitForStopped();
+            GetOutputSound();
+            _systemSimpleAudioVolume = GetSimpleAudioVolume();
+            _soundOut.Volume = AlarmVolume;
         }
 
         public void Close()
@@ -390,14 +434,29 @@ namespace ScreamControl.Alarms
         private ISoundOut GetSoundOut()
         {
             if (WasapiOut.IsSupportedOnCurrentPlatform)
-                return new WasapiOut();
+            {
+                WasapiOut was;
+                do
+                    was = new WasapiOut();
+                while (was.Device.DeviceState != DeviceState.Active);
+                return was;
+            }
             else
-                return new DirectSoundOut();
+            {
+                DirectSoundOut dso = new DirectSoundOut();
+                return dso;
+            }
         }
 
         private IWaveSource GetSoundSource()
         {
             return CodecFactory.Instance.GetCodec("beep.mp3");
+        }
+
+        private void GetOutputSound()
+        {
+            _soundOut = GetSoundOut();
+            _soundOut.Initialize(_soundSource);
         }
 
         #region Listen to mic input
@@ -441,6 +500,7 @@ namespace ScreamControl.Alarms
         {
             try
             {
+                if (_defaultDeviceChanged) return;
                 float volume = GetVolumeInfo();
                 volume = volume.Clamp(0, 100);
                 VolumeCheck(volume);
@@ -457,6 +517,7 @@ namespace ScreamControl.Alarms
 
         private void VolumeCheck(float volume)
         {
+            if (_defaultDeviceChanged) return;
             try
             {
                 VolumeCheckArgs vca;
@@ -523,7 +584,8 @@ namespace ScreamControl.Alarms
                     vca.meterColor = VOLUME_OK;
                     vca.resetSoundLabelContent = true;
                     vca.resetOverlayLabelContent = true;
-                    _soundOut.Pause();
+                    if(_soundOut.PlaybackState == PlaybackState.Playing)
+                        _soundOut.Pause();
                     _isSoundAlertPlaying = false;
 
                     _isOverlayAlertPlaying = false;
@@ -554,11 +616,16 @@ namespace ScreamControl.Alarms
 
         public void PlayAlarm(bool playAlarm = true)
         {
+            if (_defaultDeviceChanged) return;
             _timerAlarmDelayArgs = new TimerDelayArgs(DateTime.Now);
             _timerAlarmDelayArgs.alarmActive = true;
             OnUpdateTimerAlarmDelay(this, _timerAlarmDelayArgs);
             _isSoundAlertPlaying = true;
             if (!playAlarm) return;
+
+            if (_soundOut.GetType() == typeof(WasapiOut))
+                if ((_soundOut as WasapiOut).Device.DeviceState != DeviceState.Active)
+                    GetNewSoundOut();
 
             if (_soundOut.PlaybackState == PlaybackState.Paused) _soundOut.Resume();
             else _soundOut.Play();
@@ -566,6 +633,8 @@ namespace ScreamControl.Alarms
 
         public void ShowAlertWindow(bool playAlarm = true)
         {
+            if (_defaultDeviceChanged) return;
+
             _isOverlayAlertPlaying = true;
 
             if (!playAlarm)
@@ -595,6 +664,30 @@ namespace ScreamControl.Alarms
             // Do work
             _timerOverlayUpdate.Start();
         }
+
+        private void GetCapture(bool isController, string deviceId = null)
+        {
+            if (!isController)
+            {
+                using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
+                {
+                    //using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
+                    //{
+                    MMDevice device;
+                    if (deviceId != null)
+                        device = enumerator.GetDevice(deviceId);
+                    else
+                        device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+                    _meter = AudioMeterInformation.FromDevice(device);
+                    _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
+                    _soundCapture.Initialize();
+                    _soundCapture.Start();
+                    //}
+                }
+            }
+        }
+
+
 
 
         #region Various
@@ -686,8 +779,16 @@ namespace ScreamControl.Alarms
 
         private void KeepSystemVolume()
         {
-            _systemSimpleAudioVolume.MasterVolume = _systemVolume;
-            _systemSimpleAudioVolume.IsMuted = false;
+            try
+            {
+                _systemSimpleAudioVolume.MasterVolume = _systemVolume;
+                _systemSimpleAudioVolume.IsMuted = false;
+            }
+            catch(CoreAudioAPIException exp)
+            {
+                Trace.TraceError(exp.Message);
+                _systemSimpleAudioVolume = GetSimpleAudioVolume();
+            }
         }
 
         private AudioSessionManager2 GetDefaultAudioSessionManager2(DataFlow dataFlow)
