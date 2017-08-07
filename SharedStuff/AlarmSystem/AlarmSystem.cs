@@ -108,9 +108,12 @@ namespace ScreamControl.Alarms
         private readonly BackgroundWorker _bgInputListener = new BackgroundWorker();
         private System.Timers.Timer _timerAlarmDelay,
             _timerOverlayShow,
-            _timerOverlayUpdate;
+            _timerOverlayUpdate,
+            _timerZeroVolumeDelay;
         private WasapiCapture _soundCapture;
         private ISoundOut _soundOut;
+
+        private Role _currentCaptureRole = Role.Communications;
 
         //private bool _loggingEnabled = false;
         private float _systemVolume;
@@ -330,6 +333,17 @@ namespace ScreamControl.Alarms
                         }
                     }
                 };
+
+                _timerZeroVolumeDelay = new System.Timers.Timer(10000);
+                _timerZeroVolumeDelay.AutoReset = false;
+                _timerZeroVolumeDelay.Elapsed += (s, args) =>
+                {
+                    _currentCaptureRole -= 1;
+                    if (_currentCaptureRole < 0)
+                        _currentCaptureRole = Role.Communications;
+                    GetCapture(isController);
+                };
+                _timerZeroVolumeDelay.Start();
                 #endregion
 
                 Trace.TraceInformation("Timers initialized");
@@ -417,6 +431,7 @@ namespace ScreamControl.Alarms
             _timerAlarmDelay.Stop();
             _timerOverlayShow.Stop();
             _timerOverlayUpdate.Stop();
+            _timerZeroVolumeDelay.Stop();
             if (_alertOverlay != null)
             {
                 _alertOverlay.Disable();
@@ -428,6 +443,12 @@ namespace ScreamControl.Alarms
 
         private float GetVolumeInfo()
         {
+            if (_meter.PeakValue == 0.0)
+            {
+                _timerZeroVolumeDelay.Start();
+            }
+            else
+                _timerZeroVolumeDelay.Stop();
             return _meter.PeakValue * _micCaptureBoost;
         }
 
@@ -584,13 +605,13 @@ namespace ScreamControl.Alarms
                     vca.meterColor = VOLUME_OK;
                     vca.resetSoundLabelContent = true;
                     vca.resetOverlayLabelContent = true;
-                    if(_soundOut.PlaybackState == PlaybackState.Playing)
+                    if (_soundOut.PlaybackState == PlaybackState.Playing)
                         _soundOut.Pause();
                     _isSoundAlertPlaying = false;
 
                     _isOverlayAlertPlaying = false;
 
-                    if(_timerAlarmDelay != null)
+                    if (_timerAlarmDelay != null)
                         if (_timerAlarmDelay.Enabled)
                         {
                             _timerAlarmDelay.Stop();
@@ -608,7 +629,7 @@ namespace ScreamControl.Alarms
 
                 OnVolumeCheck(this, vca);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.TraceError("Volume check error: " + e);
             }
@@ -669,6 +690,11 @@ namespace ScreamControl.Alarms
         {
             if (!isController)
             {
+                if(_soundCapture!= null)
+                {
+                    _soundCapture?.Stop();
+                    _soundCapture?.Dispose();
+                }
                 using (MMDeviceEnumerator enumerator = new MMDeviceEnumerator())
                 {
                     //using (MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications))
@@ -677,7 +703,10 @@ namespace ScreamControl.Alarms
                     if (deviceId != null)
                         device = enumerator.GetDevice(deviceId);
                     else
-                        device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+                    {
+                        device = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, _currentCaptureRole);
+                    }
+
                     _meter = AudioMeterInformation.FromDevice(device);
                     _soundCapture = new WasapiCapture(true, AudioClientShareMode.Shared, 250) { Device = device };
                     _soundCapture.Initialize();
@@ -686,8 +715,6 @@ namespace ScreamControl.Alarms
                 }
             }
         }
-
-
 
 
         #region Various
@@ -784,7 +811,7 @@ namespace ScreamControl.Alarms
                 _systemSimpleAudioVolume.MasterVolume = _systemVolume;
                 _systemSimpleAudioVolume.IsMuted = false;
             }
-            catch(CoreAudioAPIException exp)
+            catch (CoreAudioAPIException exp)
             {
                 Trace.TraceError(exp.Message);
                 _systemSimpleAudioVolume = GetSimpleAudioVolume();

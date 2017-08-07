@@ -159,7 +159,7 @@ namespace ScreamControl.Client
 
             if (File.Exists("logs/log.txt"))
             {
-                File.Copy("logs/log.txt", "logs/log" + DateTime.Now.ToString("ddMM-HHmm") + ".txt", true);
+                File.Copy("logs/log.txt", "logs/log" + DateTime.Now.ToString("ddMM-HHmmss") + ".txt", true);
                 File.Delete("logs/log.txt");
             }
             File.Create("logs/log.txt").Close();
@@ -169,7 +169,7 @@ namespace ScreamControl.Client
             foreach (string file in files)
             {
                 FileInfo fi = new FileInfo(file);
-                if (fi.LastWriteTime < DateTime.Now.AddDays(7))
+                if (fi.LastWriteTime.AddDays(7) < DateTime.Now)
                     fi.Delete();
             }
 
